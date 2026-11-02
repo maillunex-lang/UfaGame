@@ -968,3 +968,10 @@ server-level rewrite/return/if и выбора virtual host, затем испр
 попыток; при неудаче сообщает последний HTTP статус и откатывает конфиг.
 Симуляция двух 404 и последующего успеха, bash -n и planning прошли. Гипотеза и
 работа на VPS еще не проверены, S09 in_progress.
+
+### S09 — тестовый HTTPS доступен
+Владелец применил nginx diff: nginx -t, локальный HTTPS Studio/API, рабочий
+портал, публичный HTML/JS и API health прошли. Исходный конфиг сохранен в
+/srv/ufagame-test/nginx-backup-NlQfm8/original.conf. Android-приложение, вход,
+сохранение черновика и конфликт на телефоне еще не проверены. S09 остается
+in_progress, S52 blocked; следующий шаг — ручная проверка владельцем Studio v8.
