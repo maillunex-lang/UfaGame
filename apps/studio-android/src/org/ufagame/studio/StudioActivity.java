@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.InputType;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
@@ -15,6 +16,9 @@ import android.widget.Toast;
 import org.json.JSONObject;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -24,7 +28,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/** Preliminary S09 phone-check shell. No native JS bridge or file permissions. */
+/** Studio shell. No native JS bridge or broad file permissions. */
 public final class StudioActivity extends Activity {
   private static final String STUDIO_URL = "https://tts-ufa.ru/game/studio/";
   private static final int PICK_ZIP=4101;
@@ -50,6 +54,18 @@ public final class StudioActivity extends Activity {
     super.onCreate(state);
     LinearLayout layout = new LinearLayout(this);
     layout.setOrientation(LinearLayout.VERTICAL);
+    layout.setBackgroundColor(android.graphics.Color.rgb(242, 245, 240));
+    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    if (Build.VERSION.SDK_INT >= 30) {
+      getWindow().setDecorFitsSystemWindows(false);
+      layout.setOnApplyWindowInsetsListener((view, insets) -> {
+        android.graphics.Insets bars = insets.getInsets(
+          WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+        android.graphics.Insets keyboard = insets.getInsets(WindowInsets.Type.ime());
+        view.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, keyboard.bottom));
+        return WindowInsets.CONSUMED;
+      });
+    }
     message = new TextView(this);
     message.setPadding(24, 24, 24, 24);
     message.setTextSize(18);
@@ -105,6 +121,15 @@ public final class StudioActivity extends Activity {
     layout.addView(retry);
     layout.addView(web, new LinearLayout.LayoutParams(-1, 0, 1));
     setContentView(layout);
+    if (Build.VERSION.SDK_INT >= 30) {
+      WindowInsetsController controller = getWindow().getInsetsController();
+      if (controller != null) {
+        int lightBars = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+          WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+        controller.setSystemBarsAppearance(lightBars, lightBars);
+      }
+      layout.requestApplyInsets();
+    }
     openStudio();
   }
   private void showOwnerLogin() {
