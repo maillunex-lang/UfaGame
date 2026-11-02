@@ -840,3 +840,11 @@ nginx80/443/18443, действующие CasaOS, RIK-AGRO и контейнер
 конечный health и маршруты nginx еще не установлены. Подробности docs/reports/S51.md.
 Следующий шаг — read-only проверка redirect/status и имен nginx-конфигураций;
 затем подготовить отдельный diff и rollback. Никаких изменений VPS не выполнялось.
+
+### S51 — проверка портала владельцем
+Root HTTPS после двух redirects: 200. `/game/`, `/game/server/`, `/game/studio/`
+вернули404. Enabled nginx sites: agroapp/default/rik-agro-test-portal; связь
+server_name/location с доменом еще не изучена. Это baseline, не разрешение
+занять маршруты/порт. Отчет docs/reports/S51.md; S51 in_progress. Следующий шаг:
+безопасная read-only выборка nginx директив и socket activation, затем diff и
+rollback. VPS/портал не изменялись.
