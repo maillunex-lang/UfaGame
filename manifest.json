@@ -1,0 +1,20 @@
+{
+  "source_commit": "71cef2f02c91cc60f8c3b3f125e7ab34fc50e21e",
+  "files": [
+    {
+      "path": "assets/index-BiOxPO1r.css",
+      "sha256": "225d7a3f28febf630a0b1d00e23b6ce9144de652d43101da0361111661801a61",
+      "bytes": 1347
+    },
+    {
+      "path": "assets/index-BnhVGTRP.js",
+      "sha256": "156667ec4d5fe839e795a76b026a68f0f4071ae03ca986ea8d4cf82cc76b7849",
+      "bytes": 229399
+    },
+    {
+      "path": "index.html",
+      "sha256": "976ed7b422c88eeacc800eb5483e500400b7f7fa68cbf1b8c619b241a5b55a3e",
+      "bytes": 394
+    }
+  ]
+}
