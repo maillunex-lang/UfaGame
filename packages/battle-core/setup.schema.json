@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/internal/battle-setup-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["simulation_version", "seed", "actors"],
+  "properties": {
+    "simulation_version": {"const": 1},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "actors": {
+      "type": "array", "minItems": 2, "maxItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "team", "slot", "hp"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
+          "team": {"enum": ["attacker", "defender"]},
+          "slot": {"type": "integer", "minimum": 0, "maximum": 4},
+          "hp": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+        }
+      }
+    }
+  }
+}
