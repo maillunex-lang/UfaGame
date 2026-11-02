@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.ufagame.studio" android:versionCode="@CODE@" android:versionName="0.0.@CODE@">
+ <uses-permission android:name="android.permission.INTERNET"/>
  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36"/>
  <application android:label="Game Studio" android:allowBackup="false" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar">
   <activity android:name=".StudioActivity" android:exported="true">

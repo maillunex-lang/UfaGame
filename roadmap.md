@@ -905,3 +905,12 @@ S17 in_progress: добавлены внутренняя схема setup, ADR 0
 контракты снимка, выбор целей и пошаговая симуляция. APK не создавался.
 Общий `npm run check`: lint, format и planning прошли; check:secrets остановился
 из-за отсутствия gitleaks в PATH, остальные части общего запуска не выполнялись.
+
+### S09 — предварительная оболочка для проверки на телефоне
+Studio versionCode 8 собирается tools/android/build-studio-test.sh: открывает
+только https://tts-ufa.ru/game/studio/ и показывает повтор при ошибке. APK не
+содержит редактор; API и UI на VPS еще не развернуты, device smoke не выполнен.
+Предыдущая signing identity сохранена, OriginPolicy тест проверен. Добавлена CI
+проверка сборки статики и изолированного тестового стека; результат CI ожидается.
+S09 in_progress, S10 blocked: chooser/download и полноценная проверка отсутствуют.
+Повторный `npm run check` с gitleaks в PATH: exit0; все входящие проверки прошли.

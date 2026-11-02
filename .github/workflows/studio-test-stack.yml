@@ -1,0 +1,47 @@
+name: Studio isolated test stack
+on:
+  workflow_dispatch:
+  push:
+    branches: ['codex/s10-studio-android']
+    paths:
+      - 'infra/studio-test/**'
+      - 'services/api/**'
+      - 'packages/contracts/**'
+      - 'apps/studio-web/**'
+      - 'package*.json'
+      - '.dockerignore'
+      - '.github/workflows/studio-test-stack.yml'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+      - name: Build web application
+        run: npm ci --ignore-scripts --no-audit --no-fund && npm run build:studio-web
+      - name: Build and smoke isolated test stack
+        env:
+          S52_DB_PASSWORD: 11111111111111111111111111111111
+          S52_API_PORT: '18055'
+          COMPOSE_PROJECT_NAME: ufagame_ci_s09
+        run: |
+          set -euo pipefail
+          trap 'docker compose -f infra/studio-test/compose.yml down --volumes --remove-orphans' EXIT
+          docker compose -f infra/studio-test/compose.yml up -d --build
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:18055/health/ready; then exit 0; fi
+            sleep 2
+          done
+          docker compose -f infra/studio-test/compose.yml logs --no-color
+          exit 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: studio-web-${{ github.sha }}
+          path: apps/studio-web/dist/
+          if-no-files-found: error
+          retention-days: 7
