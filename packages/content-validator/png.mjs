@@ -1,4 +1,5 @@
 import {crc32,inflateSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
 const signature=Buffer.from([137,80,78,71,13,10,26,10]);
 const fail=()=>{throw new Error('Invalid or unsupported PNG');};
 /** Bounded PNG validation for an intentionally narrow non-interlaced 8-bit subset.
@@ -28,9 +29,21 @@ export function inspectPng(bytes) {
   pos+=length+12;if(seenEnd&&pos!==bytes.length)fail();
  }
  if(!seenEnd)fail();
- const row=width*channels+1,expectedSize=row*height;
- let raw;try{raw=inflateSync(Buffer.concat(parts),{maxOutputLength:expectedSize});}catch{fail();}
+ const row=width*channels+1,expectedSize=row*height,compressed=Buffer.concat(parts);
+ let raw;try{const result=inflateSync(compressed,{maxOutputLength:expectedSize,info:true});if(result.engine.bytesWritten!==compressed.length)fail();raw=result.buffer;}catch{fail();}
  if(raw.length!==expectedSize)fail();
- for(let y=0;y<height;y++)if(raw[y*row]>4)fail();
- return {media_type:'image/png',width,height};
+ const stride=width*channels,decoded=Buffer.alloc(stride*height);
+ for(let y=0;y<height;y++){
+  const filter=raw[y*row];if(filter>4)fail();
+  for(let x=0;x<stride;x++){
+   const i=y*stride+x,left=x>=channels?decoded[i-channels]:0,up=y>0?decoded[i-stride]:0,upLeft=y>0&&x>=channels?decoded[i-stride-channels]:0;
+   let predictor=0;
+   if(filter===1)predictor=left;
+   else if(filter===2)predictor=up;
+   else if(filter===3)predictor=Math.floor((left+up)/2);
+   else if(filter===4){const p=left+up-upLeft,pa=Math.abs(p-left),pb=Math.abs(p-up),pc=Math.abs(p-upLeft);predictor=pa<=pb&&pa<=pc?left:pb<=pc?up:upLeft;}
+   decoded[i]=(raw[y*row+1+x]+predictor)&255;
+  }
+ }
+ return {media_type:'image/png',width,height,pixel_sha256:createHash('sha256').update(decoded).digest('hex')};
 }
