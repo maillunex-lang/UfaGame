@@ -20,7 +20,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S06 | Гостевой аккаунт и сессии | S05 | done |
 | S07 | Привязка логина и восстановление кодом | S06 | done |
 | S08 | Владелец комбайна и аудит | S07 | done |
-| S09 | Каркас веб-комбайна и черновики | S08 | todo |
+| S09 | Каркас веб-комбайна и черновики | S08 | in_progress |
 | S10 | Game Studio Android APK | S04, S09 | todo |
 | S11 | Реестр ресурсов и анимации | S03, S09 | todo |
 | S12 | Контракт ZIP-модификации | S03, S11 | todo |
@@ -781,3 +781,7 @@ Real production owner/TLS/browser UI/VPS не настраивались и не
 Новый APK не собирался: server-only S08, принятые APK6/7 остаются в GitHub Releases.
 S04 blocker внешнего backup сохраняется. Следующий доступный S09; S51 read-only
 возможен отдельно, рабочий портал без изменений.
+
+
+### S09 — начало работы
+Статус in_progress. Подготовлены предварительные schema/ADR: packages/contracts/studio_draft.schema.json, docs/adr/0006-studio-drafts.md; отчет docs/reports/S09.md. Реализация API, UI, diff и проверки еще не выполнены. VPS не затрагивался. Следующий шаг — завершить S09 по prompts/stages/S09.md.

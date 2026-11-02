@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/studio_draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "revision", "name", "content"],
+  "properties": {
+    "id": {"type": "string", "format": "uuid"},
+    "revision": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+    "name": {"type": "string", "minLength": 1, "maxLength": 100},
+    "content": {"$ref": "https://ufagame.invalid/contracts/v1/content"}
+  }
+}
