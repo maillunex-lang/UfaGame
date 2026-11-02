@@ -1,0 +1,8 @@
+[
+  {
+    "op": "create",
+    "entity_type": "dialogue_template",
+    "id": "resident_greeting_bashkortostan",
+    "source": "entities/resident_greeting_bashkortostan.json"
+  }
+]

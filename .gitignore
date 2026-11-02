@@ -1,0 +1,18 @@
+# Private and generated
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.pem
+*.key
+*.apk
+*.aab
+node_modules/
+.godot/
+build/
+dist/
+backups/
+private/
+logs/
+__pycache__/

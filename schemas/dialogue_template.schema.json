@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Demonstration dialogue template",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "channel",
+    "text",
+    "trigger",
+    "cooldown_seconds"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "channel": {
+      "enum": [
+        "global",
+        "guild",
+        "private"
+      ]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "trigger": {
+      "enum": [
+        "player_joined",
+        "greeting_received",
+        "guild_boss_defeated"
+      ]
+    },
+    "cooldown_seconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 86400
+    }
+  }
+}

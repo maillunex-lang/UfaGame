@@ -1,0 +1,7 @@
+{
+  "id": "resident_greeting_bashkortostan",
+  "channel": "global",
+  "text": "Всем привет! Кто уже прошел первого босса?",
+  "trigger": "player_joined",
+  "cooldown_seconds": 3600
+}

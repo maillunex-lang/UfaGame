@@ -1,0 +1,23 @@
+{
+  "format": "ug-content/1",
+  "package_id": "hello_bashkortostan",
+  "package_version": "1.0.0",
+  "game_id": "ufagame",
+  "base_content_version": "demo-1",
+  "required_capabilities": [
+    "dialogue.template.v1"
+  ],
+  "dependencies": [],
+  "files": [
+    {
+      "path": "entities/resident_greeting_bashkortostan.json",
+      "size": 217,
+      "sha256": "457c5b9a425d922fadde7904c7fbc0058d36bff47e3e7ef227e1b68dd4859073"
+    },
+    {
+      "path": "operations.json",
+      "size": 179,
+      "sha256": "c9a317942589a0c9334b7ce4c77966074bbb2fcbbc9072cf69eebf00dda34ba3"
+    }
+  ]
+}
