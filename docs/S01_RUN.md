@@ -10,6 +10,8 @@
 ```bash
 git clone https://github.com/maillunex-lang/UfaGame.git
 cd UfaGame
+git fetch origin codex/s01-technical-prototype
+git switch --track origin/codex/s01-technical-prototype
 git status --short --branch
 ```
 

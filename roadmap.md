@@ -538,3 +538,5 @@ VPS не трогали, миграций/компенсаций нет. Отк�
 сохранив прежнюю документацию. Секреты/ключи не создавались и не публиковались.
 GitHub: результат сохранения фиксируется после подтверждения; deployment отсутствует.
 Следующий доступный шаг: остаток S01 по docs/S01_RUN.md. S02 не начат.
+
+S01 / GitHub подтвержден: [commit 932b59f](https://github.com/maillunex-lang/UfaGame/commit/932b59f9812556ea18b9aff561a893f15e7ec0e0), ветка `codex/s01-technical-prototype`. Main не менялся. Полный check.sh exit0, Android по-прежнему blocked. Эта запись не означает merge/deploy.
