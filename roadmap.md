@@ -15,7 +15,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S01 | Проверка стека и технический прототип | нет | done |
 | S02 | Monorepo, GitHub и правила работы | S01 | done |
 | S03 | Контракты API и модель контента | S02 | done |
-| S04 | Сборка и подпись Android | S03 | todo |
+| S04 | Сборка и подпись Android | S03 | blocked |
 | S05 | База, API и транзакционный ledger | S03 | todo |
 | S06 | Гостевой аккаунт и сессии | S05 | todo |
 | S07 | Привязка логина и восстановление кодом | S06 | todo |
@@ -657,3 +657,15 @@ consumer. `npm run check:contracts`: 6 pass; `npm run check:game`: exit0,
 Строгие поля/типы/версии, stable IDs/ссылки, ledger/battle/auth контракты.
 Готового редактора/API/боевой системы это не означает. Миграций/VPS нет.
 Следующие доступные: S04, S05. User разрешил S03–S07 последовательно.
+
+
+### S04 — отдельная запись, 2026-11-02 UTC
+Статус blocked по проверке update на телефоне и внешней private backup ключей.
+Реализованы tools/android build/init-signing, Studio Java/WebView contract screen,
+ADR0003. Release Game25888509 байт, Studio22022 байт; версии1/2 обе собраны,
+package/version/minSdk/ABI и неизменность сертификатов подтверждены apksigner/aapt.
+Private backup restore/cmp прошел; keys/password/backup вне Git и не публикуются.
+Точные команды/hash/certs docs/reports/S04.md. Device update не проверен,
+внешнее сохранение ключей владельцем не подтверждено. Не done.
+Следующий доступный S05 (зависит от S03), разрешен текущим запросом.
+VPS/деплоя/миграций нет; исходники S01/документы сохранены.
