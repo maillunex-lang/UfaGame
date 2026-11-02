@@ -1,0 +1,88 @@
+name: S01 Android prototype
+on:
+  push:
+    branches: [codex/s01-technical-prototype]
+    paths: [.github/workflows/s01-apk.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: s01-apk-release
+  cancel-in-progress: false
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+      - name: Install Godot and Android tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/godot" "$RUNNER_TEMP/godot-data/godot/export_templates/4.6.3.stable"
+          curl -fL --retry 3 -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          ln -s "$RUNNER_TEMP/godot/Godot_v4.6.3-stable_linux.x86_64" "$RUNNER_TEMP/godot/godot"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+          curl -fL --retry 3 -o "$RUNNER_TEMP/templates.tpz" https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz
+          unzip -j -q "$RUNNER_TEMP/templates.tpz" templates/android_debug.apk templates/android_release.apk templates/version.txt -d "$RUNNER_TEMP/godot-data/godot/export_templates/4.6.3.stable"
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+          echo "XDG_DATA_HOME=$RUNNER_TEMP/godot-data" >> "$GITHUB_ENV"
+          echo "XDG_CONFIG_HOME=$RUNNER_TEMP/godot-config" >> "$GITHUB_ENV"
+          echo "XDG_CACHE_HOME=$RUNNER_TEMP/godot-cache" >> "$GITHUB_ENV"
+      - name: Configure local debug export
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$XDG_CONFIG_HOME/godot"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/s01-debug.keystore" -alias androiddebugkey -storepass android -keypass android -dname 'CN=Android Debug,O=Android,C=US' -keyalg RSA -keysize 2048 -validity 10000
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          settings = {
+            'export/android/java_sdk_path': os.environ['JAVA_HOME'],
+            'export/android/android_sdk_path': os.environ['ANDROID_HOME'],
+            'export/android/debug_keystore': os.environ['RUNNER_TEMP'] + '/s01-debug.keystore'
+          }
+          p = Path(os.environ['XDG_CONFIG_HOME']) / 'godot/editor_settings-4.6.tres'
+          p.write_text('[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' + '\n'.join(f'{k} = "{v}"' for k,v in settings.items()) + '\n')
+          PY
+      - name: Build, measure and verify
+        shell: bash
+        run: |
+          bash tools/s01/build-android.sh
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs build/s01/Game-S01-arm64-debug.apk > build/s01/signature.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging build/s01/Game-S01-arm64-debug.apk > build/s01/badging.txt
+          (cd build/s01 && sha256sum Game-S01-arm64-debug.apk > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: S01-Android-debug
+          path: build/s01/
+      - name: Publish prerelease once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=s01-prototype-v0.0.1
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Release already exists; do not replace an APK with a different debug key.'
+            exit 1
+          fi
+          cat > "$RUNNER_TEMP/notes.md" <<'NOTES'
+          Технический прототип S01, не готовая игра. Android 7.0+ (minSdk24), arm64-v8a.
+          Локальная запись событий: HP 100 → 75 → 40 → 0; ресурс по SHA256 сохраняется между запусками.
+          На реальном устройстве пока не проверено. Сервер/аккаунты/награды отсутствуют.
+          Debug APK: ключ создан для этой CI-сборки; дальнейшие APK с другим debug key не обновятся поверх него.
+          Не использовать для хранения игрового прогресса. APK и отчеты сборки приложены.
+          NOTES
+          printf '\nSource commit: %s\n\n' "$GITHUB_SHA" >> "$RUNNER_TEMP/notes.md"
+          cat build/s01/SHA256SUMS.txt >> "$RUNNER_TEMP/notes.md"
+          gh release create "$tag" build/s01/Game-S01-arm64-debug.apk build/s01/SHA256SUMS.txt build/s01/apk-size.json build/s01/signature.txt build/s01/badging.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'S01 — технический Android-прототип' --notes-file "$RUNNER_TEMP/notes.md" --prerelease --latest=false
