@@ -2,8 +2,8 @@
 
 Сборка выполняется на отдельной Linux-среде/сборочном компьютере, не на VPS
 с действующими проектами. Компьютер владельца не обязателен: допустима облачная
-сборочная среда. На Android устанавливается результат. В текущем сеансе APK нет.
-Команды ниже подготовлены; установка отсутствующих зависимостей не выполнялась.
+сборочная среда. На Android устанавливается результат. APK успешно собран 2026-11-02; результаты см. в отчете S01.
+Команды ниже подготовлены; минимальный набор SDK и JDK установлен в текущей сборочной среде.
 
 Сначала проверь локальные изменения, не делай reset/clean:
 
@@ -34,7 +34,7 @@ javac -version
 godot --version
 node --version
 sdkmanager --sdk_root="$ANDROID_HOME" --licenses
-sdkmanager --sdk_root="$ANDROID_HOME" 'platform-tools' 'build-tools;35.0.1' 'platforms;android-35' 'cmdline-tools;latest' 'cmake;3.10.2.4988404' 'ndk;28.1.13356709'
+sdkmanager --sdk_root="$ANDROID_HOME" 'platform-tools' 'build-tools;36.0.0' 'platforms;android-36' 'cmdline-tools;latest'
 ```
 
 В Godot Editor Settings → Export → Android укажи Java SDK Path и Android SDK
@@ -47,11 +47,11 @@ Debug keystore используй только для S01, храни вне р�
 bash tools/s01/check.sh
 bash tools/s01/build-android.sh
 cat build/s01/apk-size.json
-"$ANDROID_HOME/build-tools/35.0.1/apksigner" verify --verbose --print-certs build/s01/Game-S01-arm64-debug.apk
-"$ANDROID_HOME/build-tools/35.0.1/aapt" dump badging build/s01/Game-S01-arm64-debug.apk
+"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs build/s01/Game-S01-arm64-debug.apk
+"$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging build/s01/Game-S01-arm64-debug.apk
 ```
 
-Проверить package org.ufagame.game.s01, minSdk26, targetSdk35 и arm64-v8a.
+Проверить package org.ufagame.game.s01, minSdk24, targetSdk36 и arm64-v8a.
 APK/ключи/полные личные логи в Git не добавлять. Приложение проигрывает локальную
 запись серверного вывода; подключения к боевому серверу здесь нет.
 
@@ -75,3 +75,22 @@ adb shell am start -n org.ufagame.game.s01/com.godot.game.GodotApp
 После успешной сборки перенеси размер/hash/проверку подписи и результаты устройства
 в docs/reports/S01.md, затем отдельно обнови roadmap.md. До этого S01 blocked.
 S02 зависит от S01; отсутствие SSH не блокирует S01.
+
+
+## Установленная среда этого сеанса
+
+```bash
+cd /workspace/UfaGame
+source /workspace/toolchains/env.sh
+bash tools/s01/build-android.sh
+```
+
+JDK17: /workspace/toolchains/jdk17; SDK: /workspace/toolchains/android-sdk;
+Android templates: $XDG_DATA_HOME/godot/export_templates/4.6.3.stable.
+Command-line tools 19.0, platform-tools 37.0.1, build-tools 35.0.1 и 36.0.0,
+platforms 35 и 36. NDK/CMake не устанавливались: для обычного APK-экспорта
+они не требуются; понадобятся при собственной нативной/Gradle-сборке.
+В sdkmanager использованы --proxy=http --proxy_host=proxy --proxy_port=8080;
+публичные CA среды добавлены в локальный truststore JDK с проверкой TLS.
+Debug key хранится вне репозитория; env.sh и локальные Editor Settings
+не предназначены для переноса на другое устройство.

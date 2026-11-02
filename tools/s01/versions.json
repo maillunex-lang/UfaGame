@@ -2,12 +2,17 @@
   "godot": "4.6.3.stable.official.7d41c59c4",
   "node": "24.19.0",
   "jdk_proposed": "17",
-  "android_build_tools": "35.0.1",
-  "android_platform": "35",
+  "android_build_tools": "36.0.0",
+  "android_platform": "36",
   "ndk": "28.1.13356709",
   "cmake": "3.10.2.4988404",
   "min_sdk_proposed": 26,
   "abi": "arm64-v8a",
   "apk_max_bytes": 95000000,
-  "postgresql_proposed_major": 18
+  "postgresql_proposed_major": 18,
+  "jdk": "Temurin 17.0.21+9",
+  "android_command_line_tools": "19.0",
+  "android_platform_tools": "37.0.1",
+  "min_sdk": 24,
+  "target_sdk": 36
 }

@@ -1,6 +1,6 @@
 # roadmap.md - единый статус UfaGame
 Дата: 2026-11-02, Asia/Yekaterinburg.
-Опрос завершен: 55/55. Подготовлены документы и промпты. **S01: добавлен технический Godot-прототип; Android-сборка blocked. Игра/комбайн/сервер не реализованы, APK нет, VPS не обследован.**
+Опрос завершен: 55/55. Подготовлены документы и промпты. **S01: добавлен технический Godot-прототип; Android debug APK собран (27,59 МБ), устройство не проверено. Игра/комбайн/сервер не реализованы, VPS не обследован.**
 GitHub: публичный https://github.com/maillunex-lang/UfaGame; доступ на запись проверен. Результат публикации документов фиксируется в GITHUB_PUBLICATION.md, а не подменяет готовность S02.
 
 ## Статусы и порядок
@@ -74,7 +74,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S60 | Отложенные направления с отдельными статусами | S57 | todo |
 
 ## Следующий шаг
-Продолжить S01: установить JDK17/SDK35/templates4.6.3 в сборочной среде, собрать/измерить APK и проверить на Android по [командам S01](docs/S01_RUN.md). S02 зависит от завершения S01. Доступ к VPS не требуется.
+Продолжить S01: проверить собранный APK на Android и завершить проверку остального стека по [командам S01](docs/S01_RUN.md). S02 зависит от завершения S01. Доступ к VPS не требуется.
 
 ## Подробные этапы
 ### S01. Проверка стека и технический прототип
@@ -540,3 +540,24 @@ GitHub: результат сохранения фиксируется посл�
 Следующий доступный шаг: остаток S01 по docs/S01_RUN.md. S02 не начат.
 
 S01 / GitHub подтвержден: [commit 932b59f](https://github.com/maillunex-lang/UfaGame/commit/932b59f9812556ea18b9aff561a893f15e7ec0e0), ветка `codex/s01-technical-prototype`. Main не менялся. Полный check.sh exit0, Android по-прежнему blocked. Эта запись не означает merge/deploy.
+
+
+### S01 — отдельное обновление после установки SDK, 2026-11-02 UTC
+Статус: blocked (устройство и остаток проверки стека), блокер инструментов снят.
+Установлены Temurin JDK17.0.21+9, Android CLI19.0, platform-tools37.0.1,
+SDK platforms35/36, build-tools35.0.1/36.0.0, Android templates Godot4.6.3.
+Локальная среда: `source /workspace/toolchains/env.sh`.
+`bash tools/s01/build-android.sh`: exit0, проверки и чистый export пройдены.
+APK: build/s01/Game-S01-arm64-debug.apk, 27 587 539 байт <=95 000 000,
+SHA256 68776b4925955578c688cd6679dd81a4779cde1ad7a6189a8863d4f7e469a29a.
+`apksigner verify --verbose --print-certs`: exit0, v2/v3 verified.
+`aapt dump badging`: exit0, package org.ufagame.game.s01, minSdk24/targetSdk36,
+ABI arm64-v8a. Fixture в APK есть. На устройстве не запускали.
+Изменены apps/game/project.godot и export_presets.cfg: включен ETC2/ASTC import,
+SDK overrides убраны (без Gradle запрещены). ADR/versions/S01_RUN/report обновлены.
+NDK/CMake для template export не требуются и не установлены.
+Release-подпись, устройство, PostgreSQL/API и остальная проверка стека не выполнены.
+Отчет: docs/reports/S01.md (раздел продолжения). Старый export.log — исходная
+неудачная попытка, а не результат новой сборки. Подробный новый лог локален в scratch.
+Миграций/деплоя/VPS нет; ключ debug хранится вне репозитория.
+Следующее: проверить APK на Android, затем остаток S01; S02 не начат.
