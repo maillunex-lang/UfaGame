@@ -35,3 +35,12 @@ Rate limits auth по IP, max10/min и глобальный120/min, single-proce
 Android credential store: AES-GCM ключ AndroidKeyStore, ciphertext в files,
 allowBackupfalse, запись temp+rename; plaintext persistence запрещен.
 Расширенные тесты Android требуют устройства, не подменяются JVM compile.
+
+
+Guest expiry refinement (migration004): refresh TTL скользящий30дней.
+После долгого отсутствия encrypted installation_secret может возобновить
+именно истекший, но не revoked/bound guest family: generation counter,
+новая deterministic initial pair, тот же player_id, retry снова idempotent.
+Это не создает нового игрока и не обходится revoke: revoked_at/bootstrap_disabled
+проверяются до renewal. Существующий active rotated root не выдает новую сессию.
+Старые миграции не меняются; generation0 сохраняет прежний derivation.

@@ -29,7 +29,8 @@ export async function finish(pool:Pool,id:string,token:string){
   if(!row)return false;
   if(row.kind!=='ledger_delta')throw new DomainError('INVALID_REQUEST');
   await applyDeltaTx(c,{...row.payload,key:`job_${id}`});
-  await c.query("UPDATE jobs SET status='succeeded',lease_until=NULL WHERE id=$1",[id]);return true;
+  const ack=await c.query("UPDATE jobs SET status='succeeded',lease_until=NULL WHERE id=$1 AND lease_token=$2 AND lease_until>clock_timestamp() RETURNING id",[id,token]);
+  if(!ack.rowCount)throw new DomainError('CONFLICT',409);return true;
  });
 }
 export async function runOnce(pool:Pool,worker:string){

@@ -2,7 +2,7 @@ import {test,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {createPool,transaction} from '../../services/api/src/db.ts';
-import {applyDelta} from '../../services/api/src/economy.ts';
+import {applyDelta,applyDeltaTx} from '../../services/api/src/economy.ts';
 import {buildApp} from '../../services/api/src/app.ts';
 import {enqueue,claim,finish,renew} from '../../services/worker/src/jobs.ts';
 const pool=createPool();after(()=>pool.end());
@@ -10,16 +10,20 @@ async function player(){const id=randomUUID();await pool.query('INSERT INTO play
 const args=(playerId,delta,key=randomUUID())=>({playerId,currency:'gold',delta,key,reason:'test_reward',sourceId:'integration'});
 test('health 200, ready 503 on DB failure; no public currency grant',async()=>{
  const app=await buildApp(pool);try{
+  const address=await app.listen({host:'127.0.0.1',port:0});
+  assert.equal((await fetch(address+'/health/ready')).status,200);
   assert.equal((await app.inject('/health/live')).statusCode,200);assert.equal((await app.inject('/health/ready')).statusCode,200);
   assert.equal((await app.inject({method:'POST',url:'/v1/grant',payload:{amount:10}})).statusCode,404);
+  const oversized=await app.inject({method:'POST',url:'/v1/guests',payload:{extra:'x'.repeat(20000)}});assert.equal(oversized.statusCode,413);assert.equal(oversized.json().error.code,'INVALID_REQUEST');
  }finally{await app.close();}
  const unavailable=await buildApp({query:async()=>{throw new Error('offline');}});
  try{assert.equal((await unavailable.inject('/health/ready')).statusCode,503);}finally{await unavailable.close();}
 });
 test('rollback does not keep balance or ledger; duplicate/conflicting keys; overspend race',async()=>{
  const id=await player();
- await assert.rejects(transaction(pool,async c=>{await c.query('INSERT INTO balances VALUES($1,$2,$3)',[id,'gold',99]);throw new Error('rollback');}));
+ await assert.rejects(transaction(pool,async c=>{await applyDeltaTx(c,args(id,99));throw new Error('rollback after ledger write');}));
  assert.equal((await pool.query('SELECT * FROM balances WHERE player_id=$1',[id])).rowCount,0);
+ assert.equal((await pool.query('SELECT * FROM ledger WHERE player_id=$1',[id])).rowCount,0);
  const request=args(id,100);const results=await Promise.all(Array.from({length:5},()=>applyDelta(pool,request)));
  assert.equal(new Set(results.map(x=>x.id)).size,1);
  await assert.rejects(applyDelta(pool,{...request,delta:101}),e=>e.code==='CONFLICT');

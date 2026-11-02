@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/bound_session",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session",
+    "recovery_code"
+  ],
+  "properties": {
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api_version",
+        "player_id",
+        "access_token",
+        "refresh_token",
+        "access_expires_at",
+        "refresh_expires_at"
+      ],
+      "properties": {
+        "api_version": {
+          "const": 1
+        },
+        "player_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "access_token": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "refresh_token": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "access_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refresh_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "recovery_code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    }
+  }
+}

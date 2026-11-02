@@ -1,7 +1,8 @@
 config_version=5
 
 [application]
-config/name="UfaGame S01"
+config/name="UfaGame"
+config/icon="res://icon.svg"
 run/main_scene="res://main.tscn"
 
 [display]

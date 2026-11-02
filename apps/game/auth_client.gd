@@ -8,6 +8,8 @@ var http: HTTPRequest
 func _ready() -> void:
 	http = HTTPRequest.new()
 	http.timeout = 15.0
+	http.body_size_limit = 65536
+	http.max_redirects = 0
 	add_child(http)
 	if Engine.has_singleton("UfaCredentials"):
 		native = Engine.get_singleton("UfaCredentials")
@@ -69,6 +71,9 @@ func refresh_session() -> Dictionary:
 		if not save_state():
 			return {"ok": false, "code": last_error}
 	var result: Dictionary = await call_api("/v1/sessions/refresh", {"refresh_token": state.session.refresh_token, "request_id": state.pending_refresh})
+	if not result.ok and result.get("status") == 401 and state.has("installation_secret"):
+		# Only the server may renew an expired guest family; revoked/bound roots fail.
+		result = await call_api("/v1/guests", {"installation_secret": state.installation_secret})
 	if result.ok and not retain_session(result.data):
 		return {"ok": false, "code": last_error}
 	return result
@@ -83,11 +88,8 @@ func progress() -> Dictionary:
 	return result
 
 func connect_guest(base: String) -> Dictionary:
-	if native == null or not last_error.is_empty():
+	if not prepare_server(base):
 		return {"ok": false, "code": last_error}
-	if state.has("base_url") and state.base_url != base.trim_suffix("/"):
-		return {"ok": false, "code": "ACCOUNT_SERVER_MISMATCH"}
-	state.base_url = base.trim_suffix("/")
 	if not state.has("installation_secret"):
 		state.installation_secret = native.random_secret()
 	if not save_state():
@@ -99,3 +101,59 @@ func connect_guest(base: String) -> Dictionary:
 		if not retain_session(result.data):
 			return {"ok": false, "code": last_error}
 	return await progress()
+
+func prepare_server(base: String) -> bool:
+	if last_error not in ["CREDENTIALS_UNAVAILABLE", "ANDROID_KEYSTORE_REQUIRED"]:
+		last_error = ""
+	if native == null or not last_error.is_empty():
+		return false
+	var allowed := RegEx.new()
+	allowed.compile("^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9_./~-]*)?$")
+	if allowed.search(base) == null:
+		last_error = "HTTPS_REQUIRED"
+		return false
+	if state.has("base_url") and state.base_url != base.trim_suffix("/"):
+		last_error = "ACCOUNT_SERVER_MISMATCH"
+		return false
+	state.base_url = base.trim_suffix("/")
+	return save_state()
+
+func authorized_post(path: String, payload: Dictionary) -> Dictionary:
+	if not state.has("session"):
+		return {"ok": false, "code": "UNAUTHORIZED"}
+	var result: Dictionary = await call_api(path, payload, true)
+	if not result.ok and result.get("status") == 401:
+		var refreshed: Dictionary = await refresh_session()
+		if not refreshed.ok:
+			return refreshed
+		result = await call_api(path, payload, true)
+	return result
+
+func bind_account(login: String, password: String) -> Dictionary:
+	var result: Dictionary = await authorized_post("/v1/account/bind", {"login": login, "password": password})
+	if result.ok and (not result.data.get("session") is Dictionary or not result.data.get("recovery_code") is String or str(result.data.get("recovery_code", "")).length() != 43):
+		return {"ok": false, "code": "INVALID_RESPONSE"}
+	if result.ok and not retain_session(result.data.session):
+		return {"ok": false, "code": last_error}
+	return result
+
+func login_account(base: String, login: String, password: String) -> Dictionary:
+	if not prepare_server(base):
+		return {"ok": false, "code": last_error}
+	var result: Dictionary = await call_api("/v1/sessions/login", {"login": login, "password": password})
+	if result.ok and not retain_session(result.data):
+		return {"ok": false, "code": last_error}
+	return result
+
+func recover_account(base: String, login: String, code: String, password: String) -> Dictionary:
+	if not prepare_server(base):
+		return {"ok": false, "code": last_error}
+	var result: Dictionary = await call_api("/v1/account/recover", {"login": login, "recovery_code": code, "new_password": password})
+	if result.ok and (not result.data.get("session") is Dictionary or not result.data.get("recovery_code") is String or str(result.data.get("recovery_code", "")).length() != 43):
+		return {"ok": false, "code": "INVALID_RESPONSE"}
+	if result.ok and not retain_session(result.data.session):
+		return {"ok": false, "code": last_error}
+	return result
+
+func rotate_code(password: String) -> Dictionary:
+	return await authorized_post("/v1/account/recovery/rotate", {"password": password})

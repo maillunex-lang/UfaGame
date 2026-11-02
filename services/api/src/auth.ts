@@ -31,15 +31,25 @@ export async function lockAuthorized(client:PoolClient,token:string){
  if(!row)throw new DomainError('UNAUTHORIZED',401);return row;
 }
 export async function guest(pool:Pool,secret:string){
- const hash=digest(secret),pair={access:derive('initial-access',secret),refresh:derive('initial-refresh',secret)};
+ const hash=digest(secret);
+ const pairFor=(generation:number)=>{const input=secret+(generation===0?'':':generation:'+generation);return {access:derive('initial-access',input),refresh:derive('initial-refresh',input)};};
  return transaction(pool,async c=>{
   await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[hash]);
   const old=(await c.query('SELECT * FROM players WHERE bootstrap_hash=$1 FOR UPDATE',[hash])).rows[0];
   if(old){
-   const session=(await c.query('SELECT * FROM sessions WHERE id=$1 AND revoked_at IS NULL AND refresh_expires_at>now() AND access_hash=$2 AND refresh_hash=$3',[old.initial_session_id,digest(pair.access),digest(pair.refresh)])).rows[0];
-   if(old.bootstrap_disabled||!session)throw new DomainError('UNAUTHORIZED',401);
+   const pair=pairFor(old.bootstrap_generation);
+   const session=(await c.query('SELECT *,refresh_expires_at<=now() AS expired FROM sessions WHERE id=$1 FOR UPDATE',[old.initial_session_id])).rows[0];
+   if(old.bootstrap_disabled||!session||session.revoked_at)throw new DomainError('UNAUTHORIZED',401);
+   if(session.expired){
+    const generation=old.bootstrap_generation+1;
+    const created=await newSession(c,old.id,pairFor(generation));
+    await c.query('UPDATE players SET initial_session_id=$2,bootstrap_generation=$3 WHERE id=$1',[old.id,created.row.id,generation]);
+    return created.response;
+   }
+   if(session.access_hash!==digest(pair.access)||session.refresh_hash!==digest(pair.refresh))throw new DomainError('UNAUTHORIZED',401);
    return sessionResponse(session,pair);
   }
+  const pair=pairFor(0);
   const id=randomUUID();await c.query('INSERT INTO players(id,bootstrap_hash) VALUES($1,$2)',[id,hash]);
   const created=await newSession(c,id,pair);await c.query('UPDATE players SET initial_session_id=$2 WHERE id=$1',[id,created.row.id]);return created.response;
  });
@@ -57,7 +67,7 @@ export async function refresh(pool:Pool,token:string,requestId:string){
    if(!valid||row.access_hash!==digest(pair.access)||row.refresh_hash!==digest(pair.refresh))throw new DomainError('UNAUTHORIZED',401);
    return sessionResponse(row,pair);
   }
-  const changed=(await c.query("UPDATE sessions SET previous_refresh_hash=refresh_hash,previous_request_id=$4,retry_until=now()+interval '30 seconds',access_hash=$2,refresh_hash=$3,access_expires_at=LEAST(now()+interval '15 minutes',refresh_expires_at) WHERE id=$1 RETURNING *",[row.id,digest(pair.access),digest(pair.refresh),requestId])).rows[0];
+  const changed=(await c.query("UPDATE sessions SET previous_refresh_hash=refresh_hash,previous_request_id=$4,retry_until=now()+interval '30 seconds',access_hash=$2,refresh_hash=$3,access_expires_at=now()+interval '15 minutes',refresh_expires_at=now()+interval '30 days' WHERE id=$1 RETURNING *",[row.id,digest(pair.access),digest(pair.refresh),requestId])).rows[0];
   return sessionResponse(changed,pair);
  });
 }

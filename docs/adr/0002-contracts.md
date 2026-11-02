@@ -26,10 +26,13 @@ Auth endpoints: POST /v1/guests, /v1/sessions/refresh, /v1/sessions/revoke,
 GET /health/live, /health/ready, GET /v1/capabilities.
 Bodies: guest_request/refresh_request/revoke_request/bind_request/login_request/
 recover_request. Session и progress имеют отдельные response schemas.
-Bind/recover возвращают session + recovery_code (показать и сохранить вне игры).
+Bind/recover возвращают bound_session {session, recovery_code} (показать и сохранить вне игры).
 Нельзя читать чужой progress по player_id: он берется только из bearer session.
 Ошибки возвращают error{code,message,request_id}, без деталей PostgreSQL/секретов.
 Request body <=16КиБ, no extra fields. Auth TTL/rate limits фиксируются S06/S07.
+POST /v1/account/recovery/rotate с password требует bearer и выдает новый
+recovery_code, прежний немедленно недействителен; позволяет восстановить код
+после потерянного bind/recover ответа через обычный password login.
 Bootstrap installation_secret — 32 случайных байта base64url, не device ID.
 Idempotent bootstrap не должен выдавать новую сессию после revoke/rotation.
 Refresh — ротация атомарно; recovery — одноразовый, отзывает все старые сессии.

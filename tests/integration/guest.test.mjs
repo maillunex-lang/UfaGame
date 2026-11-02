@@ -48,3 +48,15 @@ test('refresh race with different request IDs has one winner; rate limit and no 
   let last;for(let i=0;i<12;i++)last=await send(app,'/v1/guests',{});assert.equal(last.statusCode,429);
  }finally{await app.close();}
 });
+
+test('inactive guest renewal preserves identity, remains idempotent, and cannot bypass revoke',async()=>{
+ const app=await buildApp(pool);try{
+  const secret=randomBytes(32).toString('base64url'),a=(await send(app,'/v1/guests',{installation_secret:secret})).json();
+  await pool.query("UPDATE sessions SET refresh_expires_at=now()-interval '1 second' WHERE player_id=$1",[a.player_id]);
+  const responses=await Promise.all([send(app,'/v1/guests',{installation_secret:secret}),send(app,'/v1/guests',{installation_secret:secret})]);
+  assert.ok(responses.every(r=>r.statusCode===200));const b=responses[0].json();assert.deepEqual(b,responses[1].json());assert.equal(b.player_id,a.player_id);assert.notEqual(b.access_token,a.access_token);
+  assert.equal((await send(app,'/v1/sessions/revoke',{all_sessions:true},b.access_token)).statusCode,200);
+  await pool.query("UPDATE sessions SET refresh_expires_at=now()-interval '1 second' WHERE player_id=$1",[a.player_id]);
+  assert.equal((await send(app,'/v1/guests',{installation_secret:secret})).statusCode,401);
+ }finally{await app.close();}
+});

@@ -1,6 +1,6 @@
 # Разработка UfaGame
 
-S01 принят на iQOO15R / Android16: запуск, HP0 и reuse ресурса. S02 организует исходники и проверки. API, worker, Studio и игровые системы пока не реализованы. Статусы этапов — в [roadmap](../roadmap.md).
+S01 принят на iQOO15R / Android16: запуск, HP0 и reuse ресурса. S02 организует исходники и проверки. API/worker S05 и серверные auth S06/S07 реализованы; Studio — минимальная Android-оболочка. Игровые системы и редактор пока не реализованы. Статусы этапов — в [roadmap](../roadmap.md).
 
 ## Получить исходники
 
@@ -22,7 +22,7 @@ npm run check
 npm run check:game
 ```
 
-`check` выполняет lint/syntax, форматирование файлов инфраструктуры S02, статическую проверку планирования, поиск секретов в исходниках/истории и compile/smoke проверку стека S01. Это не игровой сервер и не сквозная проверка игры. Lint намеренно не переписывает старые спецификации. `npm run format` форматирует только перечисленные инфраструктурные файлы.
+`check` также запускает контрактные тесты S03 и strict TypeScript API/worker; `npm run test:integration` отдельно проверяет PostgreSQL ledger/jobs/auth. `check` выполняет lint/syntax, форматирование файлов инфраструктуры S02, статическую проверку планирования, поиск секретов в исходниках/истории и compile/smoke проверку стека S01. Это не игровой сервер и не сквозная проверка игры. Lint намеренно не переписывает старые спецификации. `npm run format` форматирует только перечисленные инфраструктурные файлы.
 
 `check:game` проверяет store/replay и headless запуск. `npm run dev:game` открывает технический прототип Godot; команда требует графическую среду. `npm run fixture:events` генерирует локальную запись вывода Node, не запускает API.
 
@@ -46,10 +46,10 @@ Workflow `S01 Android prototype` публикует одноразовый prere
 | ----------------------------- | --------------------------------------------------- |
 | apps/game                     | Рабочий технический прототип S01                    |
 | apps/studio-web               | Зарезервирован для S09                              |
-| apps/studio-android           | Зарезервирован для S10                              |
+| apps/studio-android           | Минимальный native shell S04; полный UI S10         |
 | services/prototype            | Генератор fixture S01                               |
-| services/api, services/worker | Зарезервированы для S05                             |
-| packages/contracts            | Контракты S03, пока README                          |
+| services/api, services/worker | API/worker S05 и auth S06/S07                       |
+| packages/contracts            | Строгие схемы/registry/validator S03                |
 | packages/battle-core          | Бой S17, пока README                                |
 | packages/content-validator    | Валидатор S13, пока README                          |
 | content, infra, tests         | Структура для следующих этапов, реализаций пока нет |
@@ -64,3 +64,5 @@ Workflow `S01 Android prototype` публикует одноразовый prere
 Работай в отдельной ветке, сверяй git status/fetch перед изменениями и push. Не перезаписывай main и не force-push чужую работу. Перед push: `npm run check`, для изменений Godot — `npm run check:game`, для Android — измерение/подпись APK. Новый runtime контракт сначала описывать в схеме и ADR.
 
 После каждого этапа отдельно обновлять roadmap: результат, файлы, точные проверки, ограничения, commit/URL и следующий доступный этап. Сборка, ручная приемка, публикация и deployment — разные доказательства. Старые записи журнала сохраняются как история; текущий статус находится в таблице.
+
+Текущие Android/auth команды и честные ограничения: [S03–S07](S03_S07_RUN.md).

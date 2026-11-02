@@ -43,3 +43,14 @@ jobs:
           XDG_DATA_HOME: ${{ runner.temp }}/godot-data
           XDG_CONFIG_HOME: ${{ runner.temp }}/godot-config
           XDG_CACHE_HOME: ${{ runner.temp }}/godot-cache
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run test:integration

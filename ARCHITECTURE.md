@@ -4,8 +4,8 @@
 ## Компоненты
 | Компонент | Предложение | Ответственность |
 |---|---|---|
-| Game Android | Godot 4, GDScript, небольшой Kotlin-плагин обновления APK | 2D, UI из JSON, визуализация боев, локальные ресурсы |
-| Game Studio | React + TypeScript; Android Kotlin WebView | визуальные редакторы, ZIP, версии, управление |
+| Game Android | Godot4, GDScript, Java AndroidKeyStore bridge; будущий APK update bridge S48 | 2D, UI из JSON, визуализация боев, локальные ресурсы |
+| Game Studio | React + TypeScript; минимальный Java WebView shell S04, полный комбайн S09/S10 | визуальные редакторы, ZIP, версии, управление |
 | API и workers | TypeScript на Node.js, Fastify | авторизация, экономика, бой, чат, жители |
 | База | PostgreSQL | транзакции, журнал наград, аккаунты, память, версии |
 | Очереди | сначала задания в PostgreSQL с lease; Redis при подтвержденной необходимости | фоновые задачи без лишних сервисов |
@@ -19,7 +19,7 @@ Godot PCK поддерживает пакеты, но пользовательс
 apps/game/; apps/studio-web/; apps/studio-android/; services/api/; services/worker/;
 packages/contracts/; packages/battle-core/; packages/content-validator/;
 content/; schemas/; infra/; tests/; docs/adr/; docs/reports/; prompts/.
-Каталоги созданы в S02; README зарезервированных компонентов не означают наличия реализации. Фактический код S01 находится в apps/game, services/prototype и tools/s01; текущие статусы — в roadmap.md.
+Каталоги созданы в S02; README зарезервированных компонентов не означают наличия реализации. Фактический код: apps/game и minimal apps/studio-android, services/api/worker/prototype, packages/contracts и tools; текущие статусы — в roadmap.md.
 
 ## Бой и сеть
 Снимок команд, content_version, seed RNG, battle_id и simulation_version закрепляются до боя. Сервер проверяет принадлежность героев, экипировку и права на скорость/skip.
