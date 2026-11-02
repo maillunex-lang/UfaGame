@@ -18,7 +18,11 @@ secret, initial pair выводится domain-separated SHA256 от него. �
 bootstrap hash + session hash, не исходный secret; retry возвращает ту же
 сессию до rotation/revoke, затем401 (не создает новую). После bind bootstrap
 отключен. Access берется из Authorization Bearer, player ID не принимается.
-Refresh lock order player→session, атомарная ротация; replay401. Revocation
+Refresh lock order player→session, атомарная ротация; request_id UUID обязателен.
+Retry того же старого токена+request_id в течение30с возвращает тот же новый
+pair (выводится от old token+request_id, не хранится plaintext). Другой request_id
+со старым токеном401; после следующей rotation/revoke retry тоже недействителен.
+Это позволяет пережить потерянный network response без потери гостя. Revocation
 проверяется на каждом запросе БД, не только в клиенте.
 
 Пароль: Node crypto.scrypt N=131072,r=8,p=1,maxmem256MiB, случайная salt16B,

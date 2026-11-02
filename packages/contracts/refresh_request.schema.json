@@ -4,12 +4,17 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "refresh_token"
+    "refresh_token",
+    "request_id"
   ],
   "properties": {
     "refresh_token": {
       "type": "string",
       "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
     }
   }
 }

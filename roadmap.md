@@ -17,7 +17,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S03 | Контракты API и модель контента | S02 | done |
 | S04 | Сборка и подпись Android | S03 | blocked |
 | S05 | База, API и транзакционный ledger | S03 | done |
-| S06 | Гостевой аккаунт и сессии | S05 | todo |
+| S06 | Гостевой аккаунт и сессии | S05 | blocked |
 | S07 | Привязка логина и восстановление кодом | S06 | todo |
 | S08 | Владелец комбайна и аудит | S07 | todo |
 | S09 | Каркас веб-комбайна и черновики | S08 | todo |
@@ -681,3 +681,16 @@ network none, Unix socket, host ports не заняты, контейнер уд
 Отчет docs/reports/S05.md. Публичных currency grant endpoints нет.
 База только ephemeral; production migrations/deploy/VPS не выполнялись.
 Следующий доступный S06; S04 остается blocked по ручным проверкам.
+
+
+### S06 — отдельная запись, 2026-11-02 UTC
+Статус blocked по Android runtime Keystore/guest HTTPS flow; backend реализован.
+Auth migration002/routes, secure Android plugin AES-GCM и клиент guest/refresh,
+shared request schema с refresh request_id. `npm run test:integration`: 6pass,
+`check:api`, `check:game`, build Android code3/apksigner/manifest/zipalign — exit0.
+Старые/чужие/expired/revoked tokens, refresh race/retry и network response loss
+проверены на PostgreSQL. Plaintext tokens в БД/файлах не сохраняются.
+На физическом Android native storage/HTTP/update еще не проверены, не done.
+Отчет docs/reports/S06.md. Новые таблицы локальны, VPS/deploy нет.
+Дальше разрешенная независимая реализация backend/UI S07; зависимость S06
+не считается полностью принятой до Android-проверки, S07 done заранее запрещен.

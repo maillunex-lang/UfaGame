@@ -3,9 +3,10 @@ import rateLimit from '@fastify/rate-limit';
 import type {Pool} from 'pg';
 import {registry} from '@ufagame/contracts';
 import {DomainError} from './errors.ts';
+import {registerAuth} from './auth.ts';
 export async function buildApp(pool:Pool) {
  const app=Fastify({logger:false,bodyLimit:16384,trustProxy:false,requestTimeout:10000});
- await app.register(rateLimit,{max:120,timeWindow:60000,errorResponseBuilder:()=>({error:{code:'RATE_LIMITED',message:'RATE_LIMITED',request_id:'rate-limit'}})});
+ await app.register(rateLimit,{max:120,timeWindow:60000,errorResponseBuilder:()=>({statusCode:429,code:'RATE_LIMITED',message:'RATE_LIMITED'})});
  app.setErrorHandler((error,request,reply)=>{
   const e=error as any;const status=e instanceof DomainError?e.status:(e.statusCode===400?400:e.statusCode===429?429:500);
   const code=e instanceof DomainError?e.code:(status===400?'INVALID_REQUEST':status===429?'RATE_LIMITED':'INTERNAL_ERROR');
@@ -16,5 +17,7 @@ export async function buildApp(pool:Pool) {
   try{await pool.query('SELECT 1');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
  });
  app.get('/v1/capabilities',async()=>registry);
+ app.setNotFoundHandler((request,reply)=>reply.code(404).send({error:{code:'NOT_FOUND',message:'NOT_FOUND',request_id:request.id}}));
+ await registerAuth(app,pool);
  return app;
 }

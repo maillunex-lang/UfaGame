@@ -29,6 +29,18 @@ export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD
 godot --headless --path "$s04_tmp/game" --editor --import --quit
 godot --headless --path "$s04_tmp/game" --export-release 'Android Release' "$s04_output/Game-arm64.apk"
 unset GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD
+# Compile trusted AndroidKeyStore Godot v2 bridge, inject metadata, align and re-sign.
+s04_source=${GODOT_ANDROID_SOURCE_TEMPLATE:-${XDG_DATA_HOME:-$HOME/.local/share}/godot/export_templates/4.6.3.stable/android_source.zip}
+[[ -f "$s04_source" ]] || { echo 'Install android_source.zip from matching Godot templates'; exit 1; }
+mkdir -p "$s04_tmp/plugin/classes" "$s04_tmp/plugin/dex"
+unzip -p "$s04_source" libs/release/godot-lib.template_release.aar > "$s04_tmp/plugin/godot.aar"
+unzip -p "$s04_tmp/plugin/godot.aar" classes.jar > "$s04_tmp/plugin/godot.jar"
+javac -encoding UTF-8 --release 8 -classpath "$s04_android:$s04_tmp/plugin/godot.jar" -d "$s04_tmp/plugin/classes" apps/game/android-src/org/ufagame/security/CredentialsPlugin.java
+jar cf "$s04_tmp/plugin/plugin.jar" -C "$s04_tmp/plugin/classes" .
+"$s04_tools/d8" --lib "$s04_android" --classpath "$s04_tmp/plugin/godot.jar" --min-api 24 --output "$s04_tmp/plugin/dex" "$s04_tmp/plugin/plugin.jar"
+python3 tools/android/inject-plugin.py "$s04_output/Game-arm64.apk" "$s04_tmp/plugin/dex/classes.dex" "$s04_tmp/plugin/unsigned.apk"
+"$s04_tools/zipalign" -P 16 -f 4 "$s04_tmp/plugin/unsigned.apk" "$s04_output/Game-arm64.apk"
+"$s04_tools/apksigner" sign --ks "$UFAGAME_SIGNING_DIR/game.keystore" --ks-key-alias game --ks-pass "file:$UFAGAME_SIGNING_DIR/password.txt" "$s04_output/Game-arm64.apk"
 mkdir -p "$s04_tmp/studio/gen" "$s04_tmp/studio/classes" "$s04_tmp/studio/dex"
 python3 - "$s04_tmp/studio/AndroidManifest.xml" "$s04_code" <<'PY'
 from pathlib import Path
