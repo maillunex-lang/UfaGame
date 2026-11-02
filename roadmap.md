@@ -914,3 +914,11 @@ Studio versionCode 8 собирается tools/android/build-studio-test.sh: о
 проверка сборки статики и изолированного тестового стека; результат CI ожидается.
 S09 in_progress, S10 blocked: chooser/download и полноценная проверка отсутствуют.
 Повторный `npm run check` с gitleaks в PATH: exit0; все входящие проверки прошли.
+
+### S09 — APK и локальный сервер в GitHub Actions
+[Studio v8](https://github.com/maillunex-lang/UfaGame/releases/tag/s09-studio-test-v8)
+опубликована; повторная загрузка подтвердила SHA-256. CI run 41518011200:
+UI build, Docker build и health/ready API с отдельной PostgreSQL прошли на
+71cef2f02c91cc60f8c3b3f125e7ab34fc50e21e. Физический Android и VPS не
+проверены, S09 in_progress. Следующий шаг — запуск отдельно на loopback у владельца,
+затем owner/UI и проверенный nginx diff с откатом; портал и чужие данные сохранить.
