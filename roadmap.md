@@ -930,3 +930,12 @@ UI build, Docker build и health/ready API с отдельной PostgreSQL пр
 с SHA-256; на VPS еще не установлена. Nginx, owner login и телефон не проверены.
 S09 in_progress, S52 blocked. Следующий шаг — доставка статики и создание owner,
 затем diff/backup и маршруты nginx с проверкой портала и откатом.
+
+### S09 — статика и владелец на VPS
+Владелец сообщил: все три SHA-256 статики совпали, nginx-пользователь может
+читать index.html, owner id1 создан. HTTPS-выдача и login пока не проверены.
+Подготовлены infra/studio-test/render-nginx.py и apply-nginx.sh: backup,
+проверка и применение показанного diff, nginx -t/reload, smoke портала/UI/API,
+откат при отказе. Локально bash -n и синтетический тест render прошли; скрипт
+на VPS не запускался. S09 in_progress; S52 blocked, следующий шаг — применить
+изменение владельцем и проверить реальный UI и вход на Android.
