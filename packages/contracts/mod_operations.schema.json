@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/mod_operations",
+  "type": "array",
+  "maxItems": 5000,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "op",
+      "entity_type",
+      "id"
+    ],
+    "properties": {
+      "op": {
+        "enum": [
+          "create",
+          "replace",
+          "delete"
+        ]
+      },
+      "entity_type": {
+        "enum": [
+          "hero",
+          "ability",
+          "faction",
+          "item",
+          "stage",
+          "ui_label",
+          "dialogue_template"
+        ]
+      },
+      "id": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{2,79}$"
+      },
+      "source": {
+        "type": "string",
+        "maxLength": 240,
+        "pattern": "^entities/([A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.json$"
+      },
+      "expected_revision": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 2147483647
+      },
+      "compensation_rule_id": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{2,79}$"
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "op": {
+              "const": "create"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "source"
+          ],
+          "properties": {
+            "expected_revision": false,
+            "compensation_rule_id": false,
+            "source": {}
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "op": {
+              "const": "replace"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "source",
+            "expected_revision"
+          ],
+          "properties": {
+            "compensation_rule_id": false,
+            "source": {},
+            "expected_revision": {}
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "op": {
+              "const": "delete"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "expected_revision"
+          ],
+          "properties": {
+            "source": false,
+            "expected_revision": {}
+          }
+        }
+      }
+    ]
+  }
+}

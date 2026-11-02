@@ -9,15 +9,16 @@
     "owner:create": "node src/create-owner.ts"
   },
   "dependencies": {
+    "@fastify/cookie": "11.1.5",
+    "@fastify/rate-limit": "11.2.1",
     "@ufagame/contracts": "*",
     "fastify": "5.12.8",
     "pg": "8.23.1",
-    "@fastify/rate-limit": "11.2.1",
-    "@fastify/cookie": "11.1.5"
+    "yauzl": "3.2.0"
   },
   "devDependencies": {
-    "@types/pg": "8.23.1",
     "@types/node": "24.10.0",
+    "@types/pg": "8.23.1",
     "typescript": "7.0.2"
   }
 }
