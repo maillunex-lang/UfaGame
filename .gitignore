@@ -16,3 +16,9 @@ backups/
 private/
 logs/
 __pycache__/
+# Local machine configuration and diagnostics
+.DS_Store
+*.log
+*.dump
+*.sql.gz
+coverage/

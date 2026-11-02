@@ -1,0 +1,31 @@
+{
+  "name": "ufagame",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "tools/s01/stack-check"
+  ],
+  "engines": {
+    "node": "24.19.0",
+    "npm": "11.9.0"
+  },
+  "packageManager": "npm@11.9.0",
+  "scripts": {
+    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack",
+    "lint": "node tools/repository.mjs lint",
+    "format:check": "prettier --check package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
+    "format": "prettier --write package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
+    "check:planning": "python3 tools/validate_planning.py",
+    "check:secrets": "node tools/repository.mjs secrets",
+    "check:stack": "npm run check --workspace ufagame-s01-stack-check",
+    "check:game": "bash tools/s01/check.sh",
+    "check:postgres": "bash tools/s01/check-postgres.sh",
+    "dev:game": "godot --path apps/game",
+    "fixture:events": "node services/prototype/emit-events.mjs",
+    "build:android:s01": "bash tools/s01/build-android.sh"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}
