@@ -52,9 +52,13 @@ candidate=''
 changed=1
 nginx -t
 systemctl reload nginx
+echo 'Checking existing portal after reload...'
 curl -fsSL --max-time 15 --max-redirs 5 -o /dev/null https://tts-ufa.ru/
+echo 'Checking Studio HTML...'
 curl -fsS --max-time 15 https://tts-ufa.ru/game/studio/ | sha256sum | grep -q '^976ed7b422c88eeacc800eb5483e500400b7f7fa68cbf1b8c619b241a5b55a3e '
+echo 'Checking Studio JavaScript...'
 curl -fsS --max-time 15 https://tts-ufa.ru/game/studio/assets/index-BnhVGTRP.js | sha256sum | grep -q '^156667ec4d5fe839e795a76b026a68f0f4071ae03ca986ea8d4cf82cc76b7849 '
+echo 'Checking Studio API readiness...'
 curl -fsS --max-time 15 https://tts-ufa.ru/game/server/health/ready | python3 -c 'import json,sys; assert json.load(sys.stdin)=={"status":"ok"}'
 changed=0
 printf 'Portal, Studio HTML/JS, and API health passed. Backup: %s/original.conf\n' "$backup_dir"
