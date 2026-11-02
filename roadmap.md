@@ -848,3 +848,10 @@ server_name/location с доменом еще не изучена. Это baseli
 занять маршруты/порт. Отчет docs/reports/S51.md; S51 in_progress. Следующий шаг:
 безопасная read-only выборка nginx директив и socket activation, затем diff и
 rollback. VPS/портал не изменялись.
+
+### S51 — nginx и порт8055
+Владелец проверил: agroapp обслуживает tts-ufa.ru:443, отдельный
+rik-agro-test-portal — :18443. TCP8055 не слушается на момент проверки,
+systemd list-sockets не показал8055. Детали: docs/reports/S51.md.
+Выборка директив не исключает include/regex; нужен проверяемый diff/rollback.
+S51 in_progress; сервер и портал не изменялись.
