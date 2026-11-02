@@ -5,7 +5,9 @@
   "type": "module",
   "workspaces": [
     "tools/s01/stack-check",
-    "packages/contracts"
+    "packages/contracts",
+    "services/api",
+    "services/worker"
   ],
   "engines": {
     "node": "24.19.0",
@@ -13,7 +15,7 @@
   },
   "packageManager": "npm@11.9.0",
   "scripts": {
-    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts",
+    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts && npm run check:api",
     "lint": "node tools/repository.mjs lint",
     "format:check": "prettier --check package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
     "format": "prettier --write package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
@@ -25,7 +27,12 @@
     "dev:game": "godot --path apps/game",
     "fixture:events": "node services/prototype/emit-events.mjs",
     "build:android:s01": "bash tools/s01/build-android.sh",
-    "check:contracts": "node --test tests/contracts/*.test.mjs"
+    "check:contracts": "node --test tests/contracts/*.test.mjs",
+    "check:api": "npm run typecheck --workspace @ufagame/api",
+    "test:integration": "bash tools/test-integration.sh",
+    "dev:api": "npm start --workspace @ufagame/api",
+    "dev:worker": "npm start --workspace @ufagame/worker",
+    "db:migrate": "npm run migrate --workspace @ufagame/api"
   },
   "devDependencies": {
     "prettier": "3.9.10"

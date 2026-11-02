@@ -1,0 +1,1 @@
+{"name":"@ufagame/api","private":true,"type":"module","scripts":{"start":"node src/main.ts","migrate":"node src/migrate.ts","typecheck":"tsc --noEmit"},"dependencies":{"@ufagame/contracts":"*","fastify":"5.12.8","pg":"8.23.1","@fastify/rate-limit":"11.2.1"},"devDependencies":{"@types/pg":"8.23.1","@types/node":"24.10.0","typescript":"7.0.2"}}

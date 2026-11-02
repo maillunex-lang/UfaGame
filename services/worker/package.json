@@ -1,0 +1,1 @@
+{"name":"@ufagame/worker","private":true,"type":"module","scripts":{"start":"node src/main.ts"},"dependencies":{"@ufagame/api":"*","pg":"8.23.1"}}

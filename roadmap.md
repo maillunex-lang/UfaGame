@@ -16,7 +16,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S02 | Monorepo, GitHub и правила работы | S01 | done |
 | S03 | Контракты API и модель контента | S02 | done |
 | S04 | Сборка и подпись Android | S03 | blocked |
-| S05 | База, API и транзакционный ledger | S03 | todo |
+| S05 | База, API и транзакционный ledger | S03 | done |
 | S06 | Гостевой аккаунт и сессии | S05 | todo |
 | S07 | Привязка логина и восстановление кодом | S06 | todo |
 | S08 | Владелец комбайна и аудит | S07 | todo |
@@ -669,3 +669,15 @@ Private backup restore/cmp прошел; keys/password/backup вне Git и не
 внешнее сохранение ключей владельцем не подтверждено. Не done.
 Следующий доступный S05 (зависит от S03), разрешен текущим запросом.
 VPS/деплоя/миграций нет; исходники S01/документы сохранены.
+
+
+### S05 — отдельное завершение, 2026-11-02 UTC
+Статус done, codex/s03-s07-foundation. services/api/worker, migration001,
+ADR0004, test-integration runner и 3 integration теста. Migrations дважды,
+health/DB failure, rollback, 5x dedupe, conflicting payload, overspend race,
+overflow, jobs claim/expiry/fencing и атомарный reward+ack — pass.
+`npm run check:api`, `npm run test:integration`: exit0. PostgreSQL18.4,
+network none, Unix socket, host ports не заняты, контейнер удален.
+Отчет docs/reports/S05.md. Публичных currency grant endpoints нет.
+База только ephemeral; production migrations/deploy/VPS не выполнялись.
+Следующий доступный S06; S04 остается blocked по ручным проверкам.

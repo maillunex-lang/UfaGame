@@ -1,0 +1,20 @@
+import Fastify from 'fastify';
+import rateLimit from '@fastify/rate-limit';
+import type {Pool} from 'pg';
+import {registry} from '@ufagame/contracts';
+import {DomainError} from './errors.ts';
+export async function buildApp(pool:Pool) {
+ const app=Fastify({logger:false,bodyLimit:16384,trustProxy:false,requestTimeout:10000});
+ await app.register(rateLimit,{max:120,timeWindow:60000,errorResponseBuilder:()=>({error:{code:'RATE_LIMITED',message:'RATE_LIMITED',request_id:'rate-limit'}})});
+ app.setErrorHandler((error,request,reply)=>{
+  const e=error as any;const status=e instanceof DomainError?e.status:(e.statusCode===400?400:e.statusCode===429?429:500);
+  const code=e instanceof DomainError?e.code:(status===400?'INVALID_REQUEST':status===429?'RATE_LIMITED':'INTERNAL_ERROR');
+  return reply.code(status).send({error:{code,message:code,request_id:request.id}});
+ });
+ app.get('/health/live',async()=>({status:'ok'}));
+ app.get('/health/ready',async(_request,reply)=>{
+  try{await pool.query('SELECT 1');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
+ });
+ app.get('/v1/capabilities',async()=>registry);
+ return app;
+}
