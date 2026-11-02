@@ -5,6 +5,13 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 import android.os.Build;
 import android.text.InputType;
 import android.webkit.CookieManager;
@@ -31,10 +38,13 @@ import android.widget.TextView;
 /** Studio shell. No native JS bridge or broad file permissions. */
 public final class StudioActivity extends Activity {
   private static final String STUDIO_URL = "https://tts-ufa.ru/game/studio/";
-  private static final int PICK_ZIP=4101;
+  private static final int PICK_ZIP=4101, SAVE_ZIP=4102;
+  private static final long MAX_DOWNLOAD=32L*1024*1024;
   private WebView web;
   private ValueCallback<Uri[]> upload;
   private OwnerVault vault;
+  private File pendingDownload;
+  private boolean downloading;
   private TextView message;
   private Button retry;
   private void failed() {
@@ -73,6 +83,13 @@ public final class StudioActivity extends Activity {
     retry.setText("Повторить");
     retry.setOnClickListener(v -> openStudio());
     vault = new OwnerVault(this);
+    if(state!=null) {
+      String saved=state.getString("pending_export");
+      if(saved!=null&&saved.matches("studio-export-[0-9]+\\.zip")) {
+        File candidate=new File(getCacheDir(),saved);
+        if(candidate.isFile())pendingDownload=candidate;
+      }
+    }
     Button savedLogin = new Button(this);
     savedLogin.setText("Войти с сохранением пароля");
     savedLogin.setOnClickListener(v -> showOwnerLogin());
@@ -83,6 +100,12 @@ public final class StudioActivity extends Activity {
     web.getSettings().setAllowContentAccess(false);
     web.getSettings().setGeolocationEnabled(false);
     web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+    web.setDownloadListener((url,userAgent,contentDisposition,mimeType,contentLength) -> {
+      if(!DownloadPolicy.allows(url)||!(OriginPolicy.allows(web.getUrl())||DownloadPolicy.allows(web.getUrl()))) {
+        Toast.makeText(this,"Загрузка с этого адреса запрещена",Toast.LENGTH_LONG).show();return;
+      }
+      startDownload(url);
+    });
     web.setWebChromeClient(new WebChromeClient() {
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         if(!OriginPolicy.allows(view.getUrl())) { callback.onReceiveValue(null); return true; }
@@ -98,10 +121,10 @@ public final class StudioActivity extends Activity {
     });
     web.setWebViewClient(new WebViewClient() {
       @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        return !OriginPolicy.allows(request.getUrl().toString());
+        return !OriginPolicy.allows(request.getUrl().toString()) && !DownloadPolicy.allows(request.getUrl().toString());
       }
       @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        return !OriginPolicy.allows(url);
+        return !OriginPolicy.allows(url) && !DownloadPolicy.allows(url);
       }
       @Override public void onPageFinished(WebView view, String url) {
         if (OriginPolicy.allows(url) && retry.getVisibility() != View.VISIBLE) {
@@ -178,8 +201,66 @@ public final class StudioActivity extends Activity {
     }));
     dialog.show();
   }
+  private void startDownload(String url) {
+    if(downloading||pendingDownload!=null){Toast.makeText(this,"Дождись окончания загрузки",Toast.LENGTH_SHORT).show();return;}
+    downloading=true;
+    final String cookies=CookieManager.getInstance().getCookie(url);
+    new Thread(() -> {
+      File temp=null;
+      try {
+        HttpsURLConnection conn=(HttpsURLConnection)new URL(url).openConnection();
+        try {
+          conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(10000);conn.setReadTimeout(15000);
+          if(cookies!=null)conn.setRequestProperty("Cookie",cookies);
+          if(conn.getResponseCode()!=200)throw new IllegalStateException("Download failed");
+          String type=conn.getContentType();
+          if(type==null||!(type.toLowerCase(java.util.Locale.ROOT).startsWith("application/zip")||type.toLowerCase(java.util.Locale.ROOT).startsWith("application/octet-stream")))throw new IllegalStateException("Invalid type");
+          long length=conn.getContentLengthLong();if(length>MAX_DOWNLOAD)throw new IllegalStateException("File too large");
+          temp=File.createTempFile("studio-export-", ".zip",getCacheDir());
+          try(InputStream in=conn.getInputStream();FileOutputStream out=new FileOutputStream(temp)) {
+            byte[] buf=new byte[16384];int n;long count=0,started=System.nanoTime();
+            while((n=in.read(buf))!=-1){count+=n;if(count>MAX_DOWNLOAD||System.nanoTime()-started>120_000_000_000L)throw new IllegalStateException("Download limit");out.write(buf,0,n);}
+            if(length>=0&&count!=length)throw new IllegalStateException("Incomplete download");out.getFD().sync();
+          }
+          try(InputStream in=new FileInputStream(temp)) {
+            int a=in.read(),b=in.read(),c=in.read(),d=in.read();
+            if(a!=0x50||b!=0x4b||!((c==3&&d==4)||(c==5&&d==6)))throw new IllegalStateException("Invalid ZIP");
+          }
+        } finally {conn.disconnect();}
+        final File ready=temp;temp=null;
+        runOnUiThread(() -> {
+          downloading=false;
+          if(isFinishing()||isDestroyed()){ready.delete();return;}
+          pendingDownload=ready;
+          Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);
+          intent.setType("application/zip");intent.putExtra(Intent.EXTRA_TITLE,"UfaGame-export.zip");
+          try{startActivityForResult(intent,SAVE_ZIP);}
+          catch(ActivityNotFoundException error){pendingDownload=null;ready.delete();Toast.makeText(this,"Нет приложения для сохранения файла",Toast.LENGTH_LONG).show();}
+        });
+      } catch(Exception error) {
+        if(temp!=null)temp.delete();
+        runOnUiThread(() -> {downloading=false;if(!isFinishing()&&!isDestroyed())Toast.makeText(this,"Не удалось загрузить файл",Toast.LENGTH_LONG).show();});
+      }
+    }).start();
+  }
+  private void saveDownloaded(Uri uri) {
+    final File ready=pendingDownload;pendingDownload=null;
+    if(ready==null)return;
+    if(uri==null||!"content".equals(uri.getScheme())){ready.delete();return;}
+    new Thread(() -> {
+      boolean success=false;
+      try(InputStream in=new FileInputStream(ready);OutputStream out=getContentResolver().openOutputStream(uri,"w")) {
+        if(out==null)throw new IllegalStateException("No output");
+        byte[] buf=new byte[16384];int n;while((n=in.read(buf))!=-1)out.write(buf,0,n);out.flush();success=true;
+      } catch(Exception error) { /* Keep user-selected destination; do not delete existing files. */ }
+      finally {ready.delete();}
+      final boolean done=success;
+      runOnUiThread(() -> {if(!isFinishing()&&!isDestroyed())Toast.makeText(this,done?"Файл сохранён":"Не удалось полностью сохранить файл",Toast.LENGTH_LONG).show();});
+    }).start();
+  }
   @Override protected void onActivityResult(int requestCode,int resultCode,Intent data) {
     super.onActivityResult(requestCode,resultCode,data);
+    if(requestCode==SAVE_ZIP){saveDownloaded(resultCode==RESULT_OK&&data!=null?data.getData():null);return;}
     if(requestCode!=PICK_ZIP||upload==null)return;
     ValueCallback<Uri[]> callback=upload;upload=null;
     Uri uri=data==null?null:data.getData();
@@ -188,5 +269,9 @@ public final class StudioActivity extends Activity {
   @Override public void onBackPressed() {
     if (web.canGoBack()) web.goBack(); else super.onBackPressed();
   }
-  @Override protected void onDestroy() { if(upload!=null){upload.onReceiveValue(null);upload=null;} web.destroy(); super.onDestroy(); }
+  @Override protected void onSaveInstanceState(Bundle out) {
+    if(pendingDownload!=null)out.putString("pending_export",pendingDownload.getName());
+    super.onSaveInstanceState(out);
+  }
+  @Override protected void onDestroy() { if(upload!=null){upload.onReceiveValue(null);upload=null;} if(pendingDownload!=null&&!isChangingConfigurations()){pendingDownload.delete();pendingDownload=null;} web.destroy(); super.onDestroy(); }
 }
