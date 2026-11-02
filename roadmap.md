@@ -785,3 +785,6 @@ S04 blocker внешнего backup сохраняется. Следующий �
 
 ### S09 — начало работы
 Статус in_progress. Подготовлены предварительные schema/ADR: packages/contracts/studio_draft.schema.json, docs/adr/0006-studio-drafts.md; отчет docs/reports/S09.md. Реализация API, UI, diff и проверки еще не выполнены. VPS не затрагивался. Следующий шаг — завершить S09 по prompts/stages/S09.md.
+
+### S09 — продолжение
+Добавлена services/api/migrations/006-studio-drafts.sql: изолированная таблица черновиков. Миграция не выполнялась; API, UI, аудит, diff и конкурентное сохранение не готовы. S09 остается in_progress. Следующий шаг — реализовать серверные операции и обязательные интеграционные проверки. VPS не затрагивался.
