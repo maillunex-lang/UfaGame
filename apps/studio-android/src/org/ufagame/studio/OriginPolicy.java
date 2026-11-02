@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 public final class OriginPolicy {
   private OriginPolicy() {}
   public static boolean allows(String value) {
+    if (value == null) return false;
     try {
       URI uri = new URI(value);
       if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null ||
