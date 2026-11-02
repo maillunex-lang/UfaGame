@@ -23,7 +23,7 @@ jobs и auth races; это не deployment. Не запускать эти ин�
 ```bash
 source /workspace/toolchains/env.sh
 export UFAGAME_SIGNING_DIR=/workspace/toolchains/private/ufagame-release
-bash tools/android/build.sh 6
+bash tools/android/build.sh 7
 ```
 
 Для измененного/публикуемого исходника выбрать новый возрастающий versionCode;
@@ -37,12 +37,12 @@ Game org.ufagame.game и Studio org.ufagame.studio подписаны разны
 этим APK. Studio пока только минимальный technical screen с общим контрактом.
 Редактор и владелец Studio еще не реализованы.
 
-На телефоне без API можно проверить: установить Game code4, нажать
+На телефоне без API можно проверить: установить Game code6, нажать
 «Проверить защищенное хранилище» → stored; закрыть и открыть → reused;
-установить Game code6 поверх code4 без удаления данных → снова reused.
+установить Game code7 поверх code6 без удаления данных → снова reused.
 Это отдельный probe file, не перезапись аккаунта. Зафиксировать модель/Android,
 package/version и результат, не считать тест пройденным по одной сборке.
-Также проверить установку Studio и update code4→6. Не удалять приложение между
+Также проверить установку Studio и update code6→7. Не удалять приложение между
 версиями: это уничтожит проверяемые данные. Приватную signing-backup.tar
 сохранить у владельца вне текущей среды, в защищенном хранилище; не в GitHub.
 

@@ -712,3 +712,16 @@ Studio22208 байт; signature/minSdk/version/16KiB alignment и code1→6 key 
 Никаких запросов/изменений VPS сейчас не выполнялось; локальные ephemeral migrations
 и тесты не означают deployment. Подробные ограничения — отдельные отчеты этапов.
 Следующий доступный: ручная Android приемка; S51 read-only доступен по зависимости.
+
+
+### Подтверждение сохранения и CI для S03–S07, 2026-11-02 UTC
+Ветка codex/s03-s07-foundation push подтвержден. Commits:
+S03=4c8380e, S04=6e61adf, S05=da99eba, S06=8a4308d, S07=b733ff0.
+CI run41489909422 completed/success: source, godot, integration (11pass).
+APK code6→7 повторно собраны из одного исходника b733ff0 теми же keys;
+minSdk/package/version/certs/registry bytes/alignment подтверждены.
+APK/ключи в Git не включены. Публичный test bundle не содержит private keys.
+S03/S05 done; S04/S06/S07 сохраняют blocked до ручной приемки/backup.
+Предпочтительный HTTPS prefix tts-ufa.ru/game/server не требует нового DNS,
+но еще не настроен/не проверен; рабочий портал и VPS не изменялись.
+Новый API URL в игре пока пуст. Детали и полные URLs в docs/reports/S03–S07.
