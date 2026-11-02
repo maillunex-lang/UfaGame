@@ -52,6 +52,10 @@ candidate=''
 changed=1
 nginx -t
 systemctl reload nginx
+echo 'Checking Studio HTML through local HTTPS nginx...'
+curl -fsS --max-time 15 --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/studio/ | sha256sum | grep -q '^976ed7b422c88eeacc800eb5483e500400b7f7fa68cbf1b8c619b241a5b55a3e '
+echo 'Checking Studio API through local HTTPS nginx...'
+curl -fsS --max-time 15 --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/server/health/ready | python3 -c 'import json,sys; assert json.load(sys.stdin)=={"status":"ok"}'
 echo 'Checking existing portal after reload...'
 curl -fsSL --max-time 15 --max-redirs 5 -o /dev/null https://tts-ufa.ru/
 echo 'Checking Studio HTML...'
