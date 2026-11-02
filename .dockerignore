@@ -1,0 +1,17 @@
+.git
+**/node_modules
+**/.godot
+**/dist
+build
+private
+.env
+.env.*
+**/*.apk
+**/*.aab
+**/*.keystore
+**/*.jks
+**/*.pem
+**/*.key
+**/*.zip
+backups
+logs
