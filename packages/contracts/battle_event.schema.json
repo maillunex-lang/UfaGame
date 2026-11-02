@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/battle_event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "battle_id",
+    "seq",
+    "at_ms",
+    "kind",
+    "target_id",
+    "hp"
+  ],
+  "properties": {
+    "battle_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "kind": {
+      "const": "hp"
+    },
+    "target_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "hp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/refresh_request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "refresh_token"
+  ],
+  "properties": {
+    "refresh_token": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    }
+  }
+}

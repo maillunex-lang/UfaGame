@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/recover_request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "login",
+    "recovery_code",
+    "new_password"
+  ],
+  "properties": {
+    "login": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]{3,32}$"
+    },
+    "recovery_code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "new_password": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 128
+    }
+  }
+}

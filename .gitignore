@@ -22,3 +22,5 @@ __pycache__/
 *.dump
 *.sql.gz
 coverage/
+apps/game/contracts/
+apps/studio-android/assets/contracts/

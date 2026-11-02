@@ -14,7 +14,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 |---|---|---|---|
 | S01 | Проверка стека и технический прототип | нет | done |
 | S02 | Monorepo, GitHub и правила работы | S01 | done |
-| S03 | Контракты API и модель контента | S02 | todo |
+| S03 | Контракты API и модель контента | S02 | done |
 | S04 | Сборка и подпись Android | S03 | todo |
 | S05 | База, API и транзакционный ledger | S03 | todo |
 | S06 | Гостевой аккаунт и сессии | S05 | todo |
@@ -647,3 +647,13 @@ Android reboot/update/FPS, runtime будущих компонентов не п
 Блокеров S02 нет. Миграций/компенсаций/портов/деплоя/VPS нет.
 Откат: revert commit S02; исходные документы и пользовательский ZIP сохранять.
 Следующий доступный этап: S03; S51 технически доступен, но VPS сейчас не требуется.
+
+
+### S03 — отдельное завершение, 2026-11-02 UTC
+Статус done, исходный commit7a888c0, codex/s03-s07-foundation.
+packages/contracts, tests/contracts, ADR0002, sync-contracts и Godot registry
+consumer. `npm run check:contracts`: 6 pass; `npm run check:game`: exit0,
+включая несовместимую capability. Отчет docs/reports/S03.md.
+Строгие поля/типы/версии, stable IDs/ссылки, ledger/battle/auth контракты.
+Готового редактора/API/боевой системы это не означает. Миграций/VPS нет.
+Следующие доступные: S04, S05. User разрешил S03–S07 последовательно.

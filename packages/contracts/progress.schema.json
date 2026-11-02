@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/progress",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "player_id",
+    "account_type",
+    "balances"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "player_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "account_type": {
+      "enum": [
+        "guest",
+        "registered"
+      ]
+    },
+    "balances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "currency",
+          "amount"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        }
+      }
+    }
+  }
+}

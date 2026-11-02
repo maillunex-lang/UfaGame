@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/revoke_request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "all_sessions"
+  ],
+  "properties": {
+    "all_sessions": {
+      "type": "boolean"
+    }
+  }
+}

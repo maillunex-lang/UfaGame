@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "content_version": "prototype_001",
+  "required_capabilities": [
+    "content.core.v1"
+  ],
+  "entities": [
+    {
+      "id": "faction_neutral",
+      "kind": "faction",
+      "name": "Тестовая фракция",
+      "data": {
+        "advantage_ids": []
+      }
+    },
+    {
+      "id": "ability_hit",
+      "kind": "ability",
+      "name": "Удар",
+      "data": {
+        "effect": "damage",
+        "power": 10,
+        "cooldown_ms": 1000
+      }
+    },
+    {
+      "id": "hero_probe",
+      "kind": "hero",
+      "name": "Тестовый герой",
+      "data": {
+        "faction_id": "faction_neutral",
+        "ability_ids": [
+          "ability_hit"
+        ]
+      }
+    }
+  ]
+}

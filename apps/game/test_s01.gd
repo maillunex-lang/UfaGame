@@ -10,6 +10,8 @@ func check(ok: bool, message: String) -> void:
 		push_error(message)
 
 func _initialize() -> void:
+	check(preload("res://contract_registry.gd").supports(["battle.hp.v1"]), "shared registry")
+	check(not preload("res://contract_registry.gd").supports(["unknown.v1"]), "incompatible capability")
 	var bytes := FileAccess.get_file_as_bytes("res://prototype/events.json")
 	var hash := FileAccess.get_sha256("res://prototype/events.json")
 	var first := Store.retain(bytes, hash)

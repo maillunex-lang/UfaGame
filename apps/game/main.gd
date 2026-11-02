@@ -8,6 +8,7 @@ var index := 0
 var text: Label
 
 func _ready() -> void:
+	assert(preload("res://contract_registry.gd").supports(["battle.hp.v1"]))
 	text = Label.new()
 	text.position = Vector2(24, 70)
 	text.add_theme_font_size_override("font_size", 22)
