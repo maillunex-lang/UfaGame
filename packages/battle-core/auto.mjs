@@ -12,7 +12,7 @@ export function createAutoBattle(input) {
  const ids=new Set(),slots=new Set(),factions=new Map();
  for(const f of input.factions){if(factions.has(f.id))throw new Error('DUPLICATE_FACTION');factions.set(f.id,f);}
  for(const f of input.factions)if(f.advantage_ids.some(id=>!factions.has(id)||id===f.id))throw new Error('INVALID_FACTION_LINK');
- for(const a of input.actors){const slot=`${a.team}:${a.slot}`;if(ids.has(a.id)||slots.has(slot))throw new Error('DUPLICATE_ACTOR_OR_SLOT');if(!factions.has(a.faction_id))throw new Error('UNKNOWN_FACTION');ids.add(a.id);slots.add(slot);}
+ for(const a of input.actors){const slot=`${a.team}:${a.slot}`;if(ids.has(a.id)||slots.has(slot))throw new Error('DUPLICATE_ACTOR_OR_SLOT');if(!factions.has(a.faction_id))throw new Error('UNKNOWN_FACTION');if(a.auto_abilities&&new Set(a.auto_abilities.map(ability=>ability.id)).size!==a.auto_abilities.length)throw new Error('DUPLICATE_ABILITY');ids.add(a.id);slots.add(slot);}
  if(!input.actors.some(a=>a.team==='attacker')||!input.actors.some(a=>a.team==='defender'))throw new Error('MISSING_TEAM');
  const actors=input.actors.map(a=>({...structuredClone(a),max_hp:a.hp,x:a.team==='attacker'?(a.slot<2?1500:500):(a.slot<2?8500:9500),y:lane[a.slot],next_attack_step:0})).sort(cmp);
  return {simulation_version:2,seed:input.seed,rng_state:input.seed,step:0,result:null,advantage_bp:input.advantage_bp,factions:structuredClone(input.factions).sort(cmp),actors};
@@ -38,6 +38,13 @@ export function stepAutoBattle(state,options={}) {
    const dy=target.y-actor.y;move=Math.min(Math.abs(dy),remaining);updated.y+=Math.sign(dy)*move;
    if(updated.x!==actor.x||updated.y!==actor.y)events.push({kind:'move',actor_id:actor.id,x:updated.x,y:updated.y});
    continue;
+  }
+  for(const ability of actor.auto_abilities??[]){
+   if(state.step%ability.interval_steps!==0)continue;
+   let abilityTarget=target,abilityAmount=ability.power;
+   if(ability.effect==='heal')abilityTarget=live.filter(a=>a.team===actor.team).sort((a,b)=>a.hp*b.max_hp-b.hp*a.max_hp||cmp(a,b))[0];
+   else if(factions.get(actor.faction_id).advantage_ids.includes(abilityTarget.faction_id))abilityAmount=Math.floor(abilityAmount*state.advantage_bp/10000);
+   effects.push({kind:ability.effect,source_id:actor.id,target_id:abilityTarget.id,amount:abilityAmount,ability_id:ability.id});
   }
   if(state.step<actor.next_attack_step)continue;
   const useAbility=updated.energy>=actor.ability.cost&&(actor.team==='defender'||autoAttacker||manual.has(actor.id));let amount,kind='damage';

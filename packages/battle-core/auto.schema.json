@@ -1,38 +1,209 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ufagame.invalid/internal/auto-battle-v2",
-  "type": "object", "additionalProperties": false,
-  "required": ["simulation_version", "seed", "actors", "factions", "advantage_bp"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "simulation_version",
+    "seed",
+    "actors",
+    "factions",
+    "advantage_bp"
+  ],
   "properties": {
-    "simulation_version": {"const": 2},
-    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
-    "advantage_bp": {"type": "integer", "minimum": 10000, "maximum": 20000},
-    "factions": {"type": "array", "maxItems": 6, "items": {
-      "type": "object", "additionalProperties": false, "required": ["id", "advantage_ids"],
-      "properties": {"id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"}, "advantage_ids": {"type": "array", "maxItems": 6, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"}}}
-    }},
-    "actors": {"type": "array", "minItems": 2, "maxItems": 10, "items": {
-      "type": "object", "additionalProperties": false,
-      "required": ["id", "team", "slot", "hp", "attack", "defense", "speed", "range", "interval_steps", "energy", "energy_per_step", "energy_per_attack", "faction_id", "ability"],
-      "properties": {
-        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
-        "team": {"enum": ["attacker", "defender"]},
-        "slot": {"type": "integer", "minimum": 0, "maximum": 4},
-        "hp": {"type": "integer", "minimum": 1, "maximum": 1000000},
-        "attack": {"type": "integer", "minimum": 0, "maximum": 1000000},
-        "defense": {"type": "integer", "minimum": 0, "maximum": 1000000},
-        "speed": {"type": "integer", "minimum": 0, "maximum": 5000},
-        "range": {"type": "integer", "minimum": 0, "maximum": 20000},
-        "interval_steps": {"type": "integer", "minimum": 1, "maximum": 900},
-        "energy": {"type": "integer", "minimum": 0, "maximum": 1000},
-        "energy_per_step": {"type": "integer", "minimum": 0, "maximum": 1000},
-        "energy_per_attack": {"type": "integer", "minimum": 0, "maximum": 1000},
-        "faction_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
-        "ability": {"type": "object", "additionalProperties": false, "required": ["effect", "power", "cost"], "properties": {
-          "effect": {"enum": ["damage", "heal"]}, "power": {"type": "integer", "minimum": 0, "maximum": 1000000},
-          "cost": {"type": "integer", "minimum": 1, "maximum": 1000}
-        }}
+    "simulation_version": {
+      "const": 2
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "advantage_bp": {
+      "type": "integer",
+      "minimum": 10000,
+      "maximum": 20000
+    },
+    "factions": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "advantage_ids"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "advantage_ids": {
+            "type": "array",
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{2,79}$"
+            }
+          }
+        }
       }
-    }}
+    },
+    "actors": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "team",
+          "slot",
+          "hp",
+          "attack",
+          "defense",
+          "speed",
+          "range",
+          "interval_steps",
+          "energy",
+          "energy_per_step",
+          "energy_per_attack",
+          "faction_id",
+          "ability"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "team": {
+            "enum": [
+              "attacker",
+              "defender"
+            ]
+          },
+          "slot": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "hp": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "attack": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "defense": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "speed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "range": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "interval_steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 900
+          },
+          "energy": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "energy_per_step": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "energy_per_attack": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "faction_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "ability": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "effect",
+              "power",
+              "cost"
+            ],
+            "properties": {
+              "effect": {
+                "enum": [
+                  "damage",
+                  "heal"
+                ]
+              },
+              "power": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "cost": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              }
+            }
+          },
+          "auto_abilities": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "effect",
+                "power",
+                "interval_steps"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                },
+                "effect": {
+                  "enum": [
+                    "damage",
+                    "heal"
+                  ]
+                },
+                "power": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "interval_steps": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 900
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

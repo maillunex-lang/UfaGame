@@ -45,3 +45,12 @@ test('ready targets are reproducible and use the seed for equal distance choices
  const a=make(1),b=make(2);assert.notEqual(a.state.rng_state,b.state.rng_state);
  assert.deepEqual(a,make(1));assert.equal(a.events.filter(e=>e.source_id==='hero_one').length,1);
 });
+test('individual automatic abilities use bounded cooldowns in manual mode',()=>{
+ const hero=actor('hero_one','attacker',0,{range:20000,attack:1,energy:0,auto_abilities:[{id:'auto_burst',effect:'damage',power:7,interval_steps:2}]});
+ const enemy=actor('foe_one','defender',0,{range:0,speed:0});let s=createAutoBattle(setup([hero,enemy]));
+ let first=stepAutoBattle(s,{autoAttacker:false});assert.equal(first.events.filter(e=>e.ability_id==='auto_burst').length,1);s=first.state;
+ let second=stepAutoBattle(s,{autoAttacker:false});assert.equal(second.events.filter(e=>e.ability_id==='auto_burst').length,0);s=second.state;
+ let third=stepAutoBattle(s,{autoAttacker:false});assert.equal(third.events.filter(e=>e.ability_id==='auto_burst').length,1);
+ const duplicate=setup([actor('hero_one','attacker',0,{auto_abilities:[{id:'auto_burst',effect:'damage',power:1,interval_steps:1},{id:'auto_burst',effect:'heal',power:1,interval_steps:1}]}),enemy]);
+ assert.throws(()=>createAutoBattle(duplicate),/DUPLICATE_ABILITY/);
+});
