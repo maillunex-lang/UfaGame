@@ -725,3 +725,16 @@ S03/S05 done; S04/S06/S07 сохраняют blocked до ручной прие�
 Предпочтительный HTTPS prefix tts-ufa.ru/game/server не требует нового DNS,
 но еще не настроен/не проверен; рабочий портал и VPS не изменялись.
 Новый API URL в игре пока пуст. Детали и полные URLs в docs/reports/S03–S07.
+
+
+### APK публикация — указание владельца, 2026-11-02 UTC
+Все передаваемые APK всегда публиковать в GitHub Releases и давать прямые ссылки;
+правило сохранено в AGENTS.md. Локальные ссылки не заменяют публикацию APK.
+Релиз: https://github.com/maillunex-lang/UfaGame/releases/tag/s07-android-v0.0.7
+Game-arm64-v6/v7 и Studio-v6/v7 загружены, повторно скачаны, size/SHA256 совпали.
+Workflow41491951609 success. Source commit APK b733ff0, signing identity сохранена.
+tools/android/publish-release.sh + release-staging.yml передают только public
+artifacts через isolated orphan branch; keys/passwords не покидают private storage.
+Только своя transfer branch удалена после публикации, source history не содержит
+APK blobs. Status S04/S06/S07 остается blocked по прежней ручной приемке/backup.
+VPS/портал не изменялись. Следующее: приемка code6→7 по инструкции release.

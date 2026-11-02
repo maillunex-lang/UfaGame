@@ -1,0 +1,41 @@
+name: Publish signed APK artifacts
+on:
+  push:
+    branches: ['artifact-staging/apk-*']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and publish exact signed files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,re,subprocess
+          from pathlib import Path
+          m=json.loads(Path('release-manifest.json').read_text())
+          assert re.fullmatch(r'[A-Za-z0-9._-]+',m['tag'])
+          assert re.fullmatch(r'[0-9a-f]{40}',m['source_sha'])
+          for f in m['files']:
+              assert re.fullmatch(r'[A-Za-z0-9._-]+',f['name'])
+              p=Path(f['name'])
+              assert p.stat().st_size==f['size']
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==f['sha256']
+          repo=os.environ['GITHUB_REPOSITORY']
+          tag=m['tag']
+          probe=subprocess.run(['gh','release','view',tag,'--repo',repo],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          if probe.returncode==0: raise SystemExit('Release already exists; refusing overwrite')
+          files=[f['name'] for f in m['files']]
+          subprocess.run(['gh','release','create',tag,*files,'--repo',repo,'--target',m['source_sha'],'--title',m['title'],'--notes-file','release-notes.md','--draft','--prerelease','--latest=false'],check=True)
+          subprocess.run(['gh','release','edit',tag,'--repo',repo,'--draft=false','--prerelease','--latest=false'],check=True)
+          print('Published signed APKs without transferring signing keys')
+          PY
+      - name: Delete only this temporary transfer branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$GITHUB_REF_NAME"

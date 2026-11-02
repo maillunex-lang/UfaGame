@@ -21,3 +21,15 @@ VPS: сначала read-only инвентаризация и отчет. Без
 
 ## Передача другому ИИ
 Оставь воспроизводимые команды, версии, пути отчетов и следующий доступный этап. Секреты не записывай. Заполни журнал в roadmap.md, при необходимости ADR и OPEN_DECISIONS.md.
+
+
+## Передача APK владельцу
+Все APK, передаваемые владельцу для установки/приемки, публиковать в GitHub
+Releases maillunex-lang/UfaGame и давать прямые ссылки скачивания. Не ограничиваться
+локальными workspace ссылками/ZIP. Это явно выбранное владельцем правило.
+В release публиковать только APK и публичные отчеты/hash/certificates; signing
+keys/passwords/private backup никогда не публиковать. Уже опубликованные APK
+не заменять другими байтами под тем же asset/tag. При ограничении direct upload
+можно передать проверенные signed artifacts через isolated orphan transfer branch
+и GitHub Actions, удалив только свою transfer branch после успеха. Она не merge
+в source branches. tools/android/publish-release.sh реализует такой путь без ключей.
