@@ -795,3 +795,12 @@ revision и idempotency. `npm run check:api`, `npm run check:contracts`,
 `npm run test:integration` прошли; 21 интеграционный тест, включая гонку 200/409.
 Отчет: docs/reports/S09.md. Веб-интерфейс, diff и проверка на телефоне остаются
 незавершенными; S09 in_progress. База тестовая, VPS не менялся.
+
+### S09 — веб-комбайн
+Добавлен React/TypeScript интерфейс apps/studio-web: owner login, черновики,
+JSON-форма, сравнение и конфликт 409 без потери локального текста. Повторы после
+сетевой ошибки сохраняют request_id. `npm run build:studio-web` exit0 (tsc+Vite),
+`python3 tools/validate_planning.py` exit0. Браузерные/device и сквозной HTTPS
+сценарии не проверены; S09 in_progress. VPS/proxy не менялись, APK не создавался.
+Подробности: docs/reports/S09.md. Следующий шаг — проверить UI с реальным API и
+на телефоне, исправить обнаруженное, затем отдельно обновить статус S09.

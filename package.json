@@ -7,7 +7,8 @@
     "tools/s01/stack-check",
     "packages/contracts",
     "services/api",
-    "services/worker"
+    "services/worker",
+    "apps/studio-web"
   ],
   "engines": {
     "node": "24.19.0",
@@ -15,7 +16,7 @@
   },
   "packageManager": "npm@11.9.0",
   "scripts": {
-    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts && npm run check:api",
+    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts && npm run check:api && npm run build:studio-web",
     "lint": "node tools/repository.mjs lint",
     "format:check": "prettier --check package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
     "format": "prettier --write package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
@@ -33,7 +34,9 @@
     "dev:api": "npm start --workspace @ufagame/api",
     "dev:worker": "npm start --workspace @ufagame/worker",
     "db:migrate": "npm run migrate --workspace @ufagame/api",
-    "owner:create": "npm run owner:create --workspace @ufagame/api"
+    "owner:create": "npm run owner:create --workspace @ufagame/api",
+    "build:studio-web": "npm run build --workspace @ufagame/studio-web",
+    "dev:studio-web": "npm run dev --workspace @ufagame/studio-web"
   },
   "devDependencies": {
     "prettier": "3.9.10"
