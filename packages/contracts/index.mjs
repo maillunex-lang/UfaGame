@@ -4,9 +4,10 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
-const validators = Object.fromEntries(names.map(n => [n, ajv.compile(schemas[n])]));
+for (const name of names) ajv.addSchema(schemas[name]);
+const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
 export function validate(name, value) {
   const validator = validators[name];
   if (!validator) throw new Error('Unknown schema');

@@ -109,3 +109,27 @@ test('audit insert failure rolls back profile mutation atomically',async()=>{
   await pool.query('DROP TRIGGER IF EXISTS owner_audit_test_fail ON owner_audit');await pool.query('DROP FUNCTION IF EXISTS owner_audit_test_fail()');await api.close();
  }
 });
+
+test('draft create/save: owner authorization, CSRF, retries, conflicts, audit and persistence',async()=>{
+ const api=await app();try{
+  const session=await login(api),id=randomUUID();
+  const content={schema_version:1,content_version:'draft_test',required_capabilities:['content.core.v1'],entities:[]};
+  const body={id,name:'Черновик',content,...meta()};
+  const post=(payload,headers={})=>api.inject({method:'POST',url:'/admin/v1/drafts',payload,headers:{origin,cookie:session.cookie,'x-ufa-csrf':session.csrf,...headers}});
+  assert.equal((await api.inject({url:'/admin/v1/drafts'})).statusCode,401);
+  assert.equal((await post(body,{'x-ufa-csrf':''})).statusCode,403);
+  const created=await post(body);assert.equal(created.statusCode,200);assert.equal(created.json().revision,0);
+  assert.deepEqual((await post(body)).json(),created.json());
+  assert.equal((await post({...body,name:'Другое'})).statusCode,409);
+  const put=(payload)=>api.inject({method:'PUT',url:'/admin/v1/drafts/'+id,payload,headers:{origin,cookie:session.cookie,'x-ufa-csrf':session.csrf}});
+  const a={name:'Первый',content,expected_revision:0,...meta()},b={...a,name:'Второй',request_id:randomUUID()};
+  const responses=await Promise.all([put(a),put(b)]);assert.deepEqual(responses.map(x=>x.statusCode).sort(),[200,409]);
+  const winner=responses[0].statusCode===200?a:b;
+  assert.deepEqual((await put(winner)).json(),responses.find(x=>x.statusCode===200).json());
+  assert.equal((await put({...winner,name:'Изменённый повтор'})).statusCode,409);
+  const restored=await api.inject({url:'/admin/v1/drafts/'+id,headers:{cookie:session.cookie}});assert.equal(restored.json().revision,1);assert.equal(restored.json().name,winner.name);
+  const audit=(await pool.query("SELECT * FROM owner_audit WHERE action IN ('draft.create','draft.save') AND resource_id=$1 ORDER BY sequence",['draft:'+id])).rows;
+  assert.equal(audit.length,2);assert.equal(audit[0].before_state,null);assert.equal(audit[1].before_state.revision,0);assert.equal(audit[1].after_state.revision,1);
+  assert.equal(validate('owner_audit_page',(await api.inject({url:'/admin/v1/audit?after=0&limit=100',headers:{cookie:session.cookie}})).json()).ok,true);
+ }finally{await api.close();}
+});

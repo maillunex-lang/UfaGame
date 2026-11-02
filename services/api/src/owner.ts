@@ -4,6 +4,7 @@ import {createHash,randomUUID,timingSafeEqual} from 'node:crypto';
 import {transaction} from './db.ts';
 import {DomainError} from './errors.ts';
 import {requireBody,randomToken} from './auth.ts';
+import {validate} from '@ufagame/contracts';
 import {hashPassword,verifyPassword} from './passwords.ts';
 
 export const OWNER_COOKIE='__Secure-ufagame-owner';
@@ -22,9 +23,9 @@ function safeSnapshot(value:any):void {
   safeSnapshot(child);
  }
 }
-async function audit(c:PoolClient,action:string,reason:string,requestId:string,before:any,after:any,fp:string){
+async function audit(c:PoolClient,action:string,reason:string,requestId:string,before:any,after:any,fp:string,resourceId="owner:1"){
  safeSnapshot(before);safeSnapshot(after);
- try{await c.query('INSERT INTO owner_audit(id,owner_id,action,resource_id,reason,request_id,fingerprint,before_state,after_state) VALUES($1,1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),action,'owner:1',reason,requestId,fp,before,after]);}
+ try{await c.query('INSERT INTO owner_audit(id,owner_id,action,resource_id,reason,request_id,fingerprint,before_state,after_state) VALUES($1,1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),action,resourceId,reason,requestId,fp,before,after]);}
  catch(error){if((error as any).code==='23505')throw new DomainError('CONFLICT',409);throw error;}
 }
 export async function createOwner(pool:Pool,login:string,password:string){
@@ -119,6 +120,38 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
     await audit(c,'owner.password',b.reason,b.request_id,{credential_version:owner.credential_version},{credential_version:owner.credential_version+1},fingerprint('owner.password',b.reason,owner.credential_version));
    });reply.clearCookie(OWNER_COOKIE,cookieOptions);return {ok:true,relogin:true};
   });
+  admin.get('/drafts',async request=>{
+   await activeOwner(pool,cookieToken(request));
+   if(Object.keys(request.query as object).length)throw new DomainError('INVALID_REQUEST');
+   return {drafts:(await pool.query('SELECT id,name,revision FROM studio_drafts ORDER BY updated_at DESC,id LIMIT 100')).rows};
+  });
+  admin.get('/drafts/:id',async request=>{
+   await activeOwner(pool,cookieToken(request));const id=(request.params as any).id;
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))throw new DomainError('INVALID_REQUEST');
+   const row=(await pool.query('SELECT id,revision,name,content FROM studio_drafts WHERE id=$1',[id])).rows[0];
+   if(!row)throw new DomainError('NOT_FOUND',404);return row;
+  });
+  async function writeDraft(request:FastifyRequest,create:boolean){
+   const token=cookieToken(request);verifyCsrf(request,token);
+   const b=request.body as any;requireBody(create?'draft_create_request':'draft_save_request',b);
+   if(!validate('content',b.content).ok)throw new DomainError('INVALID_REQUEST');
+   const id=create?b.id:(request.params as any).id;
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))throw new DomainError('INVALID_REQUEST');
+   const action=create?'draft.create':'draft.save',fp=fingerprint(action,b.reason,[id,b.name,b.content,create?null:b.expected_revision]);
+   return transaction(pool,async c=>{
+    await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
+    const before=(await c.query('SELECT id,revision,name,content FROM studio_drafts WHERE id=$1 FOR UPDATE',[id])).rows[0]??null;
+    if(create&&before)throw new DomainError('CONFLICT',409);
+    if(!create&&!before)throw new DomainError('NOT_FOUND',404);
+    if(!create&&before.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+    const changed=create?(await c.query('INSERT INTO studio_drafts(id,name,content) VALUES($1,$2,$3) RETURNING id,revision,name,content',[id,b.name,b.content])).rows[0]:(await c.query('UPDATE studio_drafts SET name=$2,content=$3,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING id,revision,name,content',[id,b.name,b.content])).rows[0];
+    await audit(c,action,b.reason,b.request_id,before,changed,fp,'draft:'+id);return changed;
+   });
+  }
+  admin.post('/drafts',async request=>writeDraft(request,true));
+  admin.put('/drafts/:id',async request=>writeDraft(request,false));
   admin.get('/audit',async request=>{
    await activeOwner(pool,cookieToken(request));requireBody('owner_audit_query',request.query);const query=request.query as any;
    const after=query.after??'0';if(BigInt(after)>9223372036854775807n)throw new DomainError('INVALID_REQUEST');const limit=Number(query.limit??50);

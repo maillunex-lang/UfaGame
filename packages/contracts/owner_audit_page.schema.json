@@ -44,11 +44,14 @@
               "owner.profile",
               "session.logout",
               "session.revoke_all",
-              "owner.password"
+              "owner.password",
+              "draft.create",
+              "draft.save"
             ]
           },
           "resource_id": {
-            "const": "owner:1"
+            "type": "string",
+            "pattern": "^(owner:1|draft:[0-9a-fA-F-]{36})$"
           },
           "reason": {
             "type": "string",
@@ -134,6 +137,9 @@
                     "type": "boolean"
                   }
                 }
+              },
+              {
+                "$ref": "https://ufagame.invalid/contracts/v1/studio_draft"
               }
             ]
           },
@@ -209,6 +215,9 @@
                     "type": "boolean"
                   }
                 }
+              },
+              {
+                "$ref": "https://ufagame.invalid/contracts/v1/studio_draft"
               }
             ]
           },
