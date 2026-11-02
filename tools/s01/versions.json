@@ -4,9 +4,6 @@
   "jdk_proposed": "17",
   "android_build_tools": "36.0.0",
   "android_platform": "36",
-  "ndk": "28.1.13356709",
-  "cmake": "3.10.2.4988404",
-  "min_sdk_proposed": 26,
   "abi": "arm64-v8a",
   "apk_max_bytes": 95000000,
   "postgresql_proposed_major": 18,
@@ -14,5 +11,13 @@
   "android_command_line_tools": "19.0",
   "android_platform_tools": "37.0.1",
   "min_sdk": 24,
-  "target_sdk": 36
+  "target_sdk": 36,
+  "ndk_proposed": "28.1.13356709",
+  "cmake_proposed": "3.10.2.4988404",
+  "fastify": "5.12.8",
+  "typescript": "7.0.2",
+  "react": "19.3.1",
+  "pg_driver": "8.23.1",
+  "postgresql": "18.4",
+  "postgresql_image": "postgres:18.4-bookworm@sha256:882236b897e39051d2368c5ccc6cda944904723506b2dfc97f2a8f5bc9afa382"
 }

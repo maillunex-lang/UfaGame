@@ -74,7 +74,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S60 | Отложенные направления с отдельными статусами | S57 | todo |
 
 ## Следующий шаг
-Продолжить S01: проверить собранный APK на Android и завершить проверку остального стека по [командам S01](docs/S01_RUN.md). S02 зависит от завершения S01. Доступ к VPS не требуется.
+Продолжить S01: проверить опубликованный APK на Android по [командам S01](docs/S01_RUN.md). S02 зависит от завершения S01. Доступ к VPS не требуется.
 
 ## Подробные этапы
 ### S01. Проверка стека и технический прототип
@@ -561,3 +561,32 @@ Release-подпись, устройство, PostgreSQL/API и остальна
 неудачная попытка, а не результат новой сборки. Подробный новый лог локален в scratch.
 Миграций/деплоя/VPS нет; ключ debug хранится вне репозитория.
 Следующее: проверить APK на Android, затем остаток S01; S02 не начат.
+
+
+### S01 — отдельное обновление: GitHub APK и стек, 2026-11-02 UTC
+Статус: blocked только по приемочному Android; S02 todo по зависимости.
+APK опубликован как prerelease (не production):
+https://github.com/maillunex-lang/UfaGame/releases/tag/s01-prototype-v0.0.1
+CI source 43441e3d27e667d45c2f0c85e22c733841e34f0d, run41479526778 success.
+Опубликованный APK: 27 587 539 байт, SHA256
+c094eb81c3ff51008420d63134ff184e60597e56dba0837b7f4c97e5aad379a8;
+скачан обратно, sha256sum OK, apksigner verify exit0 (v2/v3).
+Debug key CI отличается от прежнего локального APK; не обещаем update поверх.
+Постоянная production-подпись остается S04. В релизе APK + отчеты/hash.
+
+Добавлены .github/workflows/s01-apk.yml (одноразовая публикация без overwrite),
+tools/s01/stack-check (package/lock/TypeScript/Fastify smoke), check-postgres.sh;
+обновлены versions/ADR/S01_RUN/report и validate_planning (skip generated dirs).
+`npm ci --prefix tools/s01/stack-check --ignore-scripts --no-audit --no-fund`: exit0.
+`npm run check --prefix tools/s01/stack-check`: exit0; Node24.19.0,
+Fastify5.12.8 HTTP inject200/400, TypeScript7.0.2, React19.3.1 import/createElement,
+pg8.23.1 import. Не production API/UI.
+`bash tools/s01/check-postgres.sh`: exit0, PostgreSQL18.4, unique key/rollback;
+без сети/host ports, временный контейнер удален, образ закреплен digest.
+`python3 tools/validate_planning.py`: exit0 после установки npm зависимостей.
+Источники и подробные результаты — docs/reports/S01.md (продолжение).
+На Android запуск/постоянный filesDir/force-stop/reboot/update не проверены.
+VPS/деплоя/миграций/реальных платежей нет. Локальный ZIP примера не включается.
+Откат: только новые файлы проверки/CI и документация; опубликованный артефакт
+не заменять другим APK под тем же tag. Следующее: приемка S01 на телефоне,
+после ее успешного результата — S02. До этого S01 не done.

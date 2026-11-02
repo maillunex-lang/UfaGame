@@ -94,3 +94,25 @@ platforms 35 и 36. NDK/CMake не устанавливались: для обы
 публичные CA среды добавлены в локальный truststore JDK с проверкой TLS.
 Debug key хранится вне репозитория; env.sh и локальные Editor Settings
 не предназначены для переноса на другое устройство.
+
+
+## Скачать опубликованный прототип на Android
+
+[Скачать APK](https://github.com/maillunex-lang/UfaGame/releases/download/s01-prototype-v0.0.1/Game-S01-arm64-debug.apk)
+или [открыть релиз с проверочными файлами](https://github.com/maillunex-lang/UfaGame/releases/tag/s01-prototype-v0.0.1).
+Это CI-сборка с отдельным debug key. Если уже ставил старый локальный S01 APK,
+он не обновится поверх: сначала удали именно старый S01-прототип.
+После установки проверь: HP 100→75→40→0, перезапуск, сохранение ресурса.
+Для приемки запиши модель/Android и результат, не очищая данные приложения.
+Внутри прототипа нет игрового прогресса или боевого сервера.
+
+Дополнительные технические проверки стека:
+
+```bash
+npm ci --prefix tools/s01/stack-check --ignore-scripts --no-audit --no-fund
+npm run check --prefix tools/s01/stack-check
+bash tools/s01/check-postgres.sh
+```
+
+PostgreSQL-проверка требует локальный Docker, временный контейнер без сети
+и host ports автоматически удаляется. На VPS владельца эти команды не запускать.

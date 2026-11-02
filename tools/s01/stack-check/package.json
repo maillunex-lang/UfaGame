@@ -1,0 +1,9 @@
+{
+  "name": "ufagame-s01-stack-check",
+  "private": true,
+  "type": "module",
+  "scripts": {"check": "tsc --noEmit && node smoke.mjs"},
+  "dependencies": {"fastify": "5.12.8", "react": "19.3.1", "pg": "8.23.1"},
+  "devDependencies": {"typescript": "7.0.2", "@types/node": "24.10.0"},
+  "engines": {"node": "24.19.0"}
+}

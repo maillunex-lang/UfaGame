@@ -1,6 +1,6 @@
 """Static validation of the planning deliverable; NOT a production ZIP importer."""
 from pathlib import Path, PurePosixPath
-import hashlib, json, re
+import hashlib, json, re, os
 ROOT = Path(__file__).resolve().parents[1]
 def require(value, message):
     if not value:
@@ -42,6 +42,14 @@ def check_example():
     for bad in ["../x", "/x", "C:/x", "a\\b"]:
         require(not safe_path(bad), "unsafe path accepted in static checker")
     return len(paths)
+def source_files(suffix):
+    # Dependency fixtures may contain JSONC and external documentation links.
+    for directory, dirs, files in os.walk(ROOT):
+        dirs[:] = [d for d in dirs if d not in {".git", "node_modules", ".godot", "build", "dist", "__pycache__"}]
+        for name in files:
+            if name.endswith(suffix):
+                yield Path(directory) / name
+
 def main():
     roadmap = (ROOT / "roadmap.md").read_text(encoding="utf-8")
     rows = re.findall(r"^\| (S\d{2}) \|.*?\| ([^|]+) \| (todo|in_progress|blocked|done) \|$", roadmap, re.M)
@@ -56,9 +64,9 @@ def main():
         for token in ["roadmap.md", "Критерии", "проверки", "следующий"]:
             require(token.lower() in text.lower(), f"missing prompt requirement: {stage}/{token}")
     require(len(list((ROOT / "prompts/stages").glob("S*.md"))) == 60, "prompt count")
-    for p in ROOT.rglob("*.json"):
+    for p in source_files(".json"):
         load(p)
-    for p in ROOT.rglob("*.md"):
+    for p in source_files(".md"):
         for target in re.findall(r"\]\(([^)]+)\)", p.read_text(encoding="utf-8")):
             if "://" in target or target.startswith("#"):
                 continue
@@ -68,6 +76,6 @@ def main():
     count = check_example()
     print(json.dumps({"roadmap_stages":60,"stage_prompts":60,"survey_decisions":55,"example_inventory_files":count,
                       "json_syntax":"ok","relative_links":"ok","dependencies":"acyclic/backward",
-                      "runtime_tested":False,"android_built":False,"vps_accessed":False}, ensure_ascii=False))
+                      "scope":"planning-only","runtime_evidence":"docs/reports/"}, ensure_ascii=False))
 if __name__ == "__main__":
     main()
