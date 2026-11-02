@@ -855,3 +855,12 @@ rik-agro-test-portal — :18443. TCP8055 не слушается на момен
 systemd list-sockets не показал8055. Детали: docs/reports/S51.md.
 Выборка директив не исключает include/regex; нужен проверяемый diff/rollback.
 S51 in_progress; сервер и портал не изменялись.
+
+### S51 — предварительный nginx план
+Подготовлен infra/s51-nginx-proposal.md: раздельные /game/studio/ и
+/game/server/, предполагаемый upstream loopback8055, сохранение root location,
+проверки портала и план отката. Прямых include в выбранных строках agroapp нет;
+глобальные includes/context и точный diff не проверены. Обнаружен вопрос
+rate-limit при trustProxy:false за nginx. S51 in_progress; конфигурация и VPS
+не менялись. Следующий шаг — установить безопасный контекст nginx до финального
+reviewable diff, а не применять эскиз.
