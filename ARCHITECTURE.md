@@ -1,5 +1,5 @@
 # Предлагаемая архитектура
-Это инженерное предложение, а не утверждение о готовой реализации. S01 фиксирует точные версии и ADR после прототипа.
+Архитектура описывает целевую систему, а не готовую игру. Техническая база S01 проверена прототипом и приемкой на iQOO15R / Android16: версии и ограничения см. tools/s01/versions.json и docs/adr/0001-s01-stack.md. S02 создает структуру каталогов; это не реализация будущих компонентов.
 
 ## Компоненты
 | Компонент | Предложение | Ответственность |
@@ -19,7 +19,7 @@ Godot PCK поддерживает пакеты, но пользовательс
 apps/game/; apps/studio-web/; apps/studio-android/; services/api/; services/worker/;
 packages/contracts/; packages/battle-core/; packages/content-validator/;
 content/; schemas/; infra/; tests/; docs/adr/; docs/reports/; prompts/.
-Это план каталогов, не отметка о наличии кода.
+Каталоги созданы в S02; README зарезервированных компонентов не означают наличия реализации. Фактический код S01 находится в apps/game, services/prototype и tools/s01; текущие статусы — в roadmap.md.
 
 ## Бой и сеть
 Снимок команд, content_version, seed RNG, battle_id и simulation_version закрепляются до боя. Сервер проверяет принадлежность героев, экипировку и права на скорость/skip.
