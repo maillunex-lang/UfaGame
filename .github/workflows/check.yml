@@ -48,4 +48,5 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - uses: ./.github/actions/setup-godot
+      - run: npx playwright install --with-deps chromium
       - run: npm run test:integration

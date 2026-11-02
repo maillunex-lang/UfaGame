@@ -39,6 +39,7 @@
     "dev:studio-web": "npm run dev --workspace @ufagame/studio-web"
   },
   "devDependencies": {
+    "playwright": "1.57.0",
     "prettier": "3.9.10"
   }
 }
