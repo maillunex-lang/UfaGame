@@ -70,11 +70,13 @@ export async function inspectArchive(buffer) {
  if(!listed.has('operations.json')||files.size!==manifest.files.length+1)fail('Unlisted file or missing operations');
  const operations=parseJson(files.get('operations.json'),'operations.json');
  if(!validate('mod_operations',operations).ok)fail('Invalid operations');
+ const entities=[];
  for(const op of operations){
   if(op.source){
    const bytes=files.get(op.source);if(!bytes||!listed.has(op.source.toLowerCase()))fail('Missing operation source');
    const entity=parseJson(bytes,op.source);if(!entity||typeof entity!=='object'||Array.isArray(entity)||entity.id!==op.id||entity.kind!==op.entity_type)fail('Entity identity mismatch');
+   entities.push(entity);
   }
  }
- return {manifest,operations};
+ return {manifest,operations,entities};
 }
