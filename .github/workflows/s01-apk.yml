@@ -33,7 +33,19 @@ jobs:
           echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
           curl -fL --retry 3 -o "$RUNNER_TEMP/templates.tpz" https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz
           unzip -j -q "$RUNNER_TEMP/templates.tpz" templates/android_debug.apk templates/android_release.apk templates/version.txt -d "$RUNNER_TEMP/godot-data/godot/export_templates/4.6.3.stable"
-          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+          export ANDROID_HOME="$RUNNER_TEMP/android-sdk"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl -fL --retry 3 -o "$RUNNER_TEMP/android-cli.zip" https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+          unzip -q "$RUNNER_TEMP/android-cli.zip" -d "$RUNNER_TEMP/android-unpack"
+          mv "$RUNNER_TEMP/android-unpack/cmdline-tools" "$ANDROID_HOME/cmdline-tools/19.0"
+          python3 - <<'PYCODE'
+          import os, subprocess
+          tool = os.environ['ANDROID_HOME'] + '/cmdline-tools/19.0/bin/sdkmanager'
+          subprocess.run([tool, '--licenses'], input='y\n'*100, text=True, check=True)
+          subprocess.run([tool, 'platform-tools', 'platforms;android-36', 'build-tools;36.0.0'], check=True)
+          PYCODE
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           echo "XDG_DATA_HOME=$RUNNER_TEMP/godot-data" >> "$GITHUB_ENV"
           echo "XDG_CONFIG_HOME=$RUNNER_TEMP/godot-config" >> "$GITHUB_ENV"
           echo "XDG_CACHE_HOME=$RUNNER_TEMP/godot-cache" >> "$GITHUB_ENV"
