@@ -922,3 +922,11 @@ UI build, Docker build и health/ready API с отдельной PostgreSQL пр
 71cef2f02c91cc60f8c3b3f125e7ab34fc50e21e. Физический Android и VPS не
 проверены, S09 in_progress. Следующий шаг — запуск отдельно на loopback у владельца,
 затем owner/UI и проверенный nginx diff с откатом; портал и чужие данные сохранить.
+
+### S09 — тестовый API на VPS
+Владелец собрал и запустил отдельный Compose проект ufagame_s09_test на commit
+71cef2f; PostgreSQL healthy, API health/ready на 127.0.0.1:8055 — status ok.
+Статика опубликована отдельным Git-артефактом 91747be1fc2aca87d0500e6d483f27a7e87faa44
+с SHA-256; на VPS еще не установлена. Nginx, owner login и телефон не проверены.
+S09 in_progress, S52 blocked. Следующий шаг — доставка статики и создание owner,
+затем diff/backup и маршруты nginx с проверкой портала и откатом.
