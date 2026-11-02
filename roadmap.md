@@ -884,3 +884,13 @@ sites-enabled/*; совпадений директив conf.d в выводе н
 Проверка на VPS, nginx -t, API/UI и сохранность портала после reload не выполнены;
 reload и развертывание не выполнялись. S51 in_progress. Следующий шаг — получить
 предварительный diff, проверить его и завершить проверку изолированного стека.
+
+### S51 — предварительный diff владельца
+Владелец получил diff из 12 добавляемых строк перед location / в agroapp;
+конфигурация не изменена. Подробности docs/reports/S51.md. В изолированной
+локальной копии состава Dockerfile успешно выполнены npm ci --omit=dev
+--ignore-scripts --no-audit --no-fund и импорт buildApp; 6 migrations на месте.
+Docker image/Compose runtime и реальный nginx не проверены, доверенный proxy и
+rate-limit требуют решения; UI/owner/backup и phone smoke не выполнены. S51 и
+S09 in_progress, S52 blocked. Следующий шаг — сборка и испытание изолированного
+стека в среде с достаточным диском и подготовка доставки UI и rollback.
