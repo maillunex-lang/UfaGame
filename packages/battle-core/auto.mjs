@@ -18,8 +18,11 @@ export function createAutoBattle(input) {
  return {simulation_version:2,seed:input.seed,rng_state:input.seed,step:0,result:null,advantage_bp:input.advantage_bp,factions:structuredClone(input.factions).sort(cmp),actors};
 }
 /** One fixed 100ms server step. All actions use the state at the start of the tick. */
-export function stepAutoBattle(state) {
+export function stepAutoBattle(state,options={}) {
  if(state.result!==null||state.step>=LIMIT)throw new Error('BATTLE_FINISHED');
+ const {autoAttacker=true,manualActorIds=[]}=options;
+ if(typeof autoAttacker!=='boolean'||!Array.isArray(manualActorIds)||manualActorIds.length>5||new Set(manualActorIds).size!==manualActorIds.length||manualActorIds.some(id=>!state.actors.some(a=>a.id===id&&a.team==='attacker'&&a.hp>0)))throw new Error('INVALID_COMMANDS');
+ const manual=new Set(manualActorIds);
  const next=structuredClone(state);next.step++;
  const live=state.actors.filter(a=>a.hp>0),byId=new Map(next.actors.map(a=>[a.id,a]));
  const factions=new Map(state.factions.map(f=>[f.id,f]));
@@ -37,7 +40,7 @@ export function stepAutoBattle(state) {
    continue;
   }
   if(state.step<actor.next_attack_step)continue;
-  const useAbility=updated.energy>=actor.ability.cost;let amount,kind='damage';
+  const useAbility=updated.energy>=actor.ability.cost&&(actor.team==='defender'||autoAttacker||manual.has(actor.id));let amount,kind='damage';
   if(useAbility){
    updated.energy-=actor.ability.cost;kind=actor.ability.effect;amount=actor.ability.power;
    if(kind==='heal')target=live.filter(a=>a.team===actor.team).sort((a,b)=>a.hp*b.max_hp-b.hp*a.max_hp||cmp(a,b))[0];
