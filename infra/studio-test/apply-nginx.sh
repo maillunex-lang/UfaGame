@@ -52,10 +52,22 @@ candidate=''
 changed=1
 nginx -t
 systemctl reload nginx
-echo 'Checking Studio HTML through local HTTPS nginx...'
-curl -fsS --max-time 15 --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/studio/ | sha256sum | grep -q '^976ed7b422c88eeacc800eb5483e500400b7f7fa68cbf1b8c619b241a5b55a3e '
+echo 'Waiting for reloaded nginx to serve Studio HTML through local HTTPS...'
+ready=false
+for attempt in $(seq 1 15); do
+  if curl -fsS --max-time 4 --noproxy '*' --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/studio/ 2>/dev/null | sha256sum | grep -q '^976ed7b422c88eeacc800eb5483e500400b7f7fa68cbf1b8c619b241a5b55a3e '; then
+    ready=true
+    break
+  fi
+  sleep 1
+done
+if [[ $ready != true ]]; then
+  echo 'Local HTTPS Studio did not become ready; final HTTP status:' >&2
+  curl -sS --max-time 4 --noproxy '*' --resolve tts-ufa.ru:443:127.0.0.1 -o /dev/null -w '%{http_code}\n' https://tts-ufa.ru/game/studio/ >&2 || true
+  exit 1
+fi
 echo 'Checking Studio API through local HTTPS nginx...'
-curl -fsS --max-time 15 --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/server/health/ready | python3 -c 'import json,sys; assert json.load(sys.stdin)=={"status":"ok"}'
+curl -fsS --max-time 15 --noproxy '*' --resolve tts-ufa.ru:443:127.0.0.1 https://tts-ufa.ru/game/server/health/ready | python3 -c 'import json,sys; assert json.load(sys.stdin)=={"status":"ok"}'
 echo 'Checking existing portal after reload...'
 curl -fsSL --max-time 15 --max-redirs 5 -o /dev/null https://tts-ufa.ru/
 echo 'Checking Studio HTML...'
