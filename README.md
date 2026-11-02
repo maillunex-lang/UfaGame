@@ -3,7 +3,7 @@
 Онлайн-RPG для Android и комбайн управления — в разработке. Дата: 2026-11-02, Asia/Yekaterinburg.
 Репозиторий: https://github.com/maillunex-lang/UfaGame
 
-**Состояние: технический Android-прототип, строгие контракты, локальный API/PostgreSQL ledger и guest/login/recovery реализованы и тестируются. S01–S03 и S05–S07 приняты; S04 ждёт внешней приватной копии signing keys. S08 добавляет отдельную авторизацию владельца и аудит.** Это еще не готовая игра: боя, экономики контента и редактора Studio нет. VPS не обследован/не изменялся. [Команды S03–S07](docs/S03_S07_RUN.md).
+**Состояние: технический Android-прототип, строгие контракты, локальный API/PostgreSQL ledger и guest/login/recovery реализованы и тестируются. S01–S03 и S05–S07 приняты; S04 ждёт внешней приватной копии signing keys. S08 завершён: отдельная авторизация владельца, CSRF и атомарный аудит.** Это еще не готовая игра: боя, экономики контента и редактора Studio нет. VPS не обследован/не изменялся. [Команды S03–S07](docs/S03_S07_RUN.md).
 
 [Архивный APK S01](https://github.com/maillunex-lang/UfaGame/releases/tag/s01-prototype-v0.0.1) · [Разработка и команды](docs/DEVELOPMENT.md) · [Секреты](docs/SECURITY.md) · [Текущий статус](roadmap.md)
 

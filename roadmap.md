@@ -1,11 +1,11 @@
 # roadmap.md - единый статус UfaGame
 Дата: 2026-11-02, Asia/Yekaterinburg.
-Опрос завершен: 55/55. Подготовлены документы и промпты. **Есть технические Game/Studio APK и локальный API/PostgreSQL ledger/auth. S06/S07 приняты после проверки владельца и Godot HTTPS smoke; S08 реализуется. S04 ждёт внешнего signing backup. Игровые системы/редактор не реализованы, VPS не обследован.**
+Опрос завершен: 55/55. Подготовлены документы и промпты. **Есть технические Game/Studio APK и локальный API/PostgreSQL ledger/auth. S06/S07 приняты после проверки владельца и Godot HTTPS smoke; S08 завершён: отдельный владелец, CSRF и аудит. S04 ждёт внешнего signing backup. Игровые системы/редактор не реализованы, VPS не обследован.**
 GitHub: публичный https://github.com/maillunex-lang/UfaGame; доступ на запись проверен. Результат публикации документов фиксируется в GITHUB_PUBLICATION.md, а не подменяет готовность S02.
 
 ## Статусы и порядок
 todo - не начато; in_progress - реализуется; blocked - конкретный блокер; done - реализовано и проверено.
-S01–S03 и S05–S07 done; S04 blocked по внешней private backup; S08 in_progress; S09–S60 todo. Подготовка промпта не означает выполнение этапа.
+S01–S03 и S05–S08 done; S04 blocked по внешней private backup; S09–S60 todo. Подготовка промпта не означает выполнение этапа.
 S01–S24: постепенный технический срез; S01–S53: первая рабочая версия с выбранными базовыми режимами; S54–S57: полнота/проверки/публичный запуск; S58–S60: поздние расширения.
 План сложного проекта не является гарантией сроков. Каждый этап при необходимости дробится на подзадачи с сохранением зависимостей и приемки.
 Частично доступную работу продолжать независимо, но недоступную проверку не отмечать done.
@@ -19,7 +19,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S05 | База, API и транзакционный ledger | S03 | done |
 | S06 | Гостевой аккаунт и сессии | S05 | done |
 | S07 | Привязка логина и восстановление кодом | S06 | done |
-| S08 | Владелец комбайна и аудит | S07 | in_progress |
+| S08 | Владелец комбайна и аудит | S07 | done |
 | S09 | Каркас веб-комбайна и черновики | S08 | todo |
 | S10 | Game Studio Android APK | S04, S09 | todo |
 | S11 | Реестр ресурсов и анимации | S03, S09 | todo |
@@ -74,7 +74,9 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S60 | Отложенные направления с отдельными статусами | S57 | todo |
 
 ## Следующий шаг
-Android: проверить Game/Studio update и Keystore probe по docs/S03_S07_RUN.md, приватно сохранить signing backup вне среды. S51 доступен для read-only обследования будущего API route; действующий портал tts-ufa.ru сохранить. Не считать S04/S06/S07 done до проверки.
+S09: интерфейс Studio и черновики. S08 API/DB проверки и CI прошли.
+S04: внешняя private signing backup все еще не подтверждена; device update принят.
+VPS144.31.254.99/tts-ufa.ru не изменялись, S51 read-only доступен по зависимости.
 
 ## Подробные этапы
 ### S01. Проверка стека и технический прототип
@@ -765,3 +767,17 @@ Production owner/default password не создавались, web UI S09 еще
 Новый APK не нужен для server-only этапа; VPS/портал/proxy/порты не изменялись.
 S04 blocker external signing backup остается. Следующее: CI и фиксация S08,
 после успеха следующий доступный S09; S51 read-only также доступен по зависимостям.
+
+
+### S08 — отдельное завершение, 2026-11-02 UTC
+Статус done. Реализация commit4d3367f, codex/s08-owner-audit.
+CI41496078942 completed/success: source, godot, integration20pass:
+https://github.com/maillunex-lang/UfaGame/actions/runs/41496078942
+Отдельный singleton owner/provision CLI, secure cookie, Origin+CSRF,
+player denial, session revoke/expiry/password rotation, immutable atomic audit,
+strict schemas и optimistic/dedupe profile mutation проверены.
+Отчет docs/reports/S08.md, команды docs/S08_RUN.md, ADR0005.
+Real production owner/TLS/browser UI/VPS не настраивались и не выдаются за тест.
+Новый APK не собирался: server-only S08, принятые APK6/7 остаются в GitHub Releases.
+S04 blocker внешнего backup сохраняется. Следующий доступный S09; S51 read-only
+возможен отдельно, рабочий портал без изменений.
