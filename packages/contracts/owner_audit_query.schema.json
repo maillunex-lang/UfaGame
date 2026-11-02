@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/owner_audit_query",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "after": {
+      "type": "string",
+      "pattern": "^[0-9]{1,19}$"
+    },
+    "limit": {
+      "type": "string",
+      "pattern": "^([1-9][0-9]?|100)$"
+    }
+  }
+}

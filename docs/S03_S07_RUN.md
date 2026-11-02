@@ -72,3 +72,9 @@ POST /v1/guests, /v1/sessions/refresh, /v1/sessions/revoke,
 после S51. Внешний prefix proxy должен снять перед upstream /v1/... .
 Сохраняем root portal и его сервисы/порты. Пока в APK нет активного default URL:
 не отправлять пароли в не настроенный путь рабочего портала.
+
+## Результат приемки
+Владелец подтвердил sequence6→7/storage: «Все ок, работает». Не запрашивать
+повтор базовой проверки; production HTTPS flow и external private signing backup
+не объявляются выполненными. Дополнительно реальный Godot auth client прошел
+локальный trusted TLS/path/PostgreSQL smoke, включая restart/refresh/recovery.

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/owner_profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "login",
+    "display_name",
+    "revision"
+  ],
+  "properties": {
+    "id": {
+      "const": 1
+    },
+    "login": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]{3,32}$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

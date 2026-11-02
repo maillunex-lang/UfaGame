@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/owner_audit_page",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "events",
+    "next_cursor"
+  ],
+  "properties": {
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "id",
+          "owner_id",
+          "action",
+          "resource_id",
+          "reason",
+          "request_id",
+          "before_state",
+          "after_state",
+          "created_at"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "owner_id": {
+            "const": 1
+          },
+          "action": {
+            "enum": [
+              "owner.provision",
+              "session.login",
+              "owner.profile",
+              "session.logout",
+              "session.revoke_all",
+              "owner.password"
+            ]
+          },
+          "resource_id": {
+            "const": "owner:1"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "before_state": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "login",
+                  "display_name",
+                  "revision"
+                ],
+                "properties": {
+                  "id": {
+                    "const": 1
+                  },
+                  "login": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]{3,32}$"
+                  },
+                  "display_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "active_sessions"
+                ],
+                "properties": {
+                  "active_sessions": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "credential_version"
+                ],
+                "properties": {
+                  "credential_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "session_id",
+                  "active"
+                ],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          },
+          "after_state": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "login",
+                  "display_name",
+                  "revision"
+                ],
+                "properties": {
+                  "id": {
+                    "const": 1
+                  },
+                  "login": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]{3,32}$"
+                  },
+                  "display_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "active_sessions"
+                ],
+                "properties": {
+                  "active_sessions": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "credential_version"
+                ],
+                "properties": {
+                  "credential_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "session_id",
+                  "active"
+                ],
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "maxItems": 100
+    },
+    "next_cursor": {
+      "type": "string",
+      "pattern": "^[0-9]{1,19}$"
+    }
+  }
+}

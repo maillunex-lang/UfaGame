@@ -1,0 +1,129 @@
+import type {Pool,PoolClient} from 'pg';
+import type {FastifyInstance,FastifyRequest} from 'fastify';
+import {createHash,randomUUID,timingSafeEqual} from 'node:crypto';
+import {transaction} from './db.ts';
+import {DomainError} from './errors.ts';
+import {requireBody,randomToken} from './auth.ts';
+import {hashPassword,verifyPassword} from './passwords.ts';
+
+export const OWNER_COOKIE='__Secure-ufagame-owner';
+export interface OwnerOptions {origin?:string;cookiePath?:string}
+const hash=(value:string)=>createHash('sha256').update(value).digest('hex');
+const sessionHash=(token:string)=>hash('ufagame/owner-session/v1:'+token);
+const csrfFor=(token:string)=>createHash('sha256').update('ufagame/owner-csrf/v1:'+token).digest('base64url');
+const profile=(row:any)=>({id:row.id,login:row.login,display_name:row.display_name,revision:row.revision});
+const unauthorized=()=>new DomainError('UNAUTHORIZED',401);
+const forbidden=()=>new DomainError('FORBIDDEN',403);
+const fingerprint=(action:string,reason:string,payload:any)=>hash(JSON.stringify([action,reason,payload]));
+function safeSnapshot(value:any):void {
+ if(value===null||typeof value!=='object')return;
+ for(const [key,child] of Object.entries(value)){
+  if(/^(password|password_hash|token|token_hash|access_token|refresh_token|recovery_code|cookie|csrf_token)$/i.test(key))throw new Error('Secret field in audit snapshot');
+  safeSnapshot(child);
+ }
+}
+async function audit(c:PoolClient,action:string,reason:string,requestId:string,before:any,after:any,fp:string){
+ safeSnapshot(before);safeSnapshot(after);
+ try{await c.query('INSERT INTO owner_audit(id,owner_id,action,resource_id,reason,request_id,fingerprint,before_state,after_state) VALUES($1,1,$2,$3,$4,$5,$6,$7,$8)',[randomUUID(),action,'owner:1',reason,requestId,fp,before,after]);}
+ catch(error){if((error as any).code==='23505')throw new DomainError('CONFLICT',409);throw error;}
+}
+export async function createOwner(pool:Pool,login:string,password:string){
+ requireBody('owner_login_request',{login,password});const encoded=await hashPassword(password);
+ return transaction(pool,async c=>{
+  await c.query('SELECT pg_advisory_xact_lock(783108)');
+  if((await c.query('SELECT id FROM owner_accounts')).rowCount)throw new DomainError('CONFLICT',409);
+  const owner=(await c.query('INSERT INTO owner_accounts(id,login,display_name,password_hash) VALUES(1,$1,$1,$2) RETURNING *',[login.toLowerCase(),encoded])).rows[0];
+  await audit(c,'owner.provision','initial_owner_provision',randomUUID(),null,profile(owner),fingerprint('owner.provision','initial_owner_provision',profile(owner)));
+  return profile(owner);
+ });
+}
+function cookieToken(request:FastifyRequest){
+ const duplicates=(request.headers.cookie??'').split(';').filter(part=>part.trim().split('=')[0]===OWNER_COOKIE).length;
+ const token=request.cookies[OWNER_COOKIE];
+ if(duplicates!==1||!token||!/^[A-Za-z0-9_-]{43}$/.test(token))throw unauthorized();return token;
+}
+async function activeOwner(pool:Pool,token:string){
+ const row=(await pool.query('SELECT o.*,s.id AS session_id,s.expires_at FROM owner_sessions s JOIN owner_accounts o ON o.id=s.owner_id WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now()',[sessionHash(token)])).rows[0];
+ if(!row)throw unauthorized();return row;
+}
+async function lockOwner(c:PoolClient,token:string){
+ await c.query('SELECT id FROM owner_accounts WHERE id=1 FOR UPDATE');
+ const row=(await c.query('SELECT o.*,s.id AS session_id,s.expires_at FROM owner_sessions s JOIN owner_accounts o ON o.id=s.owner_id WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() FOR UPDATE OF s',[sessionHash(token)])).rows[0];
+ if(!row)throw unauthorized();return row;
+}
+function verifyCsrf(request:FastifyRequest,token:string){
+ const supplied=request.headers['x-ufa-csrf'];
+ if(typeof supplied!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(supplied)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(csrfFor(token))))throw forbidden();
+}
+export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerOptions={}){
+ let origin:string|undefined;
+ if(options.origin){const parsed=new URL(options.origin);if(parsed.protocol!=='https:'||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash)throw new Error('Invalid ADMIN_ORIGIN');origin=parsed.origin;}
+ const path=options.cookiePath??'/game/server/admin/v1';
+ if(!/^\/[A-Za-z0-9/_-]+$/.test(path)||!path.endsWith('/admin/v1'))throw new Error('Invalid ADMIN_COOKIE_PATH');
+ const cookieOptions={path,secure:true,httpOnly:true,sameSite:'strict' as const};
+ await app.register(async admin=>{
+  admin.addHook('onRequest',async request=>{
+   if(!origin)throw new DomainError('SERVICE_UNAVAILABLE',503);
+   const supplied=request.headers.origin;
+   if(supplied&&supplied!==origin)throw forbidden();
+   if(!['GET','HEAD','OPTIONS'].includes(request.method)&&supplied!==origin)throw forbidden();
+  });
+  admin.addHook('onSend',async(_request,reply,payload)=>{reply.header('Cache-Control','no-store');return payload;});
+  admin.post('/sessions',{config:{rateLimit:{max:5,timeWindow:60000}}},async(request,reply)=>{
+   requireBody('owner_login_request',request.body);const body=request.body as any;
+   const old=(await pool.query('SELECT * FROM owner_accounts WHERE id=1 AND login=$1',[body.login.toLowerCase()])).rows[0];
+   if(!await verifyPassword(body.password,old?.password_hash??null))throw unauthorized();
+   const token=randomToken();
+   const session=await transaction(pool,async c=>{
+    const owner=(await c.query('SELECT * FROM owner_accounts WHERE id=1 FOR UPDATE')).rows[0];
+    if(owner.password_hash!==old.password_hash)throw unauthorized();
+    const row=(await c.query("INSERT INTO owner_sessions(id,owner_id,token_hash,expires_at) VALUES($1,1,$2,now()+interval '30 minutes') RETURNING *",[randomUUID(),sessionHash(token)])).rows[0];
+    await audit(c,'session.login','owner_login',randomUUID(),null,{session_id:row.id,active:true},fingerprint('session.login','owner_login',row.id));return {owner,row};
+   });
+   reply.setCookie(OWNER_COOKIE,token,{...cookieOptions,maxAge:1800});
+   return {api_version:1,owner:profile(session.owner),csrf_token:csrfFor(token),expires_at:session.row.expires_at.toISOString()};
+  });
+  admin.get('/session',async request=>{const token=cookieToken(request),owner=await activeOwner(pool,token);return {api_version:1,owner:profile(owner),csrf_token:csrfFor(token),expires_at:owner.expires_at.toISOString()};});
+  admin.get('/owner',async request=>profile(await activeOwner(pool,cookieToken(request))));
+  admin.patch('/owner/profile',async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);requireBody('owner_profile_request',request.body);const b=request.body as any;
+   const fp=fingerprint('owner.profile',b.reason,[b.display_name,b.expected_revision]);
+   return transaction(pool,async c=>{
+    const owner=await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!=='owner.profile')throw new DomainError('CONFLICT',409);return old.after_state;}
+    if(owner.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+    const changed=(await c.query('UPDATE owner_accounts SET display_name=$1,revision=revision+1 WHERE id=1 RETURNING *',[b.display_name])).rows[0];
+    await audit(c,'owner.profile',b.reason,b.request_id,profile(owner),profile(changed),fp);return profile(changed);
+   });
+  });
+  for(const [route,all] of [['/sessions/logout',false],['/sessions/revoke-all',true]] as const){
+   admin.post(route,async(request,reply)=>{
+    const token=cookieToken(request);verifyCsrf(request,token);requireBody('owner_logout_request',request.body);const b=request.body as any;
+    await transaction(pool,async c=>{
+     const owner=await lockOwner(c,token);
+     const before=Number((await c.query('SELECT count(*) AS count FROM owner_sessions WHERE owner_id=1 AND revoked_at IS NULL AND expires_at>now()')).rows[0].count);
+     if(all)await c.query('UPDATE owner_sessions SET revoked_at=now() WHERE owner_id=1 AND revoked_at IS NULL');
+     else await c.query('UPDATE owner_sessions SET revoked_at=now() WHERE id=$1',[owner.session_id]);
+     await audit(c,all?'session.revoke_all':'session.logout',b.reason,b.request_id,{active_sessions:before},{active_sessions:all?0:before-1},fingerprint(route,b.reason,owner.session_id));
+    });reply.clearCookie(OWNER_COOKIE,cookieOptions);return {ok:true};
+   });
+  }
+  admin.post('/owner/password',async(request,reply)=>{
+   const token=cookieToken(request);verifyCsrf(request,token);requireBody('owner_password_request',request.body);const b=request.body as any;
+   const old=await activeOwner(pool,token);if(!await verifyPassword(b.current_password,old.password_hash))throw unauthorized();const encoded=await hashPassword(b.new_password);
+   await transaction(pool,async c=>{
+    const owner=await lockOwner(c,token);if(owner.password_hash!==old.password_hash)throw unauthorized();
+    await c.query('UPDATE owner_accounts SET password_hash=$1,credential_version=credential_version+1 WHERE id=1',[encoded]);
+    await c.query('UPDATE owner_sessions SET revoked_at=now() WHERE owner_id=1 AND revoked_at IS NULL');
+    await audit(c,'owner.password',b.reason,b.request_id,{credential_version:owner.credential_version},{credential_version:owner.credential_version+1},fingerprint('owner.password',b.reason,owner.credential_version));
+   });reply.clearCookie(OWNER_COOKIE,cookieOptions);return {ok:true,relogin:true};
+  });
+  admin.get('/audit',async request=>{
+   await activeOwner(pool,cookieToken(request));requireBody('owner_audit_query',request.query);const query=request.query as any;
+   const after=query.after??'0';if(BigInt(after)>9223372036854775807n)throw new DomainError('INVALID_REQUEST');const limit=Number(query.limit??50);
+   const events=(await pool.query('SELECT sequence,id,owner_id,action,resource_id,reason,request_id,before_state,after_state,created_at FROM owner_audit WHERE sequence>$1 ORDER BY sequence LIMIT $2',[after,limit])).rows;
+   return {events:events.map(row=>({...row,sequence:String(row.sequence),created_at:row.created_at.toISOString()})),next_cursor:events.length?String(events.at(-1).sequence):after};
+  });
+ },{prefix:'/admin/v1'});
+}

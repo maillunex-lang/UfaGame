@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/owner_session",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "owner",
+    "csrf_token",
+    "expires_at"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "login",
+        "display_name",
+        "revision"
+      ],
+      "properties": {
+        "id": {
+          "const": 1
+        },
+        "login": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{3,32}$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "csrf_token": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{43}$"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

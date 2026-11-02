@@ -32,7 +32,8 @@
     "test:integration": "bash tools/test-integration.sh",
     "dev:api": "npm start --workspace @ufagame/api",
     "dev:worker": "npm start --workspace @ufagame/worker",
-    "db:migrate": "npm run migrate --workspace @ufagame/api"
+    "db:migrate": "npm run migrate --workspace @ufagame/api",
+    "owner:create": "npm run owner:create --workspace @ufagame/api"
   },
   "devDependencies": {
     "prettier": "3.9.10"

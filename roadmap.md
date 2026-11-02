@@ -1,11 +1,11 @@
 # roadmap.md - единый статус UfaGame
 Дата: 2026-11-02, Asia/Yekaterinburg.
-Опрос завершен: 55/55. Подготовлены документы и промпты. **Есть технические Game/Studio APK и локальный API/PostgreSQL ledger/auth. S03 и S05 завершены; S04/S06/S07 ждут Android-приемки и внешнего signing backup. Игровые системы/редактор не реализованы, VPS не обследован.**
+Опрос завершен: 55/55. Подготовлены документы и промпты. **Есть технические Game/Studio APK и локальный API/PostgreSQL ledger/auth. S06/S07 приняты после проверки владельца и Godot HTTPS smoke; S08 реализуется. S04 ждёт внешнего signing backup. Игровые системы/редактор не реализованы, VPS не обследован.**
 GitHub: публичный https://github.com/maillunex-lang/UfaGame; доступ на запись проверен. Результат публикации документов фиксируется в GITHUB_PUBLICATION.md, а не подменяет готовность S02.
 
 ## Статусы и порядок
 todo - не начато; in_progress - реализуется; blocked - конкретный блокер; done - реализовано и проверено.
-S01–S03 и S05–S07 done; S04 blocked по внешней private backup; S08–S60 todo. Подготовка промпта не означает выполнение этапа.
+S01–S03 и S05–S07 done; S04 blocked по внешней private backup; S08 in_progress; S09–S60 todo. Подготовка промпта не означает выполнение этапа.
 S01–S24: постепенный технический срез; S01–S53: первая рабочая версия с выбранными базовыми режимами; S54–S57: полнота/проверки/публичный запуск; S58–S60: поздние расширения.
 План сложного проекта не является гарантией сроков. Каждый этап при необходимости дробится на подзадачи с сохранением зависимостей и приемки.
 Частично доступную работу продолжать независимо, но недоступную проверку не отмечать done.
@@ -19,7 +19,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S05 | База, API и транзакционный ledger | S03 | done |
 | S06 | Гостевой аккаунт и сессии | S05 | done |
 | S07 | Привязка логина и восстановление кодом | S06 | done |
-| S08 | Владелец комбайна и аудит | S07 | todo |
+| S08 | Владелец комбайна и аудит | S07 | in_progress |
 | S09 | Каркас веб-комбайна и черновики | S08 | todo |
 | S10 | Game Studio Android APK | S04, S09 | todo |
 | S11 | Реестр ресурсов и анимации | S03, S09 | todo |
@@ -752,3 +752,16 @@ S04 остается blocked только по external private signing backup, 
 объявлен проверенным и остается S52. Это не создает циклическую зависимость от VPS.
 Отчеты S04/S06/S07 дополнены, история прежних blockers сохранена.
 Следующий доступный S08. User разрешил продолжать. VPS/портал не затрагивались.
+
+
+### S08 — отдельное обновление реализации, 2026-11-02 UTC
+Статус in_progress до CI, исходный commita458252, codex/s08-owner-audit.
+Migration005, shared schemas, CLI one-owner, separate cookie/CSRF/Origin admin
+API, profile optimistic/dedupe mutation, logout/revoke/password и immutable audit.
+`npm run check:api`, `npm run check`: exit0. `npm run test:integration`:20pass,
+включая singleton/CLI/player denial/CSRF/expiry/audit atomic rollback/immutability.
+Файлы/команды/границы: docs/reports/S08.md, docs/S08_RUN.md, ADR0005.
+Production owner/default password не создавались, web UI S09 еще нет.
+Новый APK не нужен для server-only этапа; VPS/портал/proxy/порты не изменялись.
+S04 blocker external signing backup остается. Следующее: CI и фиксация S08,
+после успеха следующий доступный S09; S51 read-only также доступен по зависимостям.

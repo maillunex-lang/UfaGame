@@ -26,7 +26,8 @@
             "RATE_LIMITED",
             "INCOMPATIBLE_CLIENT",
             "SERVICE_UNAVAILABLE",
-            "INTERNAL_ERROR"
+            "INTERNAL_ERROR",
+            "FORBIDDEN"
           ]
         },
         "message": {

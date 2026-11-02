@@ -84,3 +84,9 @@ GitHub Actions публикует prerelease и удаляет свою transfer
 не получают binary history. При ошибке публикации не выдавать будущий URL за
 готовый файл: дождаться release и проверить скачанные bytes. Это transport
 готовых артефактов, не замена постоянной подписи или Android-приемки.
+
+## Владелец и аудит S08
+
+Отдельные admin sessions/CSRF, CLI provisioning без default password и audit
+реализованы на сервере. [Команды и границы](S08_RUN.md). Web UI следующий S09;
+S08 не добавляет экранов или новых APK. Production owner/proxy не настраивались.
