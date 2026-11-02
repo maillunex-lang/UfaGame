@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S01 recorded hp event (prototype only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["seq", "kind", "hp"],
+  "properties": {
+    "seq": {"type": "integer", "minimum": 1},
+    "kind": {"const": "hp"},
+    "hp": {"type": "integer", "minimum": 0, "maximum": 100}
+  }
+}
