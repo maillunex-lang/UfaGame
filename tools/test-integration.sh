@@ -24,4 +24,5 @@ export PGHOST="$s05_root/socket" PGUSER=postgres PGDATABASE=postgres
 unset DATABASE_URL
 npm run db:migrate
 npm run db:migrate
+node tools/sync-contracts.mjs
 node --test --test-concurrency=1 tests/integration/*.test.mjs
