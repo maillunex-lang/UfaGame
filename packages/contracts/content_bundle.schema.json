@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/content_bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "content_version",
+    "sha256",
+    "pointer_revision",
+    "content",
+    "resources"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "content_version": {
+      "type": "string",
+      "pattern": "^pub_[0-9]{6,}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "pointer_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content": {
+      "$ref": "https://ufagame.invalid/contracts/v1/content"
+    },
+    "resources": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "$ref": "https://ufagame.invalid/contracts/v1/resource_descriptor"
+      }
+    }
+  }
+}

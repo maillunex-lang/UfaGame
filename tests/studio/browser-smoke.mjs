@@ -8,7 +8,7 @@ import {createHash} from 'node:crypto';
 import {inspectArchive,PackageError} from '../../packages/content-validator/archive.mjs';
 import {planImport} from '../../packages/content-validator/plan-import.mjs';
 import {exportContent} from '../../packages/content-validator/export.mjs';
-let exported=null,imports=0,draft=null,logged=false,resources=[],pngBytes=null,previews=0,wavBytes=null;
+let published=[],exported=null,imports=0,draft=null,logged=false,resources=[],pngBytes=null,previews=0,wavBytes=null;
 const wavFile=(()=>{const data=Buffer.alloc(1600),fmt=Buffer.alloc(16);fmt.writeUInt16LE(1,0);fmt.writeUInt16LE(1,2);fmt.writeUInt32LE(8000,4);fmt.writeUInt32LE(16000,8);fmt.writeUInt16LE(2,12);fmt.writeUInt16LE(16,14);const c=(id,b)=>{const x=Buffer.alloc(8);x.write(id,0,'ascii');x.writeUInt32LE(b.length,4);return Buffer.concat([x,b]);};const body=Buffer.concat([Buffer.from('WAVE'),c('fmt ',fmt),c('data',data)]);const head=Buffer.alloc(8);head.write('RIFF',0,'ascii');head.writeUInt32LE(body.length,4);return Buffer.concat([head,body]);})();
 const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
 const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
@@ -44,6 +44,10 @@ try{
      else if(!plan.content){status=409;body={error:{code:'CONFLICT',message:'IMPORT_CONFLICTS_UNRESOLVED'}};}
      else{imports++;draft={...draft,content:plan.content,revision:draft.revision+1};body={draft,package_sha256:'x',report:plan.report,created_resources:[]};}}
     catch(e){if(!(e instanceof PackageError))throw e;status=422;body={error:{code:'INVALID_REQUEST',message:[e.code,e.file,e.field].filter(Boolean).join(':')}};}}
+   else if(path.endsWith('/content/releases')&&method==='GET'){body={pointer:published.length?{content_version:published.at(-1).content_version,pointer_revision:published.length}:null,versions:[...published].reverse(),releases:[]};}
+   else if(path.endsWith('/publish/preflight')){const v=req.postDataJSON();const cur=published.at(-1);const same=cur&&JSON.stringify(cur.content.entities)===JSON.stringify(draft.content.entities);
+    body={ready:!same,unchanged:!!same,problems:[],warnings:draft.content.entities.filter(e=>e.kind==='hero'&&!e.data.combat).map(e=>'HERO_WITHOUT_COMBAT:'+e.id),diff:{added:draft.content.entities.filter(e=>!cur?.content.entities.some(x=>x.id===e.id)).map(e=>e.id),changed:[],removed:[]},pointer_revision:published.length,resource_count:0,current:null};if(v.expected_revision!==draft.revision){status=409;body={error:{code:'CONFLICT',message:'CONFLICT'}};}}
+   else if(path.endsWith('/publish')&&method==='POST'){const v=req.postDataJSON();if(v.expected_pointer_revision!==published.length){status=409;body={error:{code:'CONFLICT',message:'POINTER_CHANGED'}};}else{const label='pub_'+String(published.length+1).padStart(6,'0');published.push({content_version:label,sha256:'x',created_at:new Date().toISOString(),source_draft_revision:draft.revision,entity_count:draft.content.entities.length,content:structuredClone(draft.content)});body={content_version:label,pointer_revision:published.length};}}
    else if(path.endsWith('/battle-preview')&&method==='POST'){const v=req.postDataJSON();previews++;
     if(v.expected_revision!==draft.revision){status=409;body={error:{code:'CONFLICT',message:'CONFLICT'}};}
     else try{const c=compileContentBattle(draft.content,v);body={api_version:1,preview:true,draft_id:draft.id,draft_revision:draft.revision,...runAutoBattle(c.setup,{heroes:c.heroes})};}
@@ -122,6 +126,14 @@ try{
  await page.getByRole('button',{name:'Применить импорт'}).click();await page.getByRole('status').filter({hasText:'Импорт применён'}).waitFor();
  assert.equal(imports,1);assert.equal(draft.revision,before+2);assert.equal(draft.content.entities.find(e=>e.id==='ability_one').data.power,42,'manual choice kept owner value');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'import UI has no horizontal overflow');
+ page.on('dialog',dialog=>dialog.accept());
+ await page.getByRole('button',{name:'Проверить перед публикацией'}).click();await page.getByRole('status').filter({hasText:'Проверка пройдена'}).waitFor();
+ await page.getByText(/Добавится: .*hero_one/).waitFor();
+ await page.getByRole('button',{name:'Опубликовать'}).click();await page.getByRole('status').filter({hasText:'Опубликована версия pub_000001'}).waitFor();
+ assert.equal(published.length,1);await page.getByText('Сейчас в игре: pub_000001').waitFor();
+ await page.getByRole('button',{name:'Проверить перед публикацией'}).click();await page.getByRole('status').filter({hasText:'уже опубликована'}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Опубликовать'}).count(),0,'nothing to publish');
+ console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');
  console.log('Chromium mobile: WAV upload+player, hero sprite ref, combat form, unsaved/invalid preview rejected, sprite replay — passed (mock API with real battle-core)');

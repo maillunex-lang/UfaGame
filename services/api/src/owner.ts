@@ -4,13 +4,14 @@ import {createHash,randomUUID,timingSafeEqual} from 'node:crypto';
 import {transaction} from './db.ts';
 import {DomainError} from './errors.ts';
 import {requireBody,randomToken} from './auth.ts';
-import {validate,resourceRefs} from '@ufagame/contracts';
+import {validate,resourceRefs,negotiate} from '@ufagame/contracts';
 import {hashPassword,verifyPassword} from './passwords.ts';
 import {ResourceRegistry} from '../../../packages/content-validator/resource-registry.mjs';
 import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../../packages/battle-core/compile.mjs';
 import {inspectArchive,PackageError} from '../../../packages/content-validator/archive.mjs';
 import {planImport} from '../../../packages/content-validator/plan-import.mjs';
 import {exportContent} from '../../../packages/content-validator/export.mjs';
+import {buildSnapshot,contentDiff,currentPointer} from './content.ts';
 
 export const OWNER_COOKIE='__Secure-ufagame-owner';
 export interface OwnerOptions {origin?:string;cookiePath?:string}
@@ -247,6 +248,84 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
    let zip:Buffer;
    try{zip=await exportContent(draft.content,{ids:q.ids?q.ids.split(','):null,resources});}catch(error){return packageError(error);}
    return reply.header('X-Content-Type-Options','nosniff').header('Content-Disposition',`attachment; filename="ufagame-draft-r${draft.revision}.zip"`).type('application/zip').send(zip);
+  });
+  const versionInfo=(row:any)=>row?{content_version:row.content_version,sha256:row.sha256,created_at:row.created_at.toISOString(),source_draft_id:row.source_draft_id,source_draft_revision:row.source_draft_revision,entity_count:row.content.entities.length,required_capabilities:row.required_capabilities}:null;
+  admin.post('/drafts/:id/publish/preflight',async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);await activeOwner(pool,token);
+   const id=(request.params as any).id,b=request.body as any;
+   if(!uuid.test(id))throw new DomainError('INVALID_REQUEST');requireBody('publish_preflight_request',b);
+   const draft=(await pool.query('SELECT id,revision,content FROM studio_drafts WHERE id=$1',[id])).rows[0];
+   if(!draft)throw new DomainError('NOT_FOUND',404);if(draft.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+   const {snapshot,problems}=await buildSnapshot(pool,draft.content);
+   const current=await currentPointer(pool);
+   const warnings=(draft.content.entities??[]).filter((e:any)=>e.kind==='hero'&&!e.data?.combat).map((e:any)=>`HERO_WITHOUT_COMBAT:${e.id}`);
+   return {draft_id:id,draft_revision:draft.revision,ready:!!snapshot&&snapshot.sha256!==current?.sha256,unchanged:!!snapshot&&snapshot.sha256===current?.sha256,problems,warnings,
+    sha256:snapshot?.sha256??null,required_capabilities:snapshot?.required_capabilities??[],resource_count:snapshot?.resources.length??0,
+    current:versionInfo(current),pointer_revision:current?.pointer_revision??0,diff:snapshot?contentDiff(current?.content,snapshot.content):null};
+  });
+  admin.post('/drafts/:id/publish',{config:{rateLimit:{max:10,timeWindow:60000}}},async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);
+   const id=(request.params as any).id,b=request.body as any;
+   if(!uuid.test(id))throw new DomainError('INVALID_REQUEST');requireBody('publish_request',b);
+   const action='content.publish',fp=fingerprint(action,b.reason,[id,b.expected_revision,b.expected_pointer_revision]);
+   return transaction(pool,async c=>{
+    await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
+    await c.query('SELECT pg_advisory_xact_lock(783120)');
+    const current=await currentPointer(c,true);
+    if((current?.pointer_revision??0)!==b.expected_pointer_revision)throw new DomainError('CONFLICT',409,'POINTER_CHANGED');
+    const draft=(await c.query('SELECT id,revision,content FROM studio_drafts WHERE id=$1 FOR SHARE',[id])).rows[0];
+    if(!draft)throw new DomainError('NOT_FOUND',404);if(draft.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+    const {snapshot,problems}=await buildSnapshot(c,draft.content);
+    if(!snapshot)throw new DomainError('INVALID_REQUEST',422,`PUBLISH_BLOCKED:${problems.join(',')}`.slice(0,160));
+    if(snapshot.sha256===current?.sha256)throw new DomainError('CONFLICT',409,'NO_CHANGES');
+    const versionId=Number((await c.query("SELECT nextval(pg_get_serial_sequence('content_versions','id')) AS id")).rows[0].id);
+    const label='pub_'+String(versionId).padStart(6,'0');
+    const content={...snapshot.content,content_version:label};
+    for(const blob of snapshot.blobs){
+     const existing=(await c.query('SELECT media_type FROM resource_blobs WHERE sha256=$1',[blob.sha256])).rows[0];
+     if(!existing)await c.query('INSERT INTO resource_blobs(sha256,media_type,payload) VALUES($1,$2,$3) ON CONFLICT (sha256) DO NOTHING',[blob.sha256,blob.media_type,blob.payload]);
+     else if(existing.media_type!==blob.media_type)throw new DomainError('CONFLICT',409,'BLOB_TYPE_MISMATCH');
+    }
+    await c.query('INSERT INTO content_versions(id,content_version,sha256,content,resources,required_capabilities,source_draft_id,source_draft_revision) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',[versionId,label,snapshot.sha256,content,JSON.stringify(snapshot.resources),snapshot.required_capabilities,id,draft.revision]);
+    const revision=(current?.pointer_revision??0)+1;
+    await c.query("INSERT INTO content_pointer(channel,version_id,revision) VALUES('test',$1,$2) ON CONFLICT (channel) DO UPDATE SET version_id=EXCLUDED.version_id,revision=EXCLUDED.revision,updated_at=now()",[versionId,revision]);
+    await c.query("INSERT INTO content_releases(channel,action,from_version_id,to_version_id,pointer_revision,reason,request_id) VALUES('test','publish',$1,$2,$3,$4,$5)",[current?.id??null,versionId,revision,b.reason,b.request_id]);
+    const result={content_version:label,sha256:snapshot.sha256,pointer_revision:revision,previous:current?.content_version??null,diff:contentDiff(current?.content,content)};
+    await audit(c,action,b.reason,b.request_id,current?{content_version:current.content_version,pointer_revision:current.pointer_revision}:null,result,fp,'content:test');
+    return result;
+   });
+  });
+  admin.get('/content/releases',async request=>{
+   await activeOwner(pool,cookieToken(request));
+   if(Object.keys(request.query as object).length)throw new DomainError('INVALID_REQUEST');
+   const current=await currentPointer(pool);
+   const versions=(await pool.query('SELECT * FROM content_versions ORDER BY id DESC LIMIT 100')).rows.map(versionInfo);
+   const releases=(await pool.query('SELECT r.action,r.pointer_revision,r.reason,r.created_at,f.content_version AS from_version,t.content_version AS to_version FROM content_releases r LEFT JOIN content_versions f ON f.id=r.from_version_id JOIN content_versions t ON t.id=r.to_version_id ORDER BY r.id DESC LIMIT 100')).rows.map(r=>({...r,created_at:r.created_at.toISOString()}));
+   return {pointer:current?{content_version:current.content_version,pointer_revision:current.pointer_revision}:null,versions,releases};
+  });
+  admin.post('/content/pointer',{config:{rateLimit:{max:10,timeWindow:60000}}},async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);const b=request.body as any;requireBody('pointer_request',b);
+   const action='content.rollback',fp=fingerprint(action,b.reason,[b.content_version,b.expected_pointer_revision]);
+   return transaction(pool,async c=>{
+    await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
+    await c.query('SELECT pg_advisory_xact_lock(783120)');
+    const current=await currentPointer(c,true);
+    if(!current||current.pointer_revision!==b.expected_pointer_revision)throw new DomainError('CONFLICT',409,'POINTER_CHANGED');
+    const target=(await c.query('SELECT * FROM content_versions WHERE content_version=$1',[b.content_version])).rows[0];
+    if(!target)throw new DomainError('NOT_FOUND',404);
+    if(target.id===current.id)throw new DomainError('CONFLICT',409,'NO_CHANGES');
+    if(!negotiate(target.required_capabilities))throw new DomainError('INVALID_REQUEST',422,'CAPABILITY_UNSUPPORTED');
+    const revision=current.pointer_revision+1;
+    await c.query("UPDATE content_pointer SET version_id=$1,revision=$2,updated_at=now() WHERE channel='test'",[target.id,revision]);
+    await c.query("INSERT INTO content_releases(channel,action,from_version_id,to_version_id,pointer_revision,reason,request_id) VALUES('test','rollback',$1,$2,$3,$4,$5)",[current.id,target.id,revision,b.reason,b.request_id]);
+    const result={content_version:target.content_version,sha256:target.sha256,pointer_revision:revision,previous:current.content_version};
+    await audit(c,action,b.reason,b.request_id,{content_version:current.content_version,pointer_revision:current.pointer_revision},result,fp,'content:test');
+    return result;
+   });
   });
   admin.get('/resources',async request=>{
    await activeOwner(pool,cookieToken(request));

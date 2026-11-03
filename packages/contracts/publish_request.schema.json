@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/publish_request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expected_revision",
+    "expected_pointer_revision",
+    "reason",
+    "request_id"
+  ],
+  "properties": {
+    "expected_revision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483646
+    },
+    "expected_pointer_revision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483646
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+    },
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}
