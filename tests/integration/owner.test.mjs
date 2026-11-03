@@ -409,3 +409,33 @@ test('geography (S21): server accepts the Wikidata set with a point and rejects 
   const big=await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id:randomUUID(),name:'Огромный',content:{...huge,entities:huge.entities},padding:'x'.repeat(2*1024*1024)},headers});assert.equal(big.statusCode,413,'bodies over 2 MiB are still refused');
  }finally{await api.close();}
 });
+
+test('S20: hero with trigger/extra-action ability goes editor → ZIP → publish → acts in a server battle',async()=>{
+ const api=await app();try{
+  const session=await login(api),headers={origin,cookie:session.cookie,'x-ufa-csrf':session.csrf};
+  const combat={hp:600,attack:20,defense:5,speed:900,range:1500,attack_interval_ms:500,energy_start:1000,energy_per_second:100,energy_per_attack:100};
+  const content={schema_version:1,content_version:'draft_s20',required_capabilities:['content.core.v1','battle.combat.v1','battle.abilities.v2','battle.triggers.v1'],entities:[
+   {id:'faction_one',kind:'faction',name:'Ф',data:{advantage_ids:[]}},
+   {id:'ability_strike',kind:'ability',name:'Удар с оглушением',data:{effect:'damage',power:50,cooldown_ms:2000,energy_cost:300,extra_effects:[{effect:'stun',power:500}]}},
+   {id:'ability_second_wind',kind:'ability',name:'Второе дыхание',data:{effect:'heal',power:60,cooldown_ms:3000,target:'self',trigger:{kind:'self_hp_below',percent:60}}},
+   {id:'hero_s20',kind:'hero',name:'Батыр',data:{faction_id:'faction_one',ability_ids:['ability_strike','ability_second_wind'],combat}},
+   {id:'enemy_s20',kind:'hero',name:'Волк',data:{faction_id:'faction_one',ability_ids:['ability_strike'],combat:{...combat,energy_start:0}}},
+   {id:'stage_s20',kind:'stage',name:'Опушка',data:{enemy_hero_ids:['enemy_s20'],time_limit_ms:90000}}]};
+  const create=async c=>{const id=randomUUID();const r=await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id,name:'S20',content:c,...meta()},headers});return [id,r];};
+  const bad=structuredClone(content);bad.entities[2].data.trigger={kind:'on_crit'};assert.equal((await create(bad))[1].statusCode,400,'unsupported block');
+  const dangling=structuredClone(content);dangling.entities[3].data.ability_ids=['ability_strike','ability_removed'];assert.equal((await create(dangling))[1].statusCode,400,'removed reference');
+  const [source,created]=await create(content);assert.equal(created.statusCode,200);
+  const zip=(await api.inject({url:`/admin/v1/drafts/${source}/export?ids=hero_s20,stage_s20`,headers:{cookie:session.cookie}})).rawPayload.toString('base64');
+  const [target]=await create({...content,entities:[]});
+  const applied=await api.inject({method:'POST',url:`/admin/v1/drafts/${target}/import/apply`,payload:{expected_revision:0,zip_base64:zip,resolutions:{},...meta()},headers});
+  assert.equal(applied.statusCode,200,applied.body);assert.equal(applied.json().draft.content.entities.length,6);
+  const pointer=(await api.inject({url:'/admin/v1/content/releases',headers:{cookie:session.cookie}})).json().pointer?.pointer_revision??0;
+  const published=await api.inject({method:'POST',url:`/admin/v1/drafts/${target}/publish`,payload:{expected_revision:1,expected_pointer_revision:pointer,...meta()},headers});
+  assert.equal(published.statusCode,200,published.body);
+  const guest=(await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:secret()}})).json();
+  const battle=await api.inject({method:'POST',url:'/v1/battles',payload:{request_id:randomUUID(),stage_id:'stage_s20',hero_ids:['hero_s20']},headers:{authorization:`Bearer ${guest.access_token}`}});
+  assert.equal(battle.statusCode,200,battle.body);const events=battle.json().events;
+  assert.ok(events.some(e=>e.kind==='stun'&&e.ability_id==='ability_strike'&&e.source_id==='atk_0'),'extra stun of the hero main ability');
+  assert.equal(battle.json().content_version,published.json().content_version);
+ }finally{await api.close();}
+});

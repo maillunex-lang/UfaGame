@@ -186,6 +186,17 @@ try{
  await map.locator('.art-map').click({position:{x:5,y:5}});await map.getByRole('status').filter({hasText:'«г. Уфа» поставлено'}).waitFor();
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'map has no horizontal overflow');
  console.log('Chromium mobile: map import, district navigation, point by tap, stage linked to point, art layer — passed (mock API)');
+ // S20: condition and extra action blocks on an ability.
+ await page.locator('.entity-list li').filter({hasText:'ability_one'}).getByRole('button',{name:'Изменить'}).click();
+ await page.getByLabel('Условие срабатывания').selectOption('self_hp_below');await page.getByLabel('Порог здоровья, %').fill('40');
+ await page.getByRole('button',{name:'Добавить действие'}).click();await page.getByLabel('Сила действия 1').fill('700');await page.getByLabel('Цель действия 1').selectOption('all_enemies');
+ await page.getByRole('button',{name:'Применить изменения'}).click();
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});
+ const changed=draft.content.entities.find(e=>e.id==='ability_one').data;
+ assert.deepEqual(changed.trigger,{kind:'self_hp_below',percent:40});assert.deepEqual(changed.extra_effects,[{effect:'stun',power:700,target:'all_enemies'}]);
+ assert.ok(draft.content.required_capabilities.includes('battle.triggers.v1'));
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'ability blocks fit the phone width');
+ console.log('Chromium mobile: ability trigger and extra action blocks edited and saved — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');

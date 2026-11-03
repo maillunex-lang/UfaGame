@@ -29,7 +29,8 @@
           "battle.combat.v1",
           "content.resources.v1",
           "battle.abilities.v2",
-          "world.locations.v1"
+          "world.locations.v1",
+          "battle.triggers.v1"
         ]
       },
       "uniqueItems": true,
@@ -221,6 +222,64 @@
                       "ally_lowest",
                       "self"
                     ]
+                  },
+                  "trigger": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "kind"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "enum": [
+                          "interval",
+                          "self_hp_below",
+                          "ally_hp_below",
+                          "battle_start"
+                        ]
+                      },
+                      "percent": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 99
+                      }
+                    }
+                  },
+                  "extra_effects": {
+                    "type": "array",
+                    "maxItems": 2,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "effect",
+                        "power"
+                      ],
+                      "properties": {
+                        "effect": {
+                          "enum": [
+                            "damage",
+                            "heal",
+                            "stun",
+                            "knockback"
+                          ]
+                        },
+                        "power": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2147483647
+                        },
+                        "target": {
+                          "enum": [
+                            "enemy",
+                            "weakest_enemy",
+                            "all_enemies",
+                            "ally_lowest",
+                            "self"
+                          ]
+                        }
+                      }
+                    }
                   }
                 }
               }

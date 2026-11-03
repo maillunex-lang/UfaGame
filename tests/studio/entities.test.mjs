@@ -108,3 +108,12 @@ test('geography: import once, add a point, protect linked places, stage needs a 
  assert.throws(()=>deleteEntity(text,'point_shulgan_tash'),/ссылку/,'linked point cannot vanish');
  assert.throws(()=>deleteEntity(text,'district_burzyanskiy'),/ссылку/,'district with points cannot vanish');
 });
+test('trigger and extra actions: capability, limits and unknown blocks',()=>{
+ let text=upsertEntity(blank(),{...ability,data:{...ability.data,trigger:{kind:'self_hp_below',percent:40},extra_effects:[{effect:'stun',power:500}]}});
+ const c=JSON.parse(text);assert.ok(c.required_capabilities.includes('battle.triggers.v1')&&c.required_capabilities.includes('battle.abilities.v2'));assert.equal(validate('content',c).ok,true);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,trigger:{kind:'on_crit'}}}),/Неизвестное условие/);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,trigger:{kind:'self_hp_below'}}}),/Порог/);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,extra_effects:[1,2,3].map(()=>({effect:'damage',power:1}))}}),/двух/);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,extra_effects:[{effect:'teleport',power:1}]}}),/дополнительные/);
+ text=upsertEntity(text,{...ability},ability.id);assert.ok(!JSON.parse(text).required_capabilities.includes('battle.triggers.v1'));
+});

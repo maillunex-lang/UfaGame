@@ -41,10 +41,19 @@ function intervalSteps(ms, abilityId) {
 
 /** Stun power in content is a duration in ms; the core counts 100 ms steps. */
 function abilityPower(ability) {
-  const {effect, power} = ability.data;
+  return effectPower(ability.data);
+}
+function effectPower({effect, power}) {
   if (effect === 'stun') return Math.max(1, Math.min(50, Math.ceil(power / STEP_MS)));
   if (effect === 'knockback') return Math.min(power, 5000);
   return Math.min(power, 1000000);
+}
+
+/** Extra actions of an ability (stun ms → steps like the main effect). */
+function extras(ability) {
+  const list = ability.data.extra_effects;
+  if (!list?.length) return {};
+  return {extra_effects: list.map(x => ({effect: x.effect, power: effectPower(x), ...(x.target ? {target: x.target} : {})}))};
 }
 
 function actorFor(map, heroId, team, slot) {
@@ -79,6 +88,7 @@ function actorFor(map, heroId, team, slot) {
         cost: main.data.energy_cost ?? 1000,
         cooldown_steps: main.data.cooldown_ms === 0 ? 0 : intervalSteps(main.data.cooldown_ms, main.id),
         ...(main.data.target ? {target: main.data.target} : {}),
+        ...extras(main),
       },
       auto_abilities: autos.map(a => ({
         id: a.id,
@@ -86,6 +96,8 @@ function actorFor(map, heroId, team, slot) {
         power: abilityPower(a),
         interval_steps: intervalSteps(a.data.cooldown_ms, a.id),
         ...(a.data.target ? {target: a.data.target} : {}),
+        ...(a.data.trigger ? {trigger: structuredClone(a.data.trigger)} : {}),
+        ...extras(a),
       })),
     },
   };

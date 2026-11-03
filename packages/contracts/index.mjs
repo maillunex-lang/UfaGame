@@ -20,6 +20,12 @@ export function validate(name, value) {
     if (abilitiesV2 && !value.required_capabilities.includes('battle.abilities.v2')) return {ok:false,code:'INVALID_REQUEST'};
     const resources = value.entities.some(e => (e.kind==='hero' && e.data.sprite_resource_id!==undefined) || (e.kind==='ability' && e.data.sound_resource_id!==undefined) || (e.kind==='location' && e.data.art!==undefined));
     if (resources && !value.required_capabilities.includes('content.resources.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    const triggers = value.entities.some(e => e.kind==='ability' && (e.data.trigger!==undefined || e.data.extra_effects!==undefined));
+    if (triggers && !value.required_capabilities.includes('battle.triggers.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    for (const e of value.entities) if (e.kind==='ability' && e.data.trigger) {
+      const needsPercent = e.data.trigger.kind==='self_hp_below' || e.data.trigger.kind==='ally_hp_below';
+      if (needsPercent !== (e.data.trigger.percent!==undefined)) return {ok:false,code:'INVALID_REQUEST'};
+    }
     const world = value.entities.some(e => e.kind==='location' || (e.kind==='stage' && e.data.location_id!==undefined));
     if (world && !value.required_capabilities.includes('world.locations.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (locationProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};

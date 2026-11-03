@@ -2,7 +2,7 @@ const idPattern=/^[a-z][a-z0-9_]{2,79}$/;
 const supported=new Set(['hero','ability','faction','stage','location']);
 const listed=new Set(['hero','ability','faction','stage']);
 const fail=message=>{throw new Error(message);};
-const WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
+const TRIGGERS_CAPABILITY='battle.triggers.v1',WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
 export const abilityEffects=['damage','heal','stun','knockback'],abilityTargets=['enemy','weakest_enemy','all_enemies','ally_lowest','self'];
 /** Field, min, max, step (multipleOf) for hero combat stats; mirrors content.schema.json. */
 export const combatFields=[['hp',1,1000000,1],['attack',0,1000000,1],['defense',0,1000000,1],['speed',0,5000,1],['range',0,20000,1],['attack_interval_ms',100,90000,100],['energy_start',0,1000,1],['energy_per_second',0,10000,10],['energy_per_attack',0,1000,1]];
@@ -14,8 +14,9 @@ function toggle(content,capability,needed){
 }
 function syncCapability(content){
  toggle(content,COMBAT_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.combat)||(e?.kind==='ability'&&e.data?.energy_cost!==undefined)));
+ toggle(content,TRIGGERS_CAPABILITY,content.entities.some(e=>e?.kind==='ability'&&(e.data?.trigger!==undefined||e.data?.extra_effects!==undefined)));
  toggle(content,WORLD_CAPABILITY,content.entities.some(e=>e?.kind==='location'||(e?.kind==='stage'&&e.data?.location_id!==undefined)));
- toggle(content,ABILITIES_CAPABILITY,content.entities.some(e=>(e?.kind==='ability'&&(['stun','knockback'].includes(e.data?.effect)||e.data?.target!==undefined))||(e?.kind==='faction'&&e.data?.advantage_bp!==undefined)));
+ toggle(content,ABILITIES_CAPABILITY,content.entities.some(e=>(e?.kind==='ability'&&(['stun','knockback'].includes(e.data?.effect)||e.data?.target!==undefined||(e.data?.extra_effects??[]).some(x=>['stun','knockback'].includes(x.effect)||x.target!==undefined)))||(e?.kind==='faction'&&e.data?.advantage_bp!==undefined)));
  toggle(content,RESOURCE_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.sprite_resource_id!==undefined)||(e?.kind==='ability'&&e.data?.sound_resource_id!==undefined)||(e?.kind==='location'&&e.data?.art!==undefined)));
 }
 function documentFrom(text){
@@ -35,6 +36,18 @@ function checkEntity(entity,all,originalId){
   if(entity.data.target!==undefined&&!abilityTargets.includes(entity.data.target))fail('Неизвестная цель способности.');
   if(!abilityEffects.includes(entity.data.effect)||!Number.isSafeInteger(entity.data.power)||entity.data.power<0||entity.data.power>2147483647||!Number.isSafeInteger(entity.data.cooldown_ms)||entity.data.cooldown_ms<0||entity.data.cooldown_ms>2147483647)fail('Проверь эффект, силу и время способности.');
   if(entity.data.energy_cost!==undefined&&!inRange(entity.data.energy_cost,1,1000))fail('Стоимость энергии — целое число от 1 до 1000.');
+  const trigger=entity.data.trigger;
+  if(trigger!==undefined){
+   if(!['interval','self_hp_below','ally_hp_below','battle_start'].includes(trigger?.kind))fail('Неизвестное условие срабатывания.');
+   const needs=trigger.kind==='self_hp_below'||trigger.kind==='ally_hp_below';
+   if(needs&&!inRange(trigger.percent,1,99))fail('Порог здоровья — от 1 до 99%.');
+   if(!needs&&trigger.percent!==undefined)fail('Для этого условия порог не нужен.');
+  }
+  const extra=entity.data.extra_effects;
+  if(extra!==undefined){
+   if(!Array.isArray(extra)||extra.length>2)fail('Не больше двух дополнительных действий.');
+   for(const x of extra)if(!abilityEffects.includes(x?.effect)||!inRange(x.power,0,2147483647)||(x.target!==undefined&&!abilityTargets.includes(x.target)))fail('Проверь дополнительные действия.');
+  }
   if(entity.data.sound_resource_id!==undefined&&!idPattern.test(entity.data.sound_resource_id))fail('Проверь ID звука.');
  }else if(entity.kind==='location'){
   checkLocation(entity,all);

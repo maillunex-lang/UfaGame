@@ -14,7 +14,7 @@ export function createAutoBattle(input) {
  for(const f of input.factions)if(f.advantage_ids.some(id=>!factions.has(id)||id===f.id))throw new Error('INVALID_FACTION_LINK');
  for(const a of input.actors){const slot=`${a.team}:${a.slot}`;if(ids.has(a.id)||slots.has(slot))throw new Error('DUPLICATE_ACTOR_OR_SLOT');if(!factions.has(a.faction_id))throw new Error('UNKNOWN_FACTION');if(a.auto_abilities&&new Set(a.auto_abilities.map(ability=>ability.id)).size!==a.auto_abilities.length)throw new Error('DUPLICATE_ABILITY');ids.add(a.id);slots.add(slot);}
  if(!input.actors.some(a=>a.team==='attacker')||!input.actors.some(a=>a.team==='defender'))throw new Error('MISSING_TEAM');
- const actors=input.actors.map(a=>({...structuredClone(a),max_hp:a.hp,x:a.team==='attacker'?(a.slot<2?1500:500):(a.slot<2?8500:9500),y:lane[a.slot],next_attack_step:0,next_ability_step:0,stunned_until_step:0})).sort(cmp);
+ const actors=input.actors.map(a=>({...structuredClone(a),max_hp:a.hp,x:a.team==='attacker'?(a.slot<2?1500:500):(a.slot<2?8500:9500),y:lane[a.slot],next_attack_step:0,next_ability_step:0,stunned_until_step:0,auto_state:Object.fromEntries((a.auto_abilities??[]).map(ab=>[ab.id,{next:0,done:false}]))})).sort(cmp);
  return {simulation_version:2,seed:input.seed,rng_state:input.seed,step:0,result:null,advantage_bp:input.advantage_bp,factions:structuredClone(input.factions).sort(cmp),actors};
 }
 const MAX_STUN_STEPS=50,MAX_KNOCKBACK=5000;
@@ -38,6 +38,30 @@ function effectsOf(state,factions,actor,ability,nearest,live,extra){
   out.push({kind:ability.effect,source_id:actor.id,target_id:target.id,amount,...extra});
  }
  return out;
+}
+/** Main effect plus up to two extra effects of the same ability (each with its own target rule). */
+function actionsOf(state,factions,actor,ability,nearest,live,extra){
+ const out=effectsOf(state,factions,actor,ability,nearest,live,extra);
+ for(const more of ability.extra_effects??[])out.push(...effectsOf(state,factions,actor,more,nearest,live,extra));
+ return out;
+}
+const MAX_STATE_STEPS=900;
+/**
+ * Trigger blocks of automatic abilities. `interval` (default) keeps the original
+ * rule step % interval === 0; condition triggers fire when the condition holds and
+ * the ability's own cooldown has passed; battle_start fires once on first contact.
+ */
+function triggered(actor,updated,ability,live,step){
+ const kind=ability.trigger?.kind??'interval';
+ if(kind==='interval')return step%ability.interval_steps===0;
+ const own=updated.auto_state?.[ability.id]??{next:0,done:false};
+ if(own.done||step<own.next)return false;
+ const percent=ability.trigger.percent??50;
+ const low=a=>a.hp*100<percent*a.max_hp;
+ const ok=kind==='battle_start'?true:kind==='self_hp_below'?low(actor):live.some(a=>a.team===actor.team&&a.id!==actor.id&&low(a));
+ if(!ok)return false;
+ updated.auto_state={...updated.auto_state,[ability.id]:{next:Math.min(MAX_STATE_STEPS,step+ability.interval_steps),done:kind==='battle_start'}};
+ return true;
 }
 /** One fixed 100ms server step. All actions use the state at the start of the tick. */
 export function stepAutoBattle(state,options={}) {
@@ -63,8 +87,8 @@ export function stepAutoBattle(state,options={}) {
    continue;
   }
   for(const ability of actor.auto_abilities??[]){
-   if(state.step%ability.interval_steps!==0)continue;
-   effects.push(...effectsOf(state,factions,actor,ability,target,live,{ability_id:ability.id}));
+   if(!triggered(actor,updated,ability,live,state.step))continue;
+   effects.push(...actionsOf(state,factions,actor,ability,target,live,{ability_id:ability.id}));
   }
   if(state.step<actor.next_attack_step)continue;
   const ready=state.step>=(actor.next_ability_step??0);
@@ -72,7 +96,7 @@ export function stepAutoBattle(state,options={}) {
   updated.next_attack_step=state.step+actor.interval_steps;
   if(useAbility){
    updated.energy-=actor.ability.cost;updated.next_ability_step=state.step+(actor.ability.cooldown_steps??0);
-   effects.push(...effectsOf(state,factions,actor,actor.ability,target,live,actor.ability.id?{ability_id:actor.ability.id}:{}));
+   effects.push(...actionsOf(state,factions,actor,actor.ability,target,live,actor.ability.id?{ability_id:actor.ability.id}:{}));
   }else{
    updated.energy=Math.min(1000,updated.energy+actor.energy_per_attack);
    effects.push(...effectsOf(state,factions,actor,{effect:'damage',power:Math.max(1,actor.attack-target.defense),target:'enemy'},target,live,{}));
