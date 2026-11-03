@@ -13,6 +13,8 @@ import {chromium} from 'playwright';
 import {migrate} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
 import {createOwner} from '../../services/api/src/owner.ts';
+/** Saves now unless autosave already did; waits for the saved status. */
+const saveNow=async p=>{const b=p.getByRole('button',{name:'Сохранить черновик'});if(await b.isEnabled())await b.click().catch(()=>{});await p.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();};
 const openId=async p=>{await p.locator('details:has(> summary:has-text("Дополнительно: ID"))').evaluate(d=>{d.open=true;});};
 const addEntity=async(p,{kind,id,name,faction,abilities=[]})=>{
  await p.getByLabel('Тип объекта').selectOption(kind);await p.getByLabel('Название объекта').fill(name);await openId(p);await p.getByLabel('ID объекта').fill(id);
@@ -59,12 +61,12 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   await addEntity(page,{kind:'ability',id:'ability_one',name:'Удар'});
   await addEntity(page,{kind:'faction',id:'faction_one',name:'Фракция'});
   await addEntity(page,{kind:'hero',id:'hero_one',name:'Герой',faction:'faction_one',abilities:['Удар']});
-  await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+  await saveNow(page);
   await page.reload();await page.getByRole('button',{name:/Мобильный черновик · версия/}).click();assert.equal(await page.getByLabel('Название',{exact:true}).inputValue(),'Мобильный черновик');
   await page.locator('.entity-list li').filter({hasText:'hero_one'}).waitFor();
   const other=await context.newPage();await other.goto(origin+'/game/studio/');await other.getByRole('button',{name:/Мобильный черновик · версия/}).click();
-  await page.getByLabel('Название',{exact:true}).fill('Версия первого редактора');await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
-  await other.getByLabel('Название',{exact:true}).fill('Локальная версия второго');await other.getByRole('button',{name:'Сохранить черновик'}).click();await other.getByRole('heading',{name:'Конфликт версий',exact:true}).waitFor();
+  await page.getByLabel('Название',{exact:true}).fill('Версия первого редактора');await saveNow(page);
+  await other.getByLabel('Название',{exact:true}).fill('Локальная версия второго');{const b=other.getByRole('button',{name:'Сохранить черновик'});if(await b.isEnabled())await b.click().catch(()=>{});}await other.getByRole('heading',{name:'Конфликт версий',exact:true}).waitFor();
   await other.locator('.conflict').getByText('Версия первого редактора',{exact:true}).waitFor();
   assert.equal(await other.getByLabel('Название',{exact:true}).inputValue(),'Локальная версия второго');assert.equal(await other.getByRole('button',{name:'Сохранить черновик'}).isDisabled(),true);
   assert.equal(await other.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -74,9 +76,9 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   await fresh.getByRole('button',{name:'Создать',exact:true}).click();await fresh.getByRole('heading',{name:'Быстрый старт'}).waitFor();
   await fresh.getByLabel('Имя героя').fill('Батыр');await fresh.locator('.quickstart').getByLabel('Картинка героя').selectOption('icon_one');
   await fresh.getByRole('button',{name:'Создать героя'}).click();await fresh.getByRole('status').filter({hasText:'Герой создан'}).waitFor();
-  await fresh.locator('.save-bar').filter({hasText:'Есть несохранённые изменения'}).waitFor();
+
   if(process.env.UFA_SCREENSHOT_DIR)await fresh.screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/quickstart.png',fullPage:true});
-  await fresh.getByRole('button',{name:'Сохранить черновик'}).click();await fresh.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+  await saveNow(fresh);
   const quick=(await pool.query("SELECT content FROM studio_drafts WHERE content->'entities' @> '[{\"id\":\"hero_batyr\"}]'")).rows[0].content;
   const batyr=quick.entities.find(e=>e.id==='hero_batyr');assert.equal(batyr.data.sprite_resource_id,'icon_one');assert.ok(batyr.data.combat);
   assert.deepEqual(quick.entities.map(e=>e.id),['faction_neytralnye','ability_udar','hero_batyr']);

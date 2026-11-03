@@ -6,19 +6,22 @@ type Preview={draft_revision:number;seed:number;result:'attacker_win'|'attacker_
 type Sprite={id:string;width:number;height:number;frames:{x:number;y:number;width:number;height:number;duration_ms:number}[];loop:boolean};
 /** Frame of a sprite animation at a moment of the replay (loops or stops on the last frame). */
 export function spriteFrame(sprite:Sprite,atMs:number){const total=sprite.frames.reduce((s,f)=>s+f.duration_ms,0);let t=sprite.loop?atMs%total:Math.min(atMs,total-1);for(const f of sprite.frames){if(t<f.duration_ms)return f;t-=f.duration_ms;}return sprite.frames[sprite.frames.length-1];}
-const csv=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const reasons:Record<string,string>={HERO_COMBAT_MISSING:'у героя нет боевых параметров',UNKNOWN_HERO:'герой не найден',UNKNOWN_STAGE:'этап не найден',UNKNOWN_ABILITY:'способность не найдена',UNKNOWN_FACTION:'фракция не найдена',ABILITY_COOLDOWN_TOO_LONG:'перезарядка больше 90 секунд',TOO_MANY_FACTIONS:'больше 6 фракций в одном бою',INVALID_TEAM_SIZE:'в каждой команде должно быть от 1 до 5 героев',DRAFT_CONTENT_INVALID:'черновик не проходит проверку'};
 export function explainPreviewError(message:string){const [code,id]=message.split(':');const text=reasons[code];return text?`Бой не собран: ${text}${id?` (${id})`:''}.`:'Сервер отклонил запрос проверки боя.';}
 
 export function BattlePreview({api,csrf,draftId,revision,dirty,content}:{api:Api;csrf:string;draftId:string;revision:number;dirty:boolean;content:unknown}){
- const [attackers,setAttackers]=useState(''),[mode,setMode]=useState<'heroes'|'stage'>('heroes'),[defenders,setDefenders]=useState(''),[stage,setStage]=useState(''),[seed,setSeed]=useState('1');
+ const [attackers,setAttackers]=useState<string[]>([]),[mode,setMode]=useState<'heroes'|'stage'>('heroes'),[defenders,setDefenders]=useState<string[]>([]),[stage,setStage]=useState(''),[seed,setSeed]=useState('1');
+ const all=((content as {entities?:{id:string;kind:string;name:string;data?:{combat?:unknown}}[]})?.entities??[]);
+ const heroes=all.filter(e=>e.kind==='hero'),stages=all.filter(e=>e.kind==='stage');
+ const pick=(list:string[],set:(v:string[])=>void,id:string,on:boolean)=>set(on?(list.length<5?[...list,id]:list):list.filter(x=>x!==id));
  const [preview,setPreview]=useState<Preview|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[frame,setFrame]=useState(0),[playing,setPlaying]=useState(false),[sprites,setSprites]=useState<Record<string,Sprite>>({});
  useEffect(()=>{if(!playing||!preview)return;const timer=window.setInterval(()=>setFrame(f=>{if(f+1>=preview.frames.length){setPlaying(false);return f;}return f+1;}),120);return()=>window.clearInterval(timer);},[playing,preview]);
  useEffect(()=>{setPreview(null);setPlaying(false);},[draftId,revision]);
  async function run(){
   setError('');if(dirty){setError('Сначала сохрани черновик: бой проверяется на сервере по сохранённой версии.');return;}
   const seedValue=Number(seed);if(!Number.isSafeInteger(seedValue)||seedValue<0||seedValue>4294967295){setError('Seed — целое число от 0 до 4294967295.');return;}
-  const body={expected_revision:revision,attacker_hero_ids:csv(attackers),seed:seedValue,...(mode==='stage'?{stage_id:stage.trim()}:{defender_hero_ids:csv(defenders)})};
+  if(!attackers.length||(mode==='heroes'?!defenders.length:!stage)){setError('Отметь героев с обеих сторон (до 5 на сторону).');return;}
+  const body={expected_revision:revision,attacker_hero_ids:attackers,seed:seedValue,...(mode==='stage'?{stage_id:stage}:{defender_hero_ids:defenders})};
   setBusy(true);setPlaying(false);
   try{const result=await api(`/drafts/${draftId}/battle-preview`,'POST',body,csrf);
    const heroes=new Map(((content as {entities?:any[]})?.entities??[]).filter(e=>e?.kind==='hero'&&typeof e.data?.sprite_resource_id==='string').map(e=>[e.id,e.data.sprite_resource_id]));
@@ -30,9 +33,10 @@ export function BattlePreview({api,csrf,draftId,revision,dirty,content}:{api:Api
  const current=preview?.frames[Math.min(frame,preview.frames.length-1)];
  return <section aria-label="Проверка боя"><h2>Проверка боя на сервере</h2>
   <p>Сервер собирает бой из сохранённого черновика и считает его тем же ядром, что и для игры. Это preview: награды и прогресс не выдаются.</p>
-  <label>Атакующие: ID героев через запятую (слоты 1–2 впереди, 3–5 сзади)<input value={attackers} onChange={e=>setAttackers(e.target.value)} placeholder="hero_batyr, hero_healer" /></label>
-  <label>Противник<select value={mode} onChange={e=>setMode(e.target.value as 'heroes'|'stage')}><option value="heroes">Герои/враги списком</option><option value="stage">Этап (stage) из черновика</option></select></label>
-  {mode==='heroes'?<label>Защитники: ID через запятую<input value={defenders} onChange={e=>setDefenders(e.target.value)} placeholder="enemy_wolf" /></label>:<label>ID этапа<input value={stage} onChange={e=>setStage(e.target.value)} placeholder="stage_forest" /></label>}
+  {heroes.length===0&&<p className="hint">В сохранённом черновике нет героев. Создай героя и подожди автосохранения.</p>}
+  <fieldset className="pick"><legend>Твоя команда (первые два — впереди, остальные — сзади)</legend>{heroes.map(h=><label key={h.id} className="check"><input type="checkbox" checked={attackers.includes(h.id)} onChange={e=>pick(attackers,setAttackers,h.id,e.target.checked)}/>{h.name}{h.data?.combat?'':' (нет боевых параметров)'}</label>)}</fieldset>
+  <label>Против кого<select value={mode} onChange={e=>setMode(e.target.value as 'heroes'|'stage')}><option value="heroes">Герои/враги списком</option><option value="stage">Этап (stage) из черновика</option></select></label>
+  {mode==='heroes'?<fieldset className="pick"><legend>Противники</legend>{heroes.map(h=><label key={h.id} className="check"><input type="checkbox" checked={defenders.includes(h.id)} onChange={e=>pick(defenders,setDefenders,h.id,e.target.checked)}/>{h.name}</label>)}</fieldset>:<label>Этап<select value={stage} onChange={e=>setStage(e.target.value)}><option value="">— выбери —</option>{stages.map(st=><option key={st.id} value={st.id}>{st.name}</option>)}</select></label>}
   <label>Seed (одинаковый seed — одинаковый бой)<input type="number" min="0" value={seed} onChange={e=>setSeed(e.target.value)} /></label>
   {error&&<p role="alert">{error}</p>}
   <button type="button" onClick={run} disabled={busy}>{busy?'Считаем…':'Проверить бой'}</button>

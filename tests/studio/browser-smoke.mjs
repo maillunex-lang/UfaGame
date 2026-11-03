@@ -8,6 +8,8 @@ import {createHash} from 'node:crypto';
 import {inspectArchive,PackageError} from '../../packages/content-validator/archive.mjs';
 import {planImport} from '../../packages/content-validator/plan-import.mjs';
 import {exportContent} from '../../packages/content-validator/export.mjs';
+/** Saves now unless autosave already did; waits for the saved status. */
+const saveNow=async p=>{const b=p.getByRole('button',{name:'Сохранить черновик'});if(await b.isEnabled())await b.click().catch(()=>{});await p.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();};
 const openId=async p=>{await p.locator('details:has(> summary:has-text("Дополнительно: ID"))').evaluate(d=>{d.open=true;});};
 const addEntity=async(p,{kind,id,name,faction,abilities=[]})=>{
  await p.getByLabel('Тип объекта').selectOption(kind);await p.getByLabel('Название объекта').fill(name);await openId(p);await p.getByLabel('ID объекта').fill(id);
@@ -91,7 +93,7 @@ try{
  await addEntity(page,{kind:'ability',id:'ability_one',name:'Удар'});
  await addEntity(page,{kind:'faction',id:'faction_one',name:'Фракция'});
  await addEntity(page,{kind:'hero',id:'hero_one',name:'Герой',faction:'faction_one',abilities:['Удар']});
- await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ await saveNow(page);
  assert.equal(logged,true);assert.equal(draft.content.entities.length,3);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await page.getByLabel('Название объекта').fill('unfinished');
  await page.locator('.save-bar').filter({hasText:'Сначала нажми «Добавить в черновик»'}).waitFor();assert.equal(await page.getByRole('button',{name:'Сохранить черновик'}).isDisabled(),true);assert.equal(draft.revision,1);
@@ -103,14 +105,14 @@ try{
  await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('Название объекта').fill('Волк');await openId(page);await page.getByLabel('ID объекта').fill('enemy_wolf');await page.getByRole('combobox',{name:/^Фракция/}).selectOption('faction_one');await page.getByRole('group',{name:/Способности/}).getByLabel('Удар').check();
  await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Интервал атаки, мс').fill('150');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByRole('alert').filter({hasText:'кратное 100'}).waitFor();await page.getByLabel('Интервал атаки, мс').fill('700');await page.getByRole('button',{name:'Добавить в черновик'}).click();
- await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByPlaceholder('enemy_wolf').fill('enemy_wolf');
  await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Сначала сохрани черновик'}).waitFor();assert.equal(previews,0,'unsaved draft is not sent');
- await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ // Autosave: no button press needed.
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});await page.getByRole('status').filter({hasText:'сохранён автоматически'}).waitFor();
  assert.ok(draft.content.required_capabilities.includes('battle.combat.v1'));assert.ok(draft.content.required_capabilities.includes('content.resources.v1'));assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.sprite_resource_id,'icon_one');assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.combat.hp,400);
- await page.getByPlaceholder('hero_batyr, hero_healer').fill('ability_one');await page.getByRole('button',{name:'Проверить бой'}).click();
- await page.getByRole('alert').filter({hasText:'герой не найден (ability_one)'}).waitFor();
- await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByRole('button',{name:'Проверить бой'}).click();
- await page.getByRole('status').filter({hasText:'атакующих'}).waitFor();assert.equal(previews,2);
+ await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Отметь героев'}).waitFor();assert.equal(previews,0);
+ await page.getByRole('group',{name:/Твоя команда/}).getByLabel('Герой',{exact:true}).check();await page.getByRole('group',{name:'Противники'}).getByLabel('Волк',{exact:true}).check();
+ await page.getByRole('button',{name:'Проверить бой'}).click();
+ await page.getByRole('status').filter({hasText:'атакующих'}).waitFor();assert.equal(previews,1);
  await page.locator('svg.battle-field circle').first().waitFor();await page.locator('svg[aria-label="Спрайт hero_one"] image').waitFor();assert.equal(await page.locator('svg[aria-label="Спрайт enemy_wolf"]').count(),0,'hero without sprite stays a circle');
  const slider=page.getByLabel('Время');const last=await slider.getAttribute('max');await slider.fill(last);
  await page.getByRole('button',{name:'Воспроизвести'}).click();await page.waitForFunction(()=>document.querySelector('input[type=range]')?.value!==document.querySelector('input[type=range]')?.max);
@@ -128,7 +130,7 @@ try{
  await page.getByRole('button',{name:'Отменить'}).click();await page.getByRole('status').filter({hasText:'Импорт отменён'}).waitFor();
  const before=draft.revision;
  await page.locator('li').filter({hasText:'ability_one'}).getByRole('button',{name:'Изменить'}).click();await page.getByLabel('Сила').fill('42');await page.getByRole('button',{name:'Применить изменения'}).click();
- await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ await saveNow(page);
  await page.getByRole('region',{name:'Импорт и экспорт'}).getByLabel('ZIP-пакет').setInputFiles({name:'hero.zip',mimeType:'application/zip',buffer:zip});
  await page.getByRole('button',{name:'Проверить пакет'}).click();await page.getByRole('status').filter({hasText:'Есть конфликты'}).waitFor();
  await page.getByText('data.power').waitFor({state:'attached'});
@@ -152,7 +154,7 @@ try{
  const revBefore=draft.revision;await page.getByRole('button',{name:'Сохранить черновик'}).click();
  await page.getByRole('status').filter({hasText:'ссылка на файл «hero_sprite»'}).waitFor();assert.equal(draft.revision,revBefore,'rejected save changes nothing');
  await page.getByRole('button',{name:'Исправить: убрать ссылку'}).click();await page.getByRole('status').filter({hasText:'Ссылка убрана'}).waitFor();
- await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ await saveNow(page);
  assert.equal(draft.revision,revBefore+1);assert.equal(draft.content.entities.find(e=>e.id==='hero_ghost').data.sprite_resource_id,undefined);
  console.log('Chromium mobile: missing picture link explained, fixed in one tap, saved — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
