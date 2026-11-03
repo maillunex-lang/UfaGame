@@ -1,6 +1,6 @@
 import React,{useRef,useState} from 'react';
 import {gridFrames,type Frame} from './resource-grid.mjs';
-export type Resource={id:string;media_type:string;width:number;height:number;sha256:string;revision:number;scale_bp:number;anchor:{x:number;y:number};frames:Frame[];loop:boolean;license:{name:string;attribution:string}};
+export type Resource={id:string;media_type:string;duration_ms?:number;sample_rate?:number;channels?:number;width:number;height:number;sha256:string;revision:number;scale_bp:number;anchor:{x:number;y:number};frames:Frame[];loop:boolean;license:{name:string;attribution:string}};
 type Api=(path:string,method?:string,body?:unknown,csrf?:string)=>Promise<any>;
 export function ResourceFrames({resource,api,csrf,onSaved,onCancel,onFinished,onDirtyChange}:{resource:Resource;api:Api;csrf:string;onSaved:()=>Promise<void>;onCancel:()=>void;onFinished:()=>void;onDirtyChange:(dirty:boolean)=>void}){
  const [baseResource]=useState(()=>structuredClone(resource));

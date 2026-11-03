@@ -42,8 +42,8 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   const pngHeader=Buffer.alloc(13);pngHeader.writeUInt32BE(1);pngHeader.writeUInt32BE(1,4);pngHeader[8]=8;pngHeader[9]=6;
   const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),pngChunk('IHDR',pngHeader),pngChunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255]))),pngChunk('IEND',Buffer.alloc(0))]);
   await page.getByLabel('ID ресурса').fill('icon_one');await page.getByLabel('Лицензия').fill('Собственная работа');
-  await page.getByLabel('PNG файл').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});
-  await page.getByRole('button',{name:'Добавить изображение'}).click();await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();
+  await page.getByLabel('Файл PNG или WAV').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});
+  await page.getByRole('button',{name:'Добавить ресурс'}).click();await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();
   await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===1);
   await page.getByRole('button',{name:'Настроить кадры'}).click();await page.getByLabel('Длительность кадра, мс').fill('250');await page.getByLabel('Зациклить').check();
   await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('button',{name:'Настроить кадры'}).waitFor();

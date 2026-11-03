@@ -38,3 +38,12 @@ test('hero combat stats and ability energy cost keep battle.combat.v1 capability
  text=upsertEntity(text,{...ability,data:{...ability.data,energy_cost:400}},ability.id);
  assert.ok(JSON.parse(text).required_capabilities.includes('battle.combat.v1'));assert.equal(validate('content',JSON.parse(text)).ok,true);
 });
+test('sprite and sound references toggle content.resources.v1 and reject malformed ids',()=>{
+ let text=upsertEntity(blank(),{...ability,data:{...ability.data,sound_resource_id:'sound_hit'}});text=upsertEntity(text,faction);
+ text=upsertEntity(text,{...hero,data:{...hero.data,sprite_resource_id:'hero_sprite'}});
+ assert.ok(JSON.parse(text).required_capabilities.includes('content.resources.v1'));assert.equal(validate('content',JSON.parse(text)).ok,true);
+ assert.throws(()=>upsertEntity(text,{...hero,id:'hero_two',data:{...hero.data,sprite_resource_id:'Bad Id'}}),/изображения/);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,sound_resource_id:'../x'}}),/звука/);
+ text=upsertEntity(text,{...hero},hero.id);text=upsertEntity(text,{...ability},ability.id);
+ assert.ok(!JSON.parse(text).required_capabilities.includes('content.resources.v1'));
+});

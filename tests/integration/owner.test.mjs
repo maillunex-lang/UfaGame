@@ -205,3 +205,38 @@ test('battle preview: owner-only, CSRF, stale revision, content errors, determin
   const other=await preview({...body,defender_hero_ids:['enemy_wolf'],stage_id:undefined,seed:43});assert.equal(other.statusCode,200);
  }finally{await api.close();}
 });
+
+test('WAV resources and content resource references: type by bytes, audio metadata, draft link checks',async()=>{
+ const {crc32,deflateSync}=await import('node:zlib');
+ const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
+ const h=Buffer.alloc(13);h.writeUInt32BE(1);h.writeUInt32BE(1,4);h[8]=8;h[9]=6;
+ const image=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',h),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255]))),chunk('IEND',Buffer.alloc(0))]);
+ const wav=(()=>{const data=Buffer.alloc(1600),fmt=Buffer.alloc(16);fmt.writeUInt16LE(1,0);fmt.writeUInt16LE(1,2);fmt.writeUInt32LE(8000,4);fmt.writeUInt32LE(16000,8);fmt.writeUInt16LE(2,12);fmt.writeUInt16LE(16,14);
+  const c=(id,b)=>{const x=Buffer.alloc(8);x.write(id,0,'ascii');x.writeUInt32LE(b.length,4);return Buffer.concat([x,b]);};const body=Buffer.concat([Buffer.from('WAVE'),c('fmt ',fmt),c('data',data)]);const head=Buffer.alloc(8);head.write('RIFF',0,'ascii');head.writeUInt32LE(body.length,4);return Buffer.concat([head,body]);})();
+ const api=await app();try{
+  const session=await login(api),headers={origin,cookie:session.cookie,'x-ufa-csrf':session.csrf},suffix=randomUUID().replaceAll('-','').slice(0,12);
+  const post=(payload)=>api.inject({method:'POST',url:'/admin/v1/resources',payload,headers});
+  const base={license:{name:'own',attribution:''},scale_bp:10000,loop:false};
+  const sound='sound_'+suffix,sprite='sprite_'+suffix;
+  assert.equal((await post({...base,id:sound,data_base64:wav.toString('base64'),frames:[{x:0,y:0,width:1,height:1,duration_ms:100}],...meta()})).statusCode,422);
+  const created=await post({...base,id:sound,data_base64:wav.toString('base64'),...meta()});assert.equal(created.statusCode,200);
+  assert.equal(created.json().media_type,'audio/wav');assert.equal(created.json().duration_ms,100);assert.equal(validate('resource_descriptor',{...created.json(),revision:undefined}).ok,false,'revision is an API addition');
+  assert.equal((await post({...base,id:sprite,data_base64:image.toString('base64'),...meta()})).statusCode,200);
+  const data=await api.inject({url:`/admin/v1/resources/${sound}/data`,headers:{cookie:session.cookie}});
+  assert.match(data.headers['content-type'],/^audio\/wav/);assert.equal(data.headers['x-content-type-options'],'nosniff');assert.deepEqual(data.rawPayload,wav);
+  const patch=await api.inject({method:'PATCH',url:'/admin/v1/resources/'+sound,payload:{license:base.license,scale_bp:10000,anchor:{x:0,y:0},frames:[{x:0,y:0,width:1,height:1,duration_ms:100}],loop:true,expected_revision:0,...meta()},headers});
+  assert.equal(patch.statusCode,422);assert.equal(patch.json().error.message,'AUDIO_FRAMES_UNSUPPORTED');
+  const content=(sp,so,caps=['content.core.v1','content.resources.v1'])=>({schema_version:1,content_version:'draft_res',required_capabilities:caps,entities:[
+   {id:'faction_one',kind:'faction',name:'Ф',data:{advantage_ids:[]}},
+   {id:'ability_one',kind:'ability',name:'У',data:{effect:'damage',power:1,cooldown_ms:0,...(so?{sound_resource_id:so}:{})}},
+   {id:'hero_one',kind:'hero',name:'Г',data:{faction_id:'faction_one',ability_ids:['ability_one'],...(sp?{sprite_resource_id:sp}:{})}}]});
+  const draft=(c)=>api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id:randomUUID(),name:'Ресурсы',content:c,...meta()},headers});
+  assert.equal((await draft(content(sprite,sound,['content.core.v1']))).statusCode,400,'capability required');
+  const missing=await draft(content('sprite_none_'+suffix,sound));assert.equal(missing.statusCode,422);assert.equal(missing.json().error.message,`RESOURCE_REF_INVALID:sprite_none_${suffix}`);
+  const wrongType=await draft(content(sound,sound));assert.equal(wrongType.statusCode,422,'sprite must be an image');
+  const swapped=await draft(content(sprite,sprite));assert.equal(swapped.statusCode,422,'sound must be audio');
+  const before=(await pool.query('SELECT count(*)::int AS n FROM studio_drafts')).rows[0].n;
+  assert.equal((await draft(content(sprite,sound))).statusCode,200);
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM studio_drafts')).rows[0].n,before+1);
+ }finally{await api.close();}
+});

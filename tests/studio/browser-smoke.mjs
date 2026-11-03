@@ -4,7 +4,8 @@ import {extname,resolve} from 'node:path';
 import {crc32,deflateSync} from 'node:zlib';
 import {chromium} from 'playwright';
 import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../packages/battle-core/compile.mjs';
-let draft=null,logged=false,resources=[],pngBytes=null,previews=0;
+let draft=null,logged=false,resources=[],pngBytes=null,previews=0,wavBytes=null;
+const wavFile=(()=>{const data=Buffer.alloc(1600),fmt=Buffer.alloc(16);fmt.writeUInt16LE(1,0);fmt.writeUInt16LE(1,2);fmt.writeUInt32LE(8000,4);fmt.writeUInt32LE(16000,8);fmt.writeUInt16LE(2,12);fmt.writeUInt16LE(16,14);const c=(id,b)=>{const x=Buffer.alloc(8);x.write(id,0,'ascii');x.writeUInt32LE(b.length,4);return Buffer.concat([x,b]);};const body=Buffer.concat([Buffer.from('WAVE'),c('fmt ',fmt),c('data',data)]);const head=Buffer.alloc(8);head.write('RIFF',0,'ascii');head.writeUInt32LE(body.length,4);return Buffer.concat([head,body]);})();
 const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
 const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
 const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255,4,5,6,255]))),chunk('IEND',Buffer.alloc(0))]);
@@ -18,6 +19,8 @@ try{
    if(path.endsWith('/session')){status=401;body={};}
    else if(path.endsWith('/sessions')&&method==='POST'){logged=true;body={owner:{display_name:'owner'},csrf_token:'fake'};}
    else if(path.endsWith('/resources')&&method==='GET'){body={resources};}
+   else if(path.endsWith('/resources')&&method==='POST'&&Buffer.from(req.postDataJSON().data_base64,'base64').toString('ascii',0,4)==='RIFF'){const v=req.postDataJSON();wavBytes=Buffer.from(v.data_base64,'base64');body={id:v.id,media_type:'audio/wav',sha256:'fake',size:wavBytes.length,duration_ms:100,sample_rate:8000,channels:1,bits_per_sample:16,license:v.license,loop:false,revision:0};resources.push(body);}
+   else if(path.endsWith('/resources/sound_one/data')&&method==='GET')return route.fulfill({status:200,contentType:'audio/wav',body:wavBytes});
    else if(path.endsWith('/resources')&&method==='POST'){const v=req.postDataJSON();pngBytes=Buffer.from(v.data_base64,'base64');assert.deepEqual(pngBytes,png);body={id:v.id,media_type:'image/png',width:2,height:1,sha256:'fake',license:v.license,revision:0,scale_bp:10000,anchor:{x:0,y:0},frames:[{x:0,y:0,width:2,height:1,duration_ms:100}],loop:false};resources.push(body);}
    else if(path.endsWith('/resources/icon_one/data')&&method==='GET')return route.fulfill({status:200,contentType:'image/png',body:pngBytes});
    else if(path.endsWith('/resources/icon_one')&&method==='PATCH'){const v=req.postDataJSON();if(v.expected_revision!==resources[0].revision){status=409;body={error:{code:'CONFLICT'}};}else{resources[0]={...resources[0],...v,revision:resources[0].revision+1};body=resources[0];}}
@@ -39,7 +42,7 @@ try{
  const page=await context.newPage();await page.goto('https://studio.test/game/studio/');
  await page.getByLabel('Логин',{exact:true}).fill('owner');await page.getByLabel('Пароль',{exact:true}).fill('demo-password');await page.getByRole('button',{name:'Войти',exact:true}).click();
  await page.getByLabel('ID ресурса').fill('icon_one');await page.getByLabel('Лицензия').fill('Собственная работа');
- await page.getByLabel('PNG файл').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});await page.getByRole('button',{name:'Добавить изображение'}).click();
+ await page.getByLabel('Файл PNG или WAV').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});await page.getByRole('button',{name:'Добавить ресурс'}).click();
  await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===2);
  await page.getByRole('button',{name:'Настроить кадры'}).click();await page.getByLabel('Столбцы').fill('2');await page.getByLabel('Длительность кадра, мс').fill('250');await page.getByLabel('Зациклить').check();
  await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('button',{name:'Настроить кадры'}).waitFor();assert.equal(resources[0].frames.length,2);assert.equal(resources[0].frames[0].duration_ms,250);assert.equal(resources[0].loop,true);
@@ -48,6 +51,9 @@ try{
  await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('alert').filter({hasText:'Ресурс изменился'}).waitFor();assert.equal(await page.getByLabel('Длительность кадра, мс').inputValue(),'300');
  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Обновить список ресурсов'}).click();
  await page.getByRole('status').filter({hasText:'Список ресурсов обновлён'}).waitFor();
+ await page.getByLabel('ID ресурса').fill('sound_one');await page.getByLabel('Лицензия').fill('Собственная работа');
+ await page.getByLabel('Файл PNG или WAV').setInputFiles({name:'hit.wav',mimeType:'audio/wav',buffer:wavFile});await page.getByRole('button',{name:'Добавить ресурс'}).click();
+ await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();await page.getByLabel('Звук sound_one').waitFor();assert.deepEqual(wavBytes,wavFile);
  await page.getByRole('button',{name:'Создать',exact:true}).click();
  await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();
@@ -60,23 +66,23 @@ try{
  page.once('dialog',dialog=>dialog.accept());await page.locator('li').filter({hasText:'ability_one'}).getByRole('button',{name:'Удалить'}).click();
  await page.getByRole('alert').filter({hasText:'Сначала убери ссылку'}).waitFor();assert.equal(draft.content.entities.length,3);
  await page.locator('li').filter({hasText:'hero_one'}).getByRole('button',{name:'Изменить'}).click();
- await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Здоровье').fill('400');await page.getByRole('button',{name:'Применить изменения'}).click();
+ await page.getByLabel('ID изображения героя (PNG из ресурсов, необязательно)').fill('icon_one');await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Здоровье').fill('400');await page.getByRole('button',{name:'Применить изменения'}).click();
  await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('ID объекта').fill('enemy_wolf');await page.getByLabel('Название объекта').fill('Волк');await page.getByLabel('ID фракции').fill('faction_one');await page.getByLabel('ID способностей через запятую').fill('ability_one');
  await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Интервал атаки, мс').fill('150');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByRole('alert').filter({hasText:'кратное 100'}).waitFor();await page.getByLabel('Интервал атаки, мс').fill('700');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByPlaceholder('enemy_wolf').fill('enemy_wolf');
  await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Сначала сохрани черновик'}).waitFor();assert.equal(previews,0,'unsaved draft is not sent');
  await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
- assert.ok(draft.content.required_capabilities.includes('battle.combat.v1'));assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.combat.hp,400);
+ assert.ok(draft.content.required_capabilities.includes('battle.combat.v1'));assert.ok(draft.content.required_capabilities.includes('content.resources.v1'));assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.sprite_resource_id,'icon_one');assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.combat.hp,400);
  await page.getByPlaceholder('hero_batyr, hero_healer').fill('ability_one');await page.getByRole('button',{name:'Проверить бой'}).click();
  await page.getByRole('alert').filter({hasText:'герой не найден (ability_one)'}).waitFor();
  await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByRole('button',{name:'Проверить бой'}).click();
  await page.getByRole('status').filter({hasText:'атакующих'}).waitFor();assert.equal(previews,2);
- await page.locator('svg.battle-field circle').first().waitFor();assert.equal(await page.locator('svg.battle-field circle').count(),2);
+ await page.locator('svg.battle-field circle').first().waitFor();await page.locator('svg[aria-label="Спрайт hero_one"] image').waitFor();assert.equal(await page.locator('svg[aria-label="Спрайт enemy_wolf"]').count(),0,'hero without sprite stays a circle');
  const slider=page.getByLabel('Время');const last=await slider.getAttribute('max');await slider.fill(last);
  await page.getByRole('button',{name:'Воспроизвести'}).click();await page.waitForFunction(()=>document.querySelector('input[type=range]')?.value!==document.querySelector('input[type=range]')?.max);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'battle preview has no horizontal overflow');
  await page.screenshot({path:process.env.UFA_SCREENSHOT||'/tmp/studio-battle-preview.png',fullPage:false});
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');
- console.log('Chromium mobile: hero combat form, unsaved/invalid preview rejected, server-core preview replay — passed (mock API with real battle-core)');
+ console.log('Chromium mobile: WAV upload+player, hero sprite ref, combat form, unsaved/invalid preview rejected, sprite replay — passed (mock API with real battle-core)');
 }finally{await browser.close();}

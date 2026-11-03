@@ -16,6 +16,8 @@ export function validate(name, value) {
     if (value.required_capabilities.some(c => !registry.capabilities.includes(c))) return {ok:false,code:'INCOMPATIBLE_CLIENT'};
     const combat = value.entities.some(e => (e.kind==='hero' && e.data.combat) || (e.kind==='ability' && e.data.energy_cost!==undefined));
     if (combat && !value.required_capabilities.includes('battle.combat.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    const resources = value.entities.some(e => (e.kind==='hero' && e.data.sprite_resource_id!==undefined) || (e.kind==='ability' && e.data.sound_resource_id!==undefined));
+    if (resources && !value.required_capabilities.includes('content.resources.v1')) return {ok:false,code:'INVALID_REQUEST'};
     const ids = new Map(value.entities.map(e => [e.id,e.kind]));
     if (ids.size !== value.entities.length) return {ok:false,code:'INVALID_REQUEST'};
     for (const e of value.entities) {
@@ -28,4 +30,13 @@ export function validate(name, value) {
 }
 export function negotiate(required, supported=registry.capabilities, apiVersion=1) {
   return apiVersion===registry.api_version && Array.isArray(required) && required.every(c=>supported.includes(c));
+}
+/** Resource ids referenced by content, with the media type each reference requires. */
+export function resourceRefs(content) {
+  const refs = [];
+  for (const e of content.entities) {
+    if (e.kind==='hero' && e.data.sprite_resource_id!==undefined) refs.push({entity_id:e.id,resource_id:e.data.sprite_resource_id,media_type:'image/png'});
+    if (e.kind==='ability' && e.data.sound_resource_id!==undefined) refs.push({entity_id:e.id,resource_id:e.data.sound_resource_id,media_type:'audio/wav'});
+  }
+  return refs;
 }

@@ -25,3 +25,15 @@ test('isolated worker detects type by magic bytes, not extension; PNG wrapper re
  await assert.rejects(inspectPngIsolated(wav()),/RESOURCE_INVALID/);
  await assert.rejects(inspectResourceIsolated(Buffer.from('#!/bin/sh\necho hi\n')),/RESOURCE_INVALID/);
 });
+import {ResourceRegistry} from '../../packages/content-validator/resource-registry.mjs';
+import {validate} from '@ufagame/contracts';
+test('registry stores WAV with audio descriptor; frames on audio and WAV via PNG path are rejected',async()=>{
+ const r=new ResourceRegistry(),license={name:'own',attribution:''};
+ const d=await r.addResource({id:'sound_hit',bytes:wav(),license,scale_bp:10000,loop:false});
+ assert.deepEqual({...d,sha256:undefined},{id:'sound_hit',media_type:'audio/wav',sha256:undefined,size:wav().length,duration_ms:100,sample_rate:8000,channels:1,bits_per_sample:16,license,loop:false});
+ assert.equal(validate('resource_descriptor',d).ok,true);
+ await assert.rejects(r.addResource({id:'sound_two',bytes:wav(),license,scale_bp:10000,loop:false,frames:[{x:0,y:0,width:1,height:1,duration_ms:100}]}),/AUDIO_FRAMES_UNSUPPORTED/);
+ await assert.rejects(r.addPng({id:'sound_three',bytes:wav(),license,scale_bp:10000,loop:false}),/RESOURCE_INVALID/);
+ assert.equal(r.list().length,1);
+ assert.equal(validate('resource_descriptor',{...d,width:1}).ok,false,'audio descriptor cannot carry image fields');
+});

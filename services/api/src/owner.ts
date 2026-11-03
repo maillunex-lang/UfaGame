@@ -4,7 +4,7 @@ import {createHash,randomUUID,timingSafeEqual} from 'node:crypto';
 import {transaction} from './db.ts';
 import {DomainError} from './errors.ts';
 import {requireBody,randomToken} from './auth.ts';
-import {validate} from '@ufagame/contracts';
+import {validate,resourceRefs} from '@ufagame/contracts';
 import {hashPassword,verifyPassword} from './passwords.ts';
 import {ResourceRegistry} from '../../../packages/content-validator/resource-registry.mjs';
 import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../../packages/battle-core/compile.mjs';
@@ -148,6 +148,12 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
     if(create&&before)throw new DomainError('CONFLICT',409);
     if(!create&&!before)throw new DomainError('NOT_FOUND',404);
     if(!create&&before.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+    const refs=resourceRefs(b.content);
+    if(refs.length){
+     const found=new Map((await c.query("SELECT id,descriptor->>'media_type' AS media_type FROM owner_resources WHERE id = ANY($1::text[]) FOR SHARE",[refs.map(r=>r.resource_id)])).rows.map(r=>[r.id,r.media_type]));
+     const bad=refs.find(r=>found.get(r.resource_id)!==r.media_type);
+     if(bad)throw new DomainError('INVALID_REQUEST',422,`RESOURCE_REF_INVALID:${bad.resource_id}`);
+    }
     const changed=create?(await c.query('INSERT INTO studio_drafts(id,name,content) VALUES($1,$2,$3) RETURNING id,revision,name,content',[id,b.name,b.content])).rows[0]:(await c.query('UPDATE studio_drafts SET name=$2,content=$3,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING id,revision,name,content',[id,b.name,b.content])).rows[0];
     await audit(c,action,b.reason,b.request_id,before,changed,fp,'draft:'+id);return changed;
    });
@@ -176,9 +182,10 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
   admin.get('/resources/:id/data',async(request,reply)=>{
    await activeOwner(pool,cookieToken(request));const id=(request.params as any).id;
    if(typeof id!=='string'||!/^[a-z][a-z0-9_]{2,79}$/.test(id))throw new DomainError('INVALID_REQUEST');
-   const row=(await pool.query('SELECT payload FROM owner_resources WHERE id=$1',[id])).rows[0];
+   const row=(await pool.query("SELECT payload,descriptor->>'media_type' AS media_type FROM owner_resources WHERE id=$1",[id])).rows[0];
    if(!row)throw new DomainError('NOT_FOUND',404);
-   return reply.header('X-Content-Type-Options','nosniff').type('image/png').send(row.payload);
+   if(row.media_type!=='image/png'&&row.media_type!=='audio/wav')throw new DomainError('INTERNAL_ERROR',500);
+   return reply.header('X-Content-Type-Options','nosniff').header('Content-Security-Policy',"default-src 'none'; sandbox").type(row.media_type).send(row.payload);
   });
   admin.post('/resources',{
    bodyLimit:12*1024*1024,
@@ -189,8 +196,8 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
    const bytes=Buffer.from(b.data_base64,'base64');
    if(!bytes.length||bytes.length>8*1024*1024||bytes.toString('base64')!==b.data_base64)throw new DomainError('INVALID_REQUEST');
    const registry=new ResourceRegistry();let descriptor:any;
-   try {descriptor=await registry.addPng({id:b.id,bytes,license:b.license,scale_bp:b.scale_bp,anchor:b.anchor,frames:b.frames,loop:b.loop});}
-   catch(error){if((error as Error).message==='RESOURCE_BUSY')throw new DomainError('SERVICE_UNAVAILABLE',503);throw new DomainError('INVALID_REQUEST');}
+   try {descriptor=await registry.addResource({id:b.id,bytes,license:b.license,scale_bp:b.scale_bp,anchor:b.anchor,frames:b.frames,loop:b.loop});}
+   catch(error){const m=(error as Error).message;if(m==='RESOURCE_BUSY')throw new DomainError('SERVICE_UNAVAILABLE',503);if(m==='AUDIO_FRAMES_UNSUPPORTED')throw new DomainError('INVALID_REQUEST',422,m);throw new DomainError('INVALID_REQUEST');}
    const action='resource.create',fp=fingerprint(action,b.reason,[descriptor]);
    return transaction(pool,async c=>{
     await lockOwner(c,token);
@@ -215,7 +222,7 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
     const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
     if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
     const before=(await c.query('SELECT descriptor,revision FROM owner_resources WHERE id=$1 FOR UPDATE',[id])).rows[0];
-    if(!before)throw new DomainError('NOT_FOUND',404);if(before.revision!==b.expected_revision||before.revision===2147483647)throw new DomainError('CONFLICT',409);
+    if(!before)throw new DomainError('NOT_FOUND',404);if(before.descriptor.media_type!=='image/png')throw new DomainError('INVALID_REQUEST',422,'AUDIO_FRAMES_UNSUPPORTED');if(before.revision!==b.expected_revision||before.revision===2147483647)throw new DomainError('CONFLICT',409);
     const descriptor={...before.descriptor,license:b.license,scale_bp:b.scale_bp,anchor:b.anchor,frames:b.frames,loop:b.loop};
     if(!validate('resource_descriptor',descriptor).ok||descriptor.anchor.x>=descriptor.width||descriptor.anchor.y>=descriptor.height||descriptor.frames.some((f:any)=>f.x+f.width>descriptor.width||f.y+f.height>descriptor.height))throw new DomainError('INVALID_REQUEST');
     const next={...descriptor,revision:before.revision+1};

@@ -26,7 +26,8 @@
           "ui.label.v1",
           "auth.guest.v1",
           "auth.password.v1",
-          "battle.combat.v1"
+          "battle.combat.v1",
+          "content.resources.v1"
         ]
       },
       "uniqueItems": true,
@@ -143,6 +144,10 @@
                         "maximum": 1000
                       }
                     }
+                  },
+                  "sprite_resource_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
                   }
                 }
               }
@@ -199,6 +204,10 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 1000
+                  },
+                  "sound_resource_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
                   }
                 }
               }
