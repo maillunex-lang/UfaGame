@@ -84,6 +84,18 @@ func run() -> void:
 	var started: Dictionary = await live.start("stage_one", ["hero_one"])
 	check(started.ok and not started.get("resumed", true), "battle created")
 	check(await wait_until(func(): return seen.size() >= 3), "first frames arrive")
+	check(await wait_until(func(): return live.replay.cursor >= 25), "enough frames for stale-command scenario")
+	var actual_step: int = int(live.replay.state.step)
+	live.replay.state.step = 0
+	check(live.set_auto(true) > 0, "delayed auto command sent")
+	live.replay.state.step = actual_step
+	check(await wait_until(func(): return answers.any(func(a): return a[2] == "STALE_COMMAND"), 10.0), "server rejected delayed command")
+	check(await wait_until(func(): return live.ws != null and live.ws.get_ready_state() == WebSocketPeer.STATE_OPEN and live.pending_seq == 0, 15.0), "reconnected after rejected command")
+	var retry_seq: int = live.set_auto(true)
+	check(retry_seq > 0, "auto can be retried after stale command")
+	check(await wait_until(func(): return applied_results.any(func(r): return int(r.seq) == retry_seq and r.status == "applied")), "auto enabled after retry")
+	check(live.set_auto(false) > 0, "manual mode can be restored")
+	check(await wait_until(func(): return live.replay.state.get("auto") == false), "manual mode restored")
 	# Too early (still walking): the server refuses, the client reports it.
 	check(live.send_ability("atk_0") > 0, "early ability command sent")
 	check(await wait_until(func(): return applied_results.size() > 0, 5.0), "server answers an early tap within 1 s (applied in reach, otherwise refused)")

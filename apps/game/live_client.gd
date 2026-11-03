@@ -17,6 +17,8 @@ var battle_id := ""
 var heroes: Dictionary = {}
 var ws: WebSocketPeer
 var last_seq := 0
+var pending_seq := 0
+var last_packet_ms := 0
 var attempts := 0
 var reconnect_at := -1.0
 var closing := false
@@ -30,7 +32,11 @@ func _process(_delta: float) -> void:
 	if ws == null:
 		return
 	ws.poll()
+	if ws.get_ready_state() == WebSocketPeer.STATE_OPEN and Time.get_ticks_msec() - last_packet_ms > 8000:
+		connection_changed.emit("Связь задержалась. Восстанавливаем бой…")
+		ws.close(4000, "NO_FRAMES")
 	while ws != null and ws.get_available_packet_count() > 0:
+		last_packet_ms = Time.get_ticks_msec()
 		var parsed = JSON.parse_string(ws.get_packet().get_string_from_utf8())
 		if parsed is Dictionary:
 			_handle(parsed)
@@ -88,7 +94,8 @@ func _attach(snapshot: Dictionary) -> void:
 	var saved := _load()
 	battle_id = str(snapshot.battle_id)
 	heroes = snapshot.get("heroes", {})
-	last_seq = max(int(snapshot.get("last_command_seq", 0)), int(saved.get("last_seq", 0)) if saved.get("battle_id") == battle_id else 0)
+	last_seq = int(snapshot.get("last_command_seq", 0))
+	pending_seq = 0
 	done = false
 	closing = false
 	event_log.clear()
@@ -107,6 +114,7 @@ func _open() -> void:
 	var base: String = auth.state.get("base_url", "")
 	var url := base.replace("https://", "wss://") + "/v1/live-battles/%s/stream?after=%d" % [battle_id, replay.cursor]
 	ws = WebSocketPeer.new()
+	last_packet_ms = Time.get_ticks_msec()
 	ws.handshake_headers = PackedStringArray(["Authorization: Bearer " + str(auth.state.get("session", {}).get("access_token", ""))])
 	ws.inbound_buffer_size = 1 << 20
 	if ws.connect_to_url(url, tls_options) != OK:
@@ -140,7 +148,11 @@ func _handle(message: Dictionary) -> void:
 			if int(snapshot.event_seq) < after:
 				after = int(snapshot.event_seq)
 			replay.begin(snapshot, after)
-			last_seq = max(last_seq, int(snapshot.get("last_command_seq", 0)))
+			last_seq = int(snapshot.get("last_command_seq", 0))
+			if pending_seq != 0:
+				command_answered.emit(pending_seq, false, "CONNECTION_RESYNC")
+				pending_seq = 0
+			_save()
 			connection_changed.emit("")
 			snapshot_received.emit(replay.state)
 		"frame":
@@ -159,9 +171,20 @@ func _handle(message: Dictionary) -> void:
 			if frame.result != null and replay.cursor >= replay.snapshot_sequence:
 				_finish()
 		"ack":
-			command_answered.emit(int(message.ack.get("seq", 0)), true, "")
+			var seq := int(message.ack.get("seq", 0))
+			if seq == pending_seq:
+				last_seq = seq
+				pending_seq = 0
+				_save()
+			command_answered.emit(seq, true, "")
 		"error":
-			command_answered.emit(int(message.get("seq", 0)), false, str(message.get("code", "ERROR")))
+			var seq := int(message.get("seq", 0))
+			var code := str(message.get("code", "ERROR"))
+			if seq == pending_seq:
+				pending_seq = 0
+			command_answered.emit(seq, false, code)
+			if code in ["STALE_COMMAND", "OUT_OF_ORDER", "SEQUENCE_CONFLICT"] and ws != null:
+				ws.close(4000, "RESYNC")
 
 func send_ability(actor_id: String) -> int:
 	return _send({"type": "ability", "actor_id": actor_id})
@@ -174,14 +197,15 @@ func set_speed(value: int) -> int:
 	return _send({"type": "speed", "value": value})
 
 func _send(command: Dictionary) -> int:
-	if ws == null or ws.get_ready_state() != WebSocketPeer.STATE_OPEN or done:
+	if ws == null or ws.get_ready_state() != WebSocketPeer.STATE_OPEN or done or pending_seq != 0:
 		return 0
-	last_seq += 1
-	_save()
-	command.seq = last_seq
-	command.for_step = min(900, int(replay.state.get("step", 0)) + 3)  # next steps; server accepts up to 5 ahead
-	ws.send_text(JSON.stringify(command))
-	return last_seq
+	var seq := last_seq + 1
+	command.seq = seq
+	command.for_step = min(900, int(replay.state.get("step", 0)) + 5)
+	if ws.send_text(JSON.stringify(command)) != OK:
+		return 0
+	pending_seq = seq
+	return seq
 
 ## Compares what was shown with the server's final snapshot (hp, position, energy).
 func _finish() -> void:

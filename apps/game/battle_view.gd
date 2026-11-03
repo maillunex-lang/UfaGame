@@ -196,7 +196,16 @@ func _on_frame(frame: Dictionary, status: String) -> void:
 
 func _on_answer(_seq: int, ok: bool, code: String) -> void:
 	if not ok:
-		status_label.text = "Эта скорость пока недоступна." if code == "SPEED_NOT_ALLOWED" else "Команда не принята: " + code
+		pending_auto = false
+		auto_button.text = "Авто: вкл" if auto else "Авто: выкл"
+		if code in ["STALE_COMMAND", "OUT_OF_ORDER", "SEQUENCE_CONFLICT", "CONNECTION_RESYNC"]:
+			status_label.text = "Связь задержалась. Обновляем бой — попробуй ещё раз."
+		elif code == "SPEED_NOT_ALLOWED":
+			status_label.text = "Эта скорость пока недоступна."
+		else:
+			status_label.text = "Команда не выполнена. Попробуй ещё раз."
+	elif pending_auto:
+		status_label.text = "Переключаем режим…"
 
 func _on_finished(result: String, verified: bool) -> void:
 	result_panel.visible = true
