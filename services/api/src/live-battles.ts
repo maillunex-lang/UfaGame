@@ -4,6 +4,7 @@ import {randomInt,randomUUID} from 'node:crypto';
 import {transaction} from './db.ts';
 import {authorize,lockAuthorized,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
+import {assertStageOpen,recordWin} from './campaign.ts';
 import {DomainError} from './errors.ts';
 import {createLiveBattle,queueLiveCommand,advanceLiveBattle,disconnectLiveBattle,LATE_STEPS} from '../../../packages/battle-core/live.mjs';
 
@@ -31,6 +32,7 @@ export async function startLiveBattle(pool:Pool,token:string,body:any){
  const existing=(await pool.query('SELECT * FROM live_battles WHERE player_id=$1 AND request_id=$2',[auth.player_id,body.request_id])).rows[0];
  if(existing){if(!match(existing,body))throw new DomainError('CONFLICT',409);return view(existing.session_state);}
  const version=await currentPointer(pool);if(!version)throw new DomainError('NOT_FOUND',404,'NO_CONTENT');
+ await assertStageOpen(pool,auth.player_id,version.content,body.stage_id);
  const seed=randomInt(0,4294967296),compiled=await compile(version.content,{attacker_hero_ids:body.hero_ids,stage_id:body.stage_id,seed});
  const id=randomUUID(),initial=createLiveBattle({battleId:id,contentVersion:version.content_version,setup:compiled.setup,heroes:compiled.heroes,auto:false});
  return transaction(pool,async c=>{
@@ -80,6 +82,7 @@ export async function advanceDue(pool:Pool){
   const online=row.online===true,current=online?row.session_state:disconnectLiveBattle(row.session_state);
   const next=advanceLiveBattle(current,{forceAuto:!online});
   await c.query('INSERT INTO live_battle_frames(battle_id,seq,frame) VALUES($1,$2,$3)',[row.id,next.frame.seq,next.frame]);
+  if(next.session.state.result==='attacker_win')await recordWin(c,row);
   await c.query("UPDATE live_battles SET session_state=$2,next_tick_at=next_tick_at+interval '100 milliseconds',completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE NULL END WHERE id=$1",[row.id,next.session,next.session.state.result!==null]);
   return true;
  });

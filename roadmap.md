@@ -33,7 +33,7 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S19 | Визуализация боя в Game | S11, S16, S18 | done |
 | S20 | Редакторы героев, врагов и способностей | S09, S17, S19 | done |
 | S21 | Геоданные и иерархия Башкортостана | S11, S15 | done |
-| S22 | Кампания, главы и боссы | S19, S20, S21 | todo |
+| S22 | Кампания, главы и боссы | S19, S20, S21 | in_progress |
 | S23 | Уровни и повышение ранга | S05, S20, S22 | todo |
 | S24 | Пять основных и синхронизация | S23 | todo |
 | S25 | VIP и обучение | S05, S22 | todo |
@@ -1477,3 +1477,18 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s20-game-test-v11/Ga
 «оглушение» у основной способности → публикация → Game v11: урон и «оглушён» в
 бою). Ручной отчет владельца; автоматические доказательства — docs/reports/S20.md.
 Следующий шаг: S22 (кампания, главы, боссы, награды за первую победу).
+
+### S22 — кампания, главы, боссы, награды; in_progress (нужны VPS и Game v12 на телефоне)
+Глава (`chapter`) из этапов по порядку, босс, награда за первую победу, карта главы и
+«предварительный маршрут»; доступ к этапам решает сервер (`campaign_progress`,
+миграция 012, закрытый этап 409), награда один раз (ключ журнала), поражение бесплатно,
+вне глав — тренировка. Capability campaign.chapters.v1, схема `campaign`, ADR 0020,
+docs/reports/S22.md. Файлы: packages/contracts/*, services/api/src/campaign.ts,
+live-battles.ts, migrations/012-campaign.sql, apps/studio-web/src/EntityEditor.tsx,
+entities.mjs, apps/game/campaign_view.gd, main.gd, auth_client.gd, тесты
+tests/integration/campaign.test.mjs, godot-campaign.test.mjs.
+Проверки: `npm run check` exit0; Chromium mobile; интеграция 40/40 на чистой
+PostgreSQL; настоящий Godot (кампания, отказ закрытого этапа, награда после
+подтверждения сервера, повтор без награды); check:game failures=0.
+Откат: старый код игнорирует таблицу campaign_progress.
+Не проверено: VPS и телефон. Следующий шаг: Game v12, обновление VPS, приемка владельцем.

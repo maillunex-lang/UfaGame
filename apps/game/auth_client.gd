@@ -79,12 +79,16 @@ func refresh_session() -> Dictionary:
 	return result
 
 func progress() -> Dictionary:
-	var result: Dictionary = await call_api("/v1/progress", null, true)
+	return await authorized_get("/v1/progress")
+
+## GET with the session token; renews an expired access token once.
+func authorized_get(path: String) -> Dictionary:
+	var result: Dictionary = await call_api(path, null, true)
 	if not result.ok and result.get("status") == 401:
 		var refreshed: Dictionary = await refresh_session()
 		if not refreshed.ok:
 			return refreshed
-		result = await call_api("/v1/progress", null, true)
+		result = await call_api(path, null, true)
 	return result
 
 func connect_guest(base: String) -> Dictionary:

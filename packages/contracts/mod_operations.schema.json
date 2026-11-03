@@ -29,7 +29,8 @@
           "ui_label",
           "dialogue_template",
           "resource",
-          "location"
+          "location",
+          "chapter"
         ]
       },
       "id": {

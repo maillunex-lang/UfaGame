@@ -117,3 +117,16 @@ test('trigger and extra actions: capability, limits and unknown blocks',()=>{
  assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,extra_effects:[{effect:'teleport',power:1}]}}),/дополнительные/);
  text=upsertEntity(text,{...ability},ability.id);assert.ok(!JSON.parse(text).required_capabilities.includes('battle.triggers.v1'));
 });
+test('chapters: ordered stages, one chapter per stage, unique order, area, rewards; capability; protected stages',()=>{
+ let text=upsertEntity(blank(),ability);text=upsertEntity(text,faction);text=upsertEntity(text,hero);
+ const stage=(id,extra={})=>({id,kind:'stage',name:id,data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000,...extra}});
+ text=upsertEntity(text,stage('stage_a',{rewards_first:[{currency:'gold',amount:100}]}));text=upsertEntity(text,stage('stage_b',{boss:true}));
+ assert.throws(()=>upsertEntity(text,stage('stage_c',{rewards_first:[{currency:'gold',amount:1},{currency:'gold',amount:2}]})),/Награда/);
+ const chapter={id:'chapter_one',kind:'chapter',name:'Глава 1',data:{order:1,stage_ids:['stage_a','stage_b']}};
+ text=upsertEntity(text,chapter);const c=JSON.parse(text);assert.ok(c.required_capabilities.includes('campaign.chapters.v1'));assert.equal(validate('content',c).ok,true);
+ assert.throws(()=>upsertEntity(text,{...chapter,id:'chapter_two',data:{order:2,stage_ids:['stage_b']}}),/уже стоит/);
+ assert.throws(()=>upsertEntity(text,{...chapter,id:'chapter_two',data:{order:1,stage_ids:['stage_a']}}),/номером/);
+ assert.throws(()=>upsertEntity(text,{...chapter,id:'chapter_two',data:{order:2,stage_ids:['stage_gone']}}),/этапы/);
+ assert.throws(()=>deleteEntity(text,'stage_b'),/ссылку/,'a stage in a chapter cannot vanish');
+ assert.equal(listEntities(text).some(e=>e.kind==='chapter'),true);
+});

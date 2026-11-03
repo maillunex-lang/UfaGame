@@ -1,8 +1,8 @@
 const idPattern=/^[a-z][a-z0-9_]{2,79}$/;
-const supported=new Set(['hero','ability','faction','stage','location']);
-const listed=new Set(['hero','ability','faction','stage']);
+const supported=new Set(['hero','ability','faction','stage','location','chapter']);
+const listed=new Set(['hero','ability','faction','stage','chapter']);
 const fail=message=>{throw new Error(message);};
-const TRIGGERS_CAPABILITY='battle.triggers.v1',WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
+const CAMPAIGN_CAPABILITY='campaign.chapters.v1',TRIGGERS_CAPABILITY='battle.triggers.v1',WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
 export const abilityEffects=['damage','heal','stun','knockback'],abilityTargets=['enemy','weakest_enemy','all_enemies','ally_lowest','self'];
 /** Field, min, max, step (multipleOf) for hero combat stats; mirrors content.schema.json. */
 export const combatFields=[['hp',1,1000000,1],['attack',0,1000000,1],['defense',0,1000000,1],['speed',0,5000,1],['range',0,20000,1],['attack_interval_ms',100,90000,100],['energy_start',0,1000,1],['energy_per_second',0,10000,10],['energy_per_attack',0,1000,1]];
@@ -14,6 +14,7 @@ function toggle(content,capability,needed){
 }
 function syncCapability(content){
  toggle(content,COMBAT_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.combat)||(e?.kind==='ability'&&e.data?.energy_cost!==undefined)));
+ toggle(content,CAMPAIGN_CAPABILITY,content.entities.some(e=>e?.kind==='chapter'||(e?.kind==='stage'&&(e.data?.boss!==undefined||e.data?.rewards_first!==undefined))));
  toggle(content,TRIGGERS_CAPABILITY,content.entities.some(e=>e?.kind==='ability'&&(e.data?.trigger!==undefined||e.data?.extra_effects!==undefined)));
  toggle(content,WORLD_CAPABILITY,content.entities.some(e=>e?.kind==='location'||(e?.kind==='stage'&&e.data?.location_id!==undefined)));
  toggle(content,ABILITIES_CAPABILITY,content.entities.some(e=>(e?.kind==='ability'&&(['stun','knockback'].includes(e.data?.effect)||e.data?.target!==undefined||(e.data?.extra_effects??[]).some(x=>['stun','knockback'].includes(x.effect)||x.target!==undefined)))||(e?.kind==='faction'&&e.data?.advantage_bp!==undefined)));
@@ -49,12 +50,16 @@ function checkEntity(entity,all,originalId){
    for(const x of extra)if(!abilityEffects.includes(x?.effect)||!inRange(x.power,0,2147483647)||(x.target!==undefined&&!abilityTargets.includes(x.target)))fail('Проверь дополнительные действия.');
   }
   if(entity.data.sound_resource_id!==undefined&&!idPattern.test(entity.data.sound_resource_id))fail('Проверь ID звука.');
+ }else if(entity.kind==='chapter'){
+  checkChapter(entity,all,originalId);
  }else if(entity.kind==='location'){
   checkLocation(entity,all);
  }else if(entity.kind==='stage'){
   if(!Array.isArray(entity.data.enemy_hero_ids)||entity.data.enemy_hero_ids.length<1||entity.data.enemy_hero_ids.length>5||entity.data.enemy_hero_ids.some(id=>!all.some(e=>e.id===id&&e.kind==='hero')))fail('Выбери от 1 до 5 противников.');
   if(entity.data.time_limit_ms!==90000)fail('Длительность этапа — 90 секунд.');
   if(entity.data.location_id!==undefined&&!all.some(e=>e.id===entity.data.location_id&&e.kind==='location'&&e.data.level==='point'))fail('Этап можно привязать только к существующей точке на карте.');
+  const rewards=entity.data.rewards_first;
+  if(rewards!==undefined&&(!Array.isArray(rewards)||rewards.length>4||rewards.some(r=>!['gold','gems'].includes(r?.currency)||!inRange(r.amount,1,1000000))||new Set(rewards.map(r=>r.currency)).size!==rewards.length))fail('Награда: золото и самоцветы, от 1 до 1 000 000, каждая валюта один раз.');
  }else if(entity.kind==='faction'){
   refs(entity.data.advantage_ids,'faction',6);
   if(entity.data.advantage_ids.includes(entity.id))fail('Фракция не может иметь преимущество перед собой.');
@@ -85,7 +90,7 @@ export function deleteEntity(text,id){
  for(const other of content.entities){
   if(other.id===id)continue;
   const data=other.data??{};
-  if(data.parent_id===id||data.location_id===id||data.faction_id===id||(Array.isArray(data.ability_ids)&&data.ability_ids.includes(id))||(Array.isArray(data.advantage_ids)&&data.advantage_ids.includes(id))||(Array.isArray(data.enemy_hero_ids)&&data.enemy_hero_ids.includes(id)))fail(`Сначала убери ссылку из «${other.name}».`);
+  if((Array.isArray(data.stage_ids)&&data.stage_ids.includes(id))||data.parent_id===id||data.location_id===id||data.faction_id===id||(Array.isArray(data.ability_ids)&&data.ability_ids.includes(id))||(Array.isArray(data.advantage_ids)&&data.advantage_ids.includes(id))||(Array.isArray(data.enemy_hero_ids)&&data.enemy_hero_ids.includes(id)))fail(`Сначала убери ссылку из «${other.name}».`);
  }
  content.entities=content.entities.filter(e=>e.id!==id);syncCapability(content);return JSON.stringify(content,null,2);
 }
@@ -146,4 +151,17 @@ export function importGeography(text,dataset){
  for(const e of dataset.entities){if(have.has(e.id))continue;content.entities.push(structuredClone(e));added++;}
  syncCapability(content);
  return {text:JSON.stringify(content,null,2),added};
+}
+
+function checkChapter(entity,all,originalId){
+ const d=entity.data??{};
+ if(!inRange(d.order,1,999))fail('Номер главы — от 1 до 999.');
+ if(all.some(e=>e.kind==='chapter'&&e.id!==originalId&&e.data.order===d.order))fail('Глава с таким номером уже есть.');
+ if(!Array.isArray(d.stage_ids)||d.stage_ids.length<1||d.stage_ids.length>50||new Set(d.stage_ids).size!==d.stage_ids.length)fail('В главе от 1 до 50 разных этапов.');
+ for(const id of d.stage_ids){
+  if(!all.some(e=>e.id===id&&e.kind==='stage'))fail('Проверь этапы главы.');
+  const other=all.find(e=>e.kind==='chapter'&&e.id!==originalId&&e.data.stage_ids.includes(id));
+  if(other)fail(`Этап уже стоит в главе «${other.name}».`);
+ }
+ if(d.location_id!==undefined&&!all.some(e=>e.id===d.location_id&&e.kind==='location'&&['district','city'].includes(e.data.level)))fail('Карта главы — район или город.');
 }

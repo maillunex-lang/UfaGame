@@ -197,6 +197,27 @@ try{
  assert.ok(draft.content.required_capabilities.includes('battle.triggers.v1'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'ability blocks fit the phone width');
  console.log('Chromium mobile: ability trigger and extra action blocks edited and saved — passed (mock API)');
+ // S22: boss stage with first-clear reward, chapter with ordered stages and a region map.
+ await page.locator('.entity-list li').filter({hasText:'Пещера'}).filter({hasText:'stage_'}).getByRole('button',{name:'Изменить'}).click();
+ await page.getByLabel('Это бой с боссом').check();await page.getByLabel('Золото за первую победу').fill('100');await page.getByLabel('Самоцветы за первую победу').fill('5');
+ await page.getByRole('button',{name:'Применить изменения'}).click();
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});
+ await page.getByLabel('Тип объекта').selectOption('chapter');await page.getByLabel('Название объекта').fill('Глава 1. Урал');
+ const stagesBox=page.getByRole('group',{name:/Этапы главы/});await stagesBox.getByLabel('Пещера 👑').check();await stagesBox.getByLabel('Опушка').check();
+ const orderList=page.getByRole('list',{name:'Порядок этапов'});await orderList.getByRole('button',{name:/^Выше /}).last().click();
+ assert.deepEqual(await orderList.locator('li span').allTextContents(),['Опушка','Пещера']);
+ await page.getByLabel('Карта главы').selectOption({label:'Бурзянский район'});
+ if(process.env.UFA_SCREENSHOT_DIR)await page.getByRole('region',{name:'Редактор объектов'}).screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/chapter-form.png'});
+ await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});
+ const all=draft.content.entities,chapter=all.find(e=>e.kind==='chapter'),boss=all.find(e=>e.kind==='stage'&&e.name==='Пещера');
+ assert.deepEqual(boss.data.rewards_first,[{currency:'gold',amount:100},{currency:'gems',amount:5}]);assert.equal(boss.data.boss,true);
+ assert.deepEqual(chapter.data,{order:1,stage_ids:[all.find(e=>e.name==='Опушка').id,boss.id],location_id:'district_burzyanskiy'});
+ assert.ok(draft.content.required_capabilities.includes('campaign.chapters.v1'));
+ await page.locator('.entity-list li').filter({hasText:'Опушка'}).getByRole('button',{name:'Удалить'}).click();
+ await page.getByRole('alert').filter({hasText:'Сначала убери ссылку из «Глава 1. Урал»'}).waitFor();
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'chapter form fits the phone width');
+ console.log('Chromium mobile: boss stage reward, chapter with ordered stages and region, referenced stage deletion blocked — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');

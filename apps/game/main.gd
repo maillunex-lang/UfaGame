@@ -180,20 +180,22 @@ func _show_hub() -> void:
 var stage_picker: OptionButton
 var hero_checks: Dictionary = {}
 var stage_ids: Array = []
+var campaign_view
+var last_reward := ""
 
 func _battle_section(bundle: Dictionary) -> void:
 	label("Бой", 24, hub)
-	stage_ids = bundle.content.entities.filter(func(e): return e.get("kind") == "stage").map(func(e): return e.id)
+	var in_chapters := {}
+	for e in bundle.content.entities:
+		if e.get("kind") == "chapter":
+			for id in e.get("data", {}).get("stage_ids", []):
+				in_chapters[id] = true
+	var training: Array = bundle.content.entities.filter(func(e): return e.get("kind") == "stage" and not in_chapters.has(e.id))
+	stage_ids = training.map(func(e): return e.id)
 	var fighters: Array = bundle.content.entities.filter(func(e): return e.get("kind") == "hero" and e.get("data", {}).has("combat"))
-	if stage_ids.is_empty() or fighters.is_empty():
+	if (stage_ids.is_empty() and in_chapters.is_empty()) or fighters.is_empty():
 		label("Чтобы сразиться, создай в Studio этап с противниками и героя с боевыми параметрами, затем опубликуй.", 18, hub)
 		return
-	stage_picker = OptionButton.new()
-	stage_picker.custom_minimum_size.y = 54
-	for e in bundle.content.entities:
-		if e.get("kind") == "stage":
-			stage_picker.add_item(str(e.get("name", e.id)))
-	hub.add_child(stage_picker)
 	label("Твоя команда (до 5):", 18, hub)
 	hero_checks.clear()
 	for e in fighters:
@@ -203,13 +205,47 @@ func _battle_section(bundle: Dictionary) -> void:
 		check.button_pressed = hero_checks.size() == 0
 		hub.add_child(check)
 		hero_checks[e.id] = check
+	if FileAccess.file_exists("user://live_battle.json"):
+		var resume := Button.new()
+		resume.text = "Продолжить начатый бой"
+		resume.custom_minimum_size.y = 60
+		resume.pressed.connect(func(): _start_battle(""))
+		hub.add_child(resume)
+	if not in_chapters.is_empty():
+		campaign_view = preload("res://campaign_view.gd").new()
+		campaign_view.stage_chosen.connect(func(stage): _start_battle(str(stage.id)))
+		hub.add_child(campaign_view)
+		_load_campaign(bundle)
+	if stage_ids.is_empty():
+		return
+	label("Тренировка (без наград и прогресса)", 20, hub)
+	stage_picker = OptionButton.new()
+	stage_picker.custom_minimum_size.y = 54
+	for e in training:
+		stage_picker.add_item(str(e.get("name", e.id)))
+	hub.add_child(stage_picker)
 	var go := Button.new()
-	go.text = "Продолжить бой" if FileAccess.file_exists("user://live_battle.json") else "В бой!"
+	go.text = "В тренировочный бой"
 	go.custom_minimum_size.y = 60
-	go.pressed.connect(_start_battle)
+	go.pressed.connect(func(): _start_battle(str(stage_ids[stage_picker.selected])))
 	hub.add_child(go)
 
-func _start_battle() -> void:
+func _load_campaign(bundle: Dictionary) -> void:
+	var view = campaign_view
+	var data: Dictionary = await auth.authorized_get("/v1/campaign")
+	if not is_instance_valid(view):
+		return
+	if not data.ok:
+		var note := Label.new()
+		note.text = "Кампания: " + _explain(str(data.code))
+		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		view.add_child(note)
+		return
+	var money: Dictionary = await auth.progress()
+	if is_instance_valid(view):
+		view.show_campaign(data.data, bundle, money.data.balances if money.ok else [])
+
+func _start_battle(stage_id: String) -> void:
 	if busy:
 		return
 	var team: Array = hero_checks.keys().filter(func(id): return hero_checks[id].button_pressed)
@@ -218,17 +254,24 @@ func _start_battle() -> void:
 		return
 	busy = true
 	status.text = "Начинаем бой…"
+	var first_clear: Dictionary = {}
+	if campaign_view != null and is_instance_valid(campaign_view):
+		var known: Dictionary = campaign_view.find_stage(stage_id)
+		if known.get("status") == "open":
+			first_clear = known
 	var live = preload("res://live_client.gd").new()
 	live.auth = auth
 	add_child(live)
 	var view = preload("res://battle_view.gd").new()
 	add_child(view)
 	view.setup(live, content)
+	live.finished.connect(func(result, _verified): _after_battle(live, view, result, first_clear))
 	view.closed.connect(func():
 		live.queue_free()
-		status.text = ""
+		status.text = last_reward
+		last_reward = ""
 		_show_hub())
-	var result: Dictionary = await live.start(str(stage_ids[stage_picker.selected]), team)
+	var result: Dictionary = await live.start(stage_id, team)
 	busy = false
 	if not result.ok:
 		view.queue_free()
@@ -236,6 +279,22 @@ func _start_battle() -> void:
 		status.text = "Бой не начался: " + _explain(str(result.code))
 	elif result.get("resumed", false):
 		view.status_label.text = "Продолжаем начатый бой."
+
+## The reward is shown only after the server confirms that this battle cleared the
+## stage (cleared_battle_id); the client never adds currency itself.
+func _after_battle(live, view, result: String, stage: Dictionary) -> void:
+	if result != "attacker_win" or stage.is_empty():
+		return
+	var data: Dictionary = await auth.authorized_get("/v1/campaign")
+	if not data.ok:
+		return
+	for chapter in data.data.chapters:
+		for s in chapter.stages:
+			if s.id == stage.id and str(s.get("cleared_battle_id")) == str(live.battle_id):
+				var reward: String = preload("res://campaign_view.gd").reward_list(s)
+				last_reward = "Этап «%s» пройден!%s" % [str(s.name), (" Награда: " + reward) if reward != "" else ""]
+				if is_instance_valid(view):
+					view.result_label.text += "\n" + last_reward
 
 func _build_account() -> void:
 	label("Аккаунт", 24)

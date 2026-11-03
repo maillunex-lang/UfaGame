@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -26,6 +26,9 @@ export function validate(name, value) {
       const needsPercent = e.data.trigger.kind==='self_hp_below' || e.data.trigger.kind==='ally_hp_below';
       if (needsPercent !== (e.data.trigger.percent!==undefined)) return {ok:false,code:'INVALID_REQUEST'};
     }
+    const campaign = value.entities.some(e => e.kind==='chapter' || (e.kind==='stage' && (e.data.boss!==undefined || e.data.rewards_first!==undefined)));
+    if (campaign && !value.required_capabilities.includes('campaign.chapters.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    if (campaignProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
     const world = value.entities.some(e => e.kind==='location' || (e.kind==='stage' && e.data.location_id!==undefined));
     if (world && !value.required_capabilities.includes('world.locations.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (locationProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
@@ -71,6 +74,31 @@ export function locationProblems(content) {
     if (!target || target.kind!=='location' || target.data.level!=='point') out.push({code:'STAGE_LOCATION_INVALID',entity_id:e.id});
   }
   return out;
+}
+/**
+ * Campaign rules (S22): chapter stages exist and are stages, a stage belongs to at
+ * most one chapter, chapter order numbers are unique, a chapter map area is a
+ * district or city, one reward line per currency.
+ */
+export function campaignProblems(content) {
+  const byId = new Map(content.entities.map(e => [e.id,e]));
+  const out = [], owner = new Map(), orders = new Set();
+  for (const ch of content.entities.filter(e => e.kind==='chapter')) {
+    if (orders.has(ch.data.order)) out.push({code:'CHAPTER_ORDER_DUPLICATE',entity_id:ch.id}); orders.add(ch.data.order);
+    for (const id of ch.data.stage_ids) {
+      if (byId.get(id)?.kind!=='stage') out.push({code:'CHAPTER_STAGE_INVALID',entity_id:ch.id});
+      else if (owner.has(id)) out.push({code:'STAGE_IN_TWO_CHAPTERS',entity_id:id});
+      owner.set(id,ch.id);
+    }
+    if (ch.data.location_id!==undefined) { const loc=byId.get(ch.data.location_id); if (loc?.kind!=='location' || !['district','city'].includes(loc.data.level)) out.push({code:'CHAPTER_LOCATION_INVALID',entity_id:ch.id}); }
+  }
+  for (const st of content.entities.filter(e => e.kind==='stage' && e.data.rewards_first))
+    if (new Set(st.data.rewards_first.map(r => r.currency)).size !== st.data.rewards_first.length) out.push({code:'REWARD_DUPLICATE_CURRENCY',entity_id:st.id});
+  return out;
+}
+/** Linear campaign order: chapters by `order`, stages as listed. */
+export function campaignStages(content) {
+  return content.entities.filter(e => e.kind==='chapter').sort((a,b) => a.data.order-b.data.order).flatMap(ch => ch.data.stage_ids.map(id => ({chapter_id:ch.id,stage_id:id})));
 }
 export function resourceRefs(content) {
   const refs = [];

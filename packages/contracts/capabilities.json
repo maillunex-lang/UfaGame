@@ -11,6 +11,7 @@
     "content.resources.v1",
     "battle.abilities.v2",
     "world.locations.v1",
-    "battle.triggers.v1"
+    "battle.triggers.v1",
+    "campaign.chapters.v1"
   ]
 }

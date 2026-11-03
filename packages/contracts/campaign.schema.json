@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/campaign",
+  "title": "GET /v1/campaign response (S22): chapters with server-decided stage statuses",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["api_version", "content_version", "chapters"],
+  "properties": {
+    "api_version": {"const": 1},
+    "content_version": {"type": "string", "minLength": 1, "maxLength": 80},
+    "chapters": {
+      "type": "array",
+      "maxItems": 999,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "order", "location_id", "proposed", "stages"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
+          "name": {"type": "string", "minLength": 1, "maxLength": 100},
+          "order": {"type": "integer", "minimum": 1, "maximum": 999},
+          "location_id": {"type": ["string", "null"]},
+          "proposed": {"type": "boolean"},
+          "stages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "name", "boss", "status", "rewards_first", "location_id", "enemy_hero_ids", "cleared_battle_id"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
+                "name": {"type": "string", "minLength": 1, "maxLength": 100},
+                "boss": {"type": "boolean"},
+                "status": {"enum": ["cleared", "open", "locked"]},
+                "rewards_first": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["currency", "amount"],
+                    "properties": {
+                      "currency": {"enum": ["gold", "gems"]},
+                      "amount": {"type": "integer", "minimum": 1, "maximum": 1000000}
+                    }
+                  }
+                },
+                "location_id": {"type": ["string", "null"]},
+                "enemy_hero_ids": {"type": "array", "minItems": 1, "maxItems": 5, "items": {"type": "string"}},
+                "cleared_battle_id": {"type": ["string", "null"], "format": "uuid"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

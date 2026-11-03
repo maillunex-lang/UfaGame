@@ -36,3 +36,19 @@ test('hierarchy, missing parent, coordinates, distance and stage link are enforc
  const noCap=content([...base,point()]);noCap.required_capabilities=['content.core.v1'];assert.equal(validate('content',noCap).ok,false);
  assert.ok(BASHKORTOSTAN_BOUNDS.min_lat_e6<51863611&&BASHKORTOSTAN_BOUNDS.max_lon_e6>59383300);
 });
+test('campaign dependencies: missing stage, stage in two chapters, duplicate order, wrong area, duplicate reward currency',async()=>{
+ const {campaignProblems}=await import('@ufagame/contracts');
+ const base=()=>({schema_version:1,content_version:'draft_d',required_capabilities:['content.core.v1','campaign.chapters.v1','world.locations.v1'],entities:[...structuredClone(dataset.entities),
+  {id:'hero_one',kind:'hero',name:'H',data:{faction_id:'faction_one',ability_ids:['ability_one']}},{id:'faction_one',kind:'faction',name:'F',data:{advantage_ids:[]}},{id:'ability_one',kind:'ability',name:'A',data:{effect:'damage',power:1,cooldown_ms:0}},
+  {id:'stage_a',kind:'stage',name:'A',data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000,rewards_first:[{currency:'gold',amount:10}]}},
+  {id:'stage_b',kind:'stage',name:'B',data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000,boss:true}},
+  {id:'chapter_one',kind:'chapter',name:'Глава 1',data:{order:1,stage_ids:['stage_a','stage_b'],location_id:'district_burzyanskiy'}}]});
+ assert.equal(validate('content',base()).ok,true);
+ const code=fn=>{const c=base();fn(c.entities);return campaignProblems(c).map(p=>p.code);};
+ assert.deepEqual(code(e=>e.find(x=>x.id==='chapter_one').data.stage_ids.push('stage_gone')),['CHAPTER_STAGE_INVALID']);
+ assert.deepEqual(code(e=>e.push({id:'chapter_two',kind:'chapter',name:'2',data:{order:2,stage_ids:['stage_b']}})),['STAGE_IN_TWO_CHAPTERS']);
+ assert.deepEqual(code(e=>e.push({id:'chapter_two',kind:'chapter',name:'2',data:{order:1,stage_ids:[]}})).slice(0,1),['CHAPTER_ORDER_DUPLICATE']);
+ assert.deepEqual(code(e=>{e.find(x=>x.id==='chapter_one').data.location_id='republic_bashkortostan';}),['CHAPTER_LOCATION_INVALID']);
+ assert.deepEqual(code(e=>{e.find(x=>x.id==='stage_a').data.rewards_first.push({currency:'gold',amount:1});}),['REWARD_DUPLICATE_CURRENCY']);
+ const noCap=base();noCap.required_capabilities=['content.core.v1','world.locations.v1'];assert.equal(validate('content',noCap).ok,false);
+});
