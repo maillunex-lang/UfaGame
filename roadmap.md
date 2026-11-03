@@ -1426,3 +1426,12 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s19-game-test-v10/Ga
 — повторное скачивание, SHA-256 030ee3c7…7639 совпал; на телефоне не проверена.
 Для проверки на телефоне нужны: развертывание 80b531d (миграции 011 при старте),
 nginx WebSocket (apply-websocket.sh) и опубликованный в Studio этап.
+
+### S18/S19 — развертывание на тестовом VPS (выполнил владелец)
+2026-11-03 10:13: backup `/srv/ufagame-test/backup-20261103-101353` (db.dump 290014
+байт, прежний commit 11e466b, копия статики). API пересобран на ffceb71 (код 80b531d),
+миграция 011 применена при старте (health/ready `{"status":"ok"}` после штатного
+connection reset). Статика `index-4TrKfJ63.js`/`index-bdQqaJ7q.css` совпала с
+локальной сборкой. nginx: `apply-websocket.sh` добавил 4 строки WebSocket в
+/game/server/ (backup /srv/ufagame-test/nginx-backup-Vwm5DQ/original.conf), nginx -t,
+портал/Studio/API прошли. Внешний WSS и Game v10 на телефоне еще не проверены.
