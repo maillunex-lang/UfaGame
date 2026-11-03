@@ -5,8 +5,8 @@ import {crc32,deflateSync} from 'node:zlib';
 import {chromium} from 'playwright';
 let draft=null,logged=false,resources=[],pngBytes=null;
 const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
-const header=Buffer.alloc(13);header.writeUInt32BE(1);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
-const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255]))),chunk('IEND',Buffer.alloc(0))]);
+const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
+const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255,4,5,6,255]))),chunk('IEND',Buffer.alloc(0))]);
 const browser=await chromium.launch({executablePath:process.env.UFA_CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
 try{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
@@ -17,8 +17,9 @@ try{
    if(path.endsWith('/session')){status=401;body={};}
    else if(path.endsWith('/sessions')&&method==='POST'){logged=true;body={owner:{display_name:'owner'},csrf_token:'fake'};}
    else if(path.endsWith('/resources')&&method==='GET'){body={resources};}
-   else if(path.endsWith('/resources')&&method==='POST'){const v=req.postDataJSON();pngBytes=Buffer.from(v.data_base64,'base64');assert.deepEqual(pngBytes,png);body={id:v.id,media_type:'image/png',width:1,height:1,sha256:'fake',license:v.license};resources.push(body);}
+   else if(path.endsWith('/resources')&&method==='POST'){const v=req.postDataJSON();pngBytes=Buffer.from(v.data_base64,'base64');assert.deepEqual(pngBytes,png);body={id:v.id,media_type:'image/png',width:2,height:1,sha256:'fake',license:v.license,revision:0,scale_bp:10000,anchor:{x:0,y:0},frames:[{x:0,y:0,width:2,height:1,duration_ms:100}],loop:false};resources.push(body);}
    else if(path.endsWith('/resources/icon_one/data')&&method==='GET')return route.fulfill({status:200,contentType:'image/png',body:pngBytes});
+   else if(path.endsWith('/resources/icon_one')&&method==='PATCH'){const v=req.postDataJSON();if(v.expected_revision!==resources[0].revision){status=409;body={error:{code:'CONFLICT'}};}else{resources[0]={...resources[0],...v,revision:resources[0].revision+1};body=resources[0];}}
    else if(path.endsWith('/drafts')&&method==='GET'){body={drafts:draft?[{id:draft.id,name:draft.name,revision:draft.revision}]:[]};}
    else if(path.endsWith('/drafts')&&method==='POST'){const v=req.postDataJSON();draft={id:v.id,name:v.name,content:v.content,revision:0};body=draft;}
    else if(path.includes('/drafts/')&&method==='GET'){body=draft;}
@@ -34,7 +35,14 @@ try{
  await page.getByLabel('Логин',{exact:true}).fill('owner');await page.getByLabel('Пароль',{exact:true}).fill('demo-password');await page.getByRole('button',{name:'Войти',exact:true}).click();
  await page.getByLabel('ID ресурса').fill('icon_one');await page.getByLabel('Лицензия').fill('Собственная работа');
  await page.getByLabel('PNG файл').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});await page.getByRole('button',{name:'Добавить изображение'}).click();
- await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===1);
+ await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===2);
+ await page.getByRole('button',{name:'Настроить кадры'}).click();await page.getByLabel('Столбцы').fill('2');await page.getByLabel('Длительность кадра, мс').fill('250');await page.getByLabel('Зациклить').check();
+ await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('button',{name:'Настроить кадры'}).waitFor();assert.equal(resources[0].frames.length,2);assert.equal(resources[0].frames[0].duration_ms,250);assert.equal(resources[0].loop,true);
+ await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.style.left==='-6px');
+ await page.getByRole('button',{name:'Настроить кадры'}).click();await page.getByLabel('Длительность кадра, мс').fill('300');resources[0].revision++;
+ await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('alert').filter({hasText:'Ресурс изменился'}).waitFor();assert.equal(await page.getByLabel('Длительность кадра, мс').inputValue(),'300');
+ page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Обновить список ресурсов'}).click();
+ await page.getByRole('status').filter({hasText:'Список ресурсов обновлён'}).waitFor();
  await page.getByRole('button',{name:'Создать',exact:true}).click();
  await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();

@@ -45,6 +45,9 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   await page.getByLabel('PNG файл').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});
   await page.getByRole('button',{name:'Добавить изображение'}).click();await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();
   await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===1);
+  await page.getByRole('button',{name:'Настроить кадры'}).click();await page.getByLabel('Длительность кадра, мс').fill('250');await page.getByLabel('Зациклить').check();
+  await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('button',{name:'Настроить кадры'}).waitFor();
+  const storedResource=(await pool.query('SELECT descriptor,revision FROM owner_resources WHERE id=$1',['icon_one'])).rows[0];assert.equal(storedResource.revision,1);assert.equal(storedResource.descriptor.frames[0].duration_ms,250);assert.equal(storedResource.descriptor.loop,true);
   await page.getByRole('button',{name:'Создать',exact:true}).click();await page.getByLabel('Название',{exact:true}).fill('Мобильный черновик');
   await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
   await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();

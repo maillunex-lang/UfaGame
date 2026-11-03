@@ -156,7 +156,7 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
   admin.get('/resources',async request=>{
    await activeOwner(pool,cookieToken(request));
    if(Object.keys(request.query as object).length)throw new DomainError('INVALID_REQUEST');
-   return {resources:(await pool.query('SELECT descriptor FROM owner_resources ORDER BY id LIMIT 128')).rows.map(row=>row.descriptor)};
+   return {resources:(await pool.query('SELECT descriptor,revision FROM owner_resources ORDER BY id LIMIT 128')).rows.map(row=>({...row.descriptor,revision:row.revision}))};
   });
   admin.get('/resources/:id/data',async(request,reply)=>{
    await activeOwner(pool,cookieToken(request));const id=(request.params as any).id;
@@ -186,8 +186,26 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
     if(usage.n>=128||Number(usage.bytes)+bytes.length>32*1024*1024)throw new DomainError('CONFLICT',409);
     try {await c.query('INSERT INTO owner_resources(id,descriptor,payload) VALUES($1,$2,$3)',[descriptor.id,descriptor,bytes]);}
     catch(error){if((error as any).code==='23505')throw new DomainError('CONFLICT',409);throw error;}
-    await audit(c,action,b.reason,b.request_id,null,descriptor,fp,'resource:'+descriptor.id);
-    return descriptor;
+    const result={...descriptor,revision:0};
+    await audit(c,action,b.reason,b.request_id,null,result,fp,'resource:'+descriptor.id);
+    return result;
+   });
+  });
+  admin.patch('/resources/:id',async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);const b=request.body as any;requireBody('resource_update_request',b);
+   const id=(request.params as any).id;if(typeof id!=='string'||!/^[a-z][a-z0-9_]{2,79}$/.test(id))throw new DomainError('INVALID_REQUEST');
+   const action='resource.update',fp=fingerprint(action,b.reason,[id,b.expected_revision,b.license,b.scale_bp,b.anchor,b.frames,b.loop]);
+   return transaction(pool,async c=>{
+    await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
+    const before=(await c.query('SELECT descriptor,revision FROM owner_resources WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!before)throw new DomainError('NOT_FOUND',404);if(before.revision!==b.expected_revision||before.revision===2147483647)throw new DomainError('CONFLICT',409);
+    const descriptor={...before.descriptor,license:b.license,scale_bp:b.scale_bp,anchor:b.anchor,frames:b.frames,loop:b.loop};
+    if(!validate('resource_descriptor',descriptor).ok||descriptor.anchor.x>=descriptor.width||descriptor.anchor.y>=descriptor.height||descriptor.frames.some((f:any)=>f.x+f.width>descriptor.width||f.y+f.height>descriptor.height))throw new DomainError('INVALID_REQUEST');
+    const next={...descriptor,revision:before.revision+1};
+    await c.query('UPDATE owner_resources SET descriptor=$2,revision=revision+1 WHERE id=$1',[id,descriptor]);
+    await audit(c,action,b.reason,b.request_id,{...before.descriptor,revision:before.revision},next,fp,'resource:'+id);return next;
    });
   });
   admin.get('/audit',async request=>{

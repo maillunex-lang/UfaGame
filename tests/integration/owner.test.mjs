@@ -154,6 +154,17 @@ test('private PNG resources: authorization, validation, idempotency and atomic a
   assert.equal((await api.inject({url:'/admin/v1/resources/'+id+'/data'})).statusCode,401);
   const audit=(await pool.query("SELECT before_state,after_state FROM owner_audit WHERE action='resource.create' AND resource_id=$1",['resource:'+id])).rows;
   assert.equal(audit.length,1);assert.equal(audit[0].before_state,null);assert.equal(audit[0].after_state.id,id);assert.ok(!JSON.stringify(audit).includes(body.data_base64));
+  const update={license:body.license,scale_bp:10000,anchor:{x:0,y:0},frames:body.frames,loop:true,expected_revision:0,...meta()};
+  const patch=(payload)=>api.inject({method:'PATCH',url:'/admin/v1/resources/'+id,payload,headers:{origin,cookie:session.cookie,'x-ufa-csrf':session.csrf}});
+  assert.equal((await patch({...update,frames:[{x:0,y:0,width:2,height:1,duration_ms:100}]})).statusCode,400);
+  const saved=await patch(update);assert.equal(saved.statusCode,200);assert.equal(saved.json().revision,1);
+  assert.deepEqual((await patch(update)).json(),saved.json());
+  assert.equal((await patch({...update,request_id:randomUUID()})).statusCode,409);
+  const updateAudit=(await pool.query("SELECT before_state,after_state FROM owner_audit WHERE action='resource.update' AND resource_id=$1",['resource:'+id])).rows;
+  assert.equal(updateAudit.length,1);assert.equal(updateAudit[0].before_state.revision,0);assert.equal(updateAudit[0].after_state.revision,1);
+  const raceUpdate={...update,expected_revision:1};
+  const competing=await Promise.all([patch({...raceUpdate,scale_bp:11000,request_id:randomUUID()}),patch({...raceUpdate,scale_bp:12000,request_id:randomUUID()})]);
+  assert.deepEqual(competing.map(x=>x.statusCode).sort(),[200,409]);
   const conflict=await Promise.all([post({...body,id:id+'_race',request_id:randomUUID()}),post({...body,id:id+'_race',request_id:randomUUID()})]);
   assert.deepEqual(conflict.map(x=>x.statusCode).sort(),[200,409]);
  }finally{await api.close();}

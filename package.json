@@ -30,7 +30,7 @@
     "build:android:s01": "bash tools/s01/build-android.sh",
     "check:contracts": "node --test tests/contracts/*.test.mjs",
     "check:mod": "node --test tests/mod/*.test.mjs",
-    "check:studio": "node --test tests/studio/entities.test.mjs",
+    "check:studio": "node --test tests/studio/*.test.mjs",
     "check:battle": "node --test tests/battle/*.test.mjs",
     "check:api": "npm run typecheck --workspace @ufagame/api",
     "test:integration": "bash tools/test-integration.sh",
