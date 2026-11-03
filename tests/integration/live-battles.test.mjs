@@ -5,7 +5,8 @@ import WebSocket from 'ws';
 import {createPool} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
 import {validate} from '@ufagame/contracts';
-const pool=createPool();after(()=>pool.end());
+// Battles left running here would keep ticking inside later test files: finish them.
+const pool=createPool();after(async()=>{await pool.query('UPDATE live_battles SET completed_at=clock_timestamp() WHERE completed_at IS NULL');await pool.end();});
 const combat={hp:1000000,attack:1,defense:0,speed:0,range:20000,attack_interval_ms:500,energy_start:1000,energy_per_second:0,energy_per_attack:0};
 const content=()=>({schema_version:1,content_version:'fixture_001',required_capabilities:['content.core.v1','battle.combat.v1'],entities:[
  {id:'faction_one',kind:'faction',name:'Faction',data:{advantage_ids:[]}},

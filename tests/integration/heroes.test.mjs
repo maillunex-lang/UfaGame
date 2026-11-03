@@ -5,7 +5,8 @@ import {createPool} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
 import {applyDelta} from '../../services/api/src/economy.ts';
 import {validate} from '@ufagame/contracts';
-const pool=createPool();after(()=>pool.end());
+// Battles left running here would keep ticking inside later test files: finish them.
+const pool=createPool();after(async()=>{await pool.query('UPDATE live_battles SET completed_at=clock_timestamp() WHERE completed_at IS NULL');await pool.end();});
 import {progressionContent} from '../fixtures/progression.mjs';
 async function publish(c){
  const db=await pool.connect();try{
