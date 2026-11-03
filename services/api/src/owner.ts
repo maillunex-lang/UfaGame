@@ -7,6 +7,7 @@ import {requireBody,randomToken} from './auth.ts';
 import {validate} from '@ufagame/contracts';
 import {hashPassword,verifyPassword} from './passwords.ts';
 import {ResourceRegistry} from '../../../packages/content-validator/resource-registry.mjs';
+import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../../packages/battle-core/compile.mjs';
 
 export const OWNER_COOKIE='__Secure-ufagame-owner';
 export interface OwnerOptions {origin?:string;cookiePath?:string}
@@ -153,6 +154,20 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
   }
   admin.post('/drafts',async request=>writeDraft(request,true));
   admin.put('/drafts/:id',async request=>writeDraft(request,false));
+  admin.post('/drafts/:id/battle-preview',{config:{rateLimit:{max:20,timeWindow:60000}}},async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);await activeOwner(pool,token);
+   const id=(request.params as any).id,b=request.body as any;
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))throw new DomainError('INVALID_REQUEST');
+   requireBody('battle_preview_request',b);
+   const row=(await pool.query('SELECT id,revision,content FROM studio_drafts WHERE id=$1',[id])).rows[0];
+   if(!row)throw new DomainError('NOT_FOUND',404);
+   if(row.revision!==b.expected_revision)throw new DomainError('CONFLICT',409);
+   if(!validate('content',row.content).ok)throw new DomainError('INVALID_REQUEST',422,'DRAFT_CONTENT_INVALID');
+   let compiled;
+   try{compiled=compileContentBattle(row.content,b);}
+   catch(error){if(error instanceof BattleCompileError)throw new DomainError('INVALID_REQUEST',422,error.entity_id?`${error.code}:${error.entity_id}`:error.code);throw error;}
+   return {api_version:1,preview:true,draft_id:row.id,draft_revision:row.revision,...runAutoBattle(compiled.setup,{heroes:compiled.heroes})};
+  });
   admin.get('/resources',async request=>{
    await activeOwner(pool,cookieToken(request));
    if(Object.keys(request.query as object).length)throw new DomainError('INVALID_REQUEST');

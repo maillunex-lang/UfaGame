@@ -25,3 +25,16 @@ test('invalid JSON and conflicting IDs are rejected without modifying the input'
  const broken=JSON.stringify({entities:[ability,ability]});assert.throws(()=>listEntities(broken),/повторяющиеся/);
  const src=blank();assert.throws(()=>upsertEntity(src,hero),/фракцию/);assert.equal(JSON.parse(src).entities.length,0);
 });
+test('hero combat stats and ability energy cost keep battle.combat.v1 capability in sync',()=>{
+ const combat={hp:300,attack:30,defense:5,speed:800,range:1500,attack_interval_ms:500,energy_start:0,energy_per_second:100,energy_per_attack:100};
+ let text=upsertEntity(blank(),ability);text=upsertEntity(text,faction);text=upsertEntity(text,{...hero,data:{...hero.data,combat}});
+ assert.ok(JSON.parse(text).required_capabilities.includes('battle.combat.v1'));assert.equal(validate('content',JSON.parse(text)).ok,true);
+ assert.throws(()=>upsertEntity(text,{...hero,id:'hero_two',data:{...hero.data,combat:{...combat,attack_interval_ms:150}}}),/attack_interval_ms.*кратное 100/);
+ assert.throws(()=>upsertEntity(text,{...hero,id:'hero_two',data:{...hero.data,combat:{...combat,hp:0}}}),/hp/);
+ assert.throws(()=>upsertEntity(text,{...hero,id:'hero_two',data:{...hero.data,combat:{...combat,crit:1}}}),/боевые параметры/);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,energy_cost:0}}),/энергии/);
+ text=upsertEntity(text,{...hero,data:{...hero.data}},hero.id);
+ assert.ok(!JSON.parse(text).required_capabilities.includes('battle.combat.v1'),'capability removed when no combat data left');
+ text=upsertEntity(text,{...ability,data:{...ability.data,energy_cost:400}},ability.id);
+ assert.ok(JSON.parse(text).required_capabilities.includes('battle.combat.v1'));assert.equal(validate('content',JSON.parse(text)).ok,true);
+});

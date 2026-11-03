@@ -25,7 +25,8 @@
           "battle.hp.v1",
           "ui.label.v1",
           "auth.guest.v1",
-          "auth.password.v1"
+          "auth.password.v1",
+          "battle.combat.v1"
         ]
       },
       "uniqueItems": true,
@@ -78,6 +79,70 @@
                     "minItems": 1,
                     "maxItems": 8,
                     "uniqueItems": true
+                  },
+                  "combat": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "hp",
+                      "attack",
+                      "defense",
+                      "speed",
+                      "range",
+                      "attack_interval_ms",
+                      "energy_start",
+                      "energy_per_second",
+                      "energy_per_attack"
+                    ],
+                    "properties": {
+                      "hp": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000000
+                      },
+                      "attack": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "defense": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "speed": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 5000
+                      },
+                      "range": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 20000
+                      },
+                      "attack_interval_ms": {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 90000,
+                        "multipleOf": 100
+                      },
+                      "energy_start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      "energy_per_second": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000,
+                        "multipleOf": 10
+                      },
+                      "energy_per_attack": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000
+                      }
+                    }
                   }
                 }
               }
@@ -129,6 +194,11 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 2147483647
+                  },
+                  "energy_cost": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
                   }
                 }
               }

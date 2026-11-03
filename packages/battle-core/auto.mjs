@@ -54,7 +54,7 @@ export function stepAutoBattle(state,options={}) {
   }else{amount=Math.max(1,actor.attack-target.defense);updated.energy=Math.min(1000,updated.energy+actor.energy_per_attack);}
   if(kind==='damage'&&factions.get(actor.faction_id).advantage_ids.includes(target.faction_id))amount=Math.floor(amount*state.advantage_bp/10000);
   updated.next_attack_step=state.step+actor.interval_steps;
-  effects.push({kind,source_id:actor.id,target_id:target.id,amount});
+  effects.push(useAbility&&actor.ability.id?{kind,source_id:actor.id,target_id:target.id,amount,ability_id:actor.ability.id}:{kind,source_id:actor.id,target_id:target.id,amount});
  }
  const totals=new Map();
  for(const effect of effects){const t=totals.get(effect.target_id)??{damage:0,heal:0};t[effect.kind]+=effect.amount;totals.set(effect.target_id,t);events.push(effect);}

@@ -163,6 +163,10 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 1000
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
               }
             }
           },

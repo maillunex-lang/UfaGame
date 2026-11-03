@@ -2,3 +2,4 @@ export type EditableEntity={id:string;kind:'hero'|'ability'|'faction';name:strin
 export function listEntities(text:string):EditableEntity[];
 export function upsertEntity(text:string,entity:EditableEntity,originalId?:string|null):string;
 export function deleteEntity(text:string,id:string):string;
+export const combatFields:[string,number,number,number][];

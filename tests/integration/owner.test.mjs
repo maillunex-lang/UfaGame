@@ -169,3 +169,39 @@ test('private PNG resources: authorization, validation, idempotency and atomic a
   assert.deepEqual(conflict.map(x=>x.statusCode).sort(),[200,409]);
  }finally{await api.close();}
 });
+
+test('battle preview: owner-only, CSRF, stale revision, content errors, deterministic and read-only',async()=>{
+ const api=await app();try{
+  const session=await login(api),id=randomUUID();
+  const combat={hp:300,attack:30,defense:5,speed:800,range:1500,attack_interval_ms:500,energy_start:0,energy_per_second:100,energy_per_attack:100};
+  const content={schema_version:1,content_version:'draft_battle',required_capabilities:['content.core.v1','battle.combat.v1'],entities:[
+   {id:'faction_sun',kind:'faction',name:'Солнце',data:{advantage_ids:['faction_moon']}},
+   {id:'faction_moon',kind:'faction',name:'Луна',data:{advantage_ids:[]}},
+   {id:'ability_strike',kind:'ability',name:'Удар',data:{effect:'damage',power:60,cooldown_ms:1000,energy_cost:500}},
+   {id:'hero_batyr',kind:'hero',name:'Батыр',data:{faction_id:'faction_sun',ability_ids:['ability_strike'],combat}},
+   {id:'hero_plain',kind:'hero',name:'Без статов',data:{faction_id:'faction_sun',ability_ids:['ability_strike']}},
+   {id:'enemy_wolf',kind:'hero',name:'Волк',data:{faction_id:'faction_moon',ability_ids:['ability_strike'],combat:{...combat,hp:200}}},
+   {id:'stage_forest',kind:'stage',name:'Лес',data:{enemy_hero_ids:['enemy_wolf','enemy_wolf'],time_limit_ms:90000}}]};
+  const headers={origin,cookie:session.cookie,'x-ufa-csrf':session.csrf};
+  assert.equal((await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id,name:'Бой',content:{...content,required_capabilities:['content.core.v1']},...meta()},headers})).statusCode,400,'combat requires capability');
+  assert.equal((await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id,name:'Бой',content,...meta()},headers})).statusCode,200);
+  const url='/admin/v1/drafts/'+id+'/battle-preview',body={expected_revision:0,attacker_hero_ids:['hero_batyr','hero_batyr'],stage_id:'stage_forest',seed:42};
+  const preview=(payload,h=headers)=>api.inject({method:'POST',url,payload,headers:h});
+  assert.equal((await preview(body,{origin})).statusCode,401);
+  assert.equal((await preview(body,{...headers,'x-ufa-csrf':''})).statusCode,403);
+  assert.equal((await preview(body,{...headers,origin:'https://evil.example'})).statusCode,403);
+  assert.equal((await api.inject({method:'POST',url:'/admin/v1/drafts/'+randomUUID()+'/battle-preview',payload:body,headers})).statusCode,404);
+  assert.equal((await preview({...body,expected_revision:1})).statusCode,409);
+  assert.equal((await preview({...body,result:'attacker_win'})).statusCode,400,'client cannot submit a result');
+  assert.equal((await preview({...body,attacker_hero_ids:Array(6).fill('hero_batyr')})).statusCode,400);
+  const missing=await preview({...body,attacker_hero_ids:['hero_plain']});assert.equal(missing.statusCode,422);assert.equal(missing.json().error.message,'HERO_COMBAT_MISSING:hero_plain');assert.equal(validate('error',missing.json()).ok,true);
+  const unknown=await preview({...body,stage_id:'stage_none'});assert.equal(unknown.statusCode,422);assert.equal(unknown.json().error.message,'UNKNOWN_STAGE:stage_none');
+  const auditBefore=(await pool.query('SELECT count(*)::int AS n FROM owner_audit')).rows[0].n;
+  const first=await preview(body),second=await preview(body);
+  assert.equal(first.statusCode,200);assert.equal(first.headers['cache-control'],'no-store');
+  assert.equal(validate('battle_preview',first.json()).ok,true);assert.deepEqual(first.json(),second.json());
+  assert.equal(first.json().draft_revision,0);assert.equal(first.json().actors.length,4);assert.equal(first.json().actors[2].hero_id,'enemy_wolf');
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM owner_audit')).rows[0].n,auditBefore,'preview writes nothing');
+  const other=await preview({...body,defender_hero_ids:['enemy_wolf'],stage_id:undefined,seed:43});assert.equal(other.statusCode,200);
+ }finally{await api.close();}
+});

@@ -3,7 +3,8 @@ import {readFile} from 'node:fs/promises';
 import {extname,resolve} from 'node:path';
 import {crc32,deflateSync} from 'node:zlib';
 import {chromium} from 'playwright';
-let draft=null,logged=false,resources=[],pngBytes=null;
+import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../packages/battle-core/compile.mjs';
+let draft=null,logged=false,resources=[],pngBytes=null,previews=0;
 const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
 const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
 const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255,4,5,6,255]))),chunk('IEND',Buffer.alloc(0))]);
@@ -22,6 +23,10 @@ try{
    else if(path.endsWith('/resources/icon_one')&&method==='PATCH'){const v=req.postDataJSON();if(v.expected_revision!==resources[0].revision){status=409;body={error:{code:'CONFLICT'}};}else{resources[0]={...resources[0],...v,revision:resources[0].revision+1};body=resources[0];}}
    else if(path.endsWith('/drafts')&&method==='GET'){body={drafts:draft?[{id:draft.id,name:draft.name,revision:draft.revision}]:[]};}
    else if(path.endsWith('/drafts')&&method==='POST'){const v=req.postDataJSON();draft={id:v.id,name:v.name,content:v.content,revision:0};body=draft;}
+   else if(path.endsWith('/battle-preview')&&method==='POST'){const v=req.postDataJSON();previews++;
+    if(v.expected_revision!==draft.revision){status=409;body={error:{code:'CONFLICT',message:'CONFLICT'}};}
+    else try{const c=compileContentBattle(draft.content,v);body={api_version:1,preview:true,draft_id:draft.id,draft_revision:draft.revision,...runAutoBattle(c.setup,{heroes:c.heroes})};}
+    catch(e){if(!(e instanceof BattleCompileError))throw e;status=422;body={error:{code:'INVALID_REQUEST',message:e.entity_id?`${e.code}:${e.entity_id}`:e.code}};}}
    else if(path.includes('/drafts/')&&method==='GET'){body=draft;}
    else if(path.includes('/drafts/')&&method==='PUT'){const v=req.postDataJSON();draft={...draft,name:v.name,content:v.content,revision:draft.revision+1};body=draft;}
    else{status=404;body={};}
@@ -54,5 +59,24 @@ try{
  await page.getByRole('button',{name:'Очистить форму'}).click();
  page.once('dialog',dialog=>dialog.accept());await page.locator('li').filter({hasText:'ability_one'}).getByRole('button',{name:'Удалить'}).click();
  await page.getByRole('alert').filter({hasText:'Сначала убери ссылку'}).waitFor();assert.equal(draft.content.entities.length,3);
+ await page.locator('li').filter({hasText:'hero_one'}).getByRole('button',{name:'Изменить'}).click();
+ await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Здоровье').fill('400');await page.getByRole('button',{name:'Применить изменения'}).click();
+ await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('ID объекта').fill('enemy_wolf');await page.getByLabel('Название объекта').fill('Волк');await page.getByLabel('ID фракции').fill('faction_one');await page.getByLabel('ID способностей через запятую').fill('ability_one');
+ await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Интервал атаки, мс').fill('150');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByRole('alert').filter({hasText:'кратное 100'}).waitFor();await page.getByLabel('Интервал атаки, мс').fill('700');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByPlaceholder('enemy_wolf').fill('enemy_wolf');
+ await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Сначала сохрани черновик'}).waitFor();assert.equal(previews,0,'unsaved draft is not sent');
+ await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ assert.ok(draft.content.required_capabilities.includes('battle.combat.v1'));assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.combat.hp,400);
+ await page.getByPlaceholder('hero_batyr, hero_healer').fill('ability_one');await page.getByRole('button',{name:'Проверить бой'}).click();
+ await page.getByRole('alert').filter({hasText:'герой не найден (ability_one)'}).waitFor();
+ await page.getByPlaceholder('hero_batyr, hero_healer').fill('hero_one');await page.getByRole('button',{name:'Проверить бой'}).click();
+ await page.getByRole('status').filter({hasText:'атакующих'}).waitFor();assert.equal(previews,2);
+ await page.locator('svg.battle-field circle').first().waitFor();assert.equal(await page.locator('svg.battle-field circle').count(),2);
+ const slider=page.getByLabel('Время');const last=await slider.getAttribute('max');await slider.fill(last);
+ await page.getByRole('button',{name:'Воспроизвести'}).click();await page.waitForFunction(()=>document.querySelector('input[type=range]')?.value!==document.querySelector('input[type=range]')?.max);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'battle preview has no horizontal overflow');
+ await page.screenshot({path:process.env.UFA_SCREENSHOT||'/tmp/studio-battle-preview.png',fullPage:false});
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');
+ console.log('Chromium mobile: hero combat form, unsaved/invalid preview rejected, server-core preview replay — passed (mock API with real battle-core)');
 }finally{await browser.close();}

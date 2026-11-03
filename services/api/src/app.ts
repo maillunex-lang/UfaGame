@@ -15,7 +15,7 @@ export async function buildApp(pool:Pool,ownerOptions:OwnerOptions={origin:proce
  app.setErrorHandler((error,request,reply)=>{
   const e=error as any;const status=e instanceof DomainError?e.status:(Number.isInteger(e.statusCode)&&e.statusCode>=400&&e.statusCode<500?e.statusCode:500);
   const code=e instanceof DomainError?e.code:(status===429?'RATE_LIMITED':status<500?'INVALID_REQUEST':'INTERNAL_ERROR');
-  return reply.code(status).send({error:{code,message:code,request_id:request.id}});
+  return reply.code(status).send({error:{code,message:e instanceof DomainError&&e.detail?e.detail:code,request_id:request.id}});
  });
  app.get('/health/live',async()=>({status:'ok'}));
  app.get('/health/ready',async(_request,reply)=>{

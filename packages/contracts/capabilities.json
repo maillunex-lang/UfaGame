@@ -6,6 +6,7 @@
     "battle.hp.v1",
     "ui.label.v1",
     "auth.guest.v1",
-    "auth.password.v1"
+    "auth.password.v1",
+    "battle.combat.v1"
   ]
 }

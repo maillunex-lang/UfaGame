@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -14,6 +14,8 @@ export function validate(name, value) {
   if (!validator(value)) return {ok:false, code:'INVALID_REQUEST'};
   if (name === 'content') {
     if (value.required_capabilities.some(c => !registry.capabilities.includes(c))) return {ok:false,code:'INCOMPATIBLE_CLIENT'};
+    const combat = value.entities.some(e => (e.kind==='hero' && e.data.combat) || (e.kind==='ability' && e.data.energy_cost!==undefined));
+    if (combat && !value.required_capabilities.includes('battle.combat.v1')) return {ok:false,code:'INVALID_REQUEST'};
     const ids = new Map(value.entities.map(e => [e.id,e.kind]));
     if (ids.size !== value.entities.length) return {ok:false,code:'INVALID_REQUEST'};
     for (const e of value.entities) {
