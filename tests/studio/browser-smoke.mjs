@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {extname,resolve} from 'node:path';
+import {chromium} from 'playwright';
+let draft=null,logged=false;
+const browser=await chromium.launch({executablePath:process.env.UFA_CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ await context.route('https://studio.test/**',async route=>{
+  const req=route.request(),url=new URL(req.url()),path=url.pathname;
+  if(path.startsWith('/game/server/')){
+   const method=req.method();let body={},status=200;
+   if(path.endsWith('/session')){status=401;body={};}
+   else if(path.endsWith('/sessions')&&method==='POST'){logged=true;body={owner:{display_name:'owner'},csrf_token:'fake'};}
+   else if(path.endsWith('/drafts')&&method==='GET'){body={drafts:draft?[{id:draft.id,name:draft.name,revision:draft.revision}]:[]};}
+   else if(path.endsWith('/drafts')&&method==='POST'){const v=req.postDataJSON();draft={id:v.id,name:v.name,content:v.content,revision:0};body=draft;}
+   else if(path.includes('/drafts/')&&method==='GET'){body=draft;}
+   else if(path.includes('/drafts/')&&method==='PUT'){const v=req.postDataJSON();draft={...draft,name:v.name,content:v.content,revision:draft.revision+1};body=draft;}
+   else{status=404;body={};}
+   return route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
+  }
+  const relative=path.slice('/game/studio/'.length)||'index.html';
+  const file=resolve('apps/studio-web/dist',relative);
+  try{return route.fulfill({status:200,contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css'})[extname(file)],body:await readFile(file)});}catch{return route.fulfill({status:404,body:''});}
+ });
+ const page=await context.newPage();await page.goto('https://studio.test/game/studio/');
+ await page.getByLabel('Логин',{exact:true}).fill('owner');await page.getByLabel('Пароль',{exact:true}).fill('demo-password');await page.getByRole('button',{name:'Войти',exact:true}).click();
+ await page.getByRole('button',{name:'Создать',exact:true}).click();
+ await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('ID объекта').fill('hero_one');await page.getByLabel('Название объекта').fill('Герой');await page.getByLabel('ID фракции').fill('faction_one');await page.getByLabel('ID способностей через запятую').fill('ability_one');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ assert.equal(logged,true);assert.equal(draft.content.entities.length,3);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.getByLabel('ID объекта').fill('unfinished');await page.getByRole('button',{name:'Сохранить',exact:true}).click();
+ await page.getByRole('status').filter({hasText:'Сначала примени или очисти'}).waitFor();assert.equal(draft.revision,1);
+ await page.getByRole('button',{name:'Очистить форму'}).click();
+ page.once('dialog',dialog=>dialog.accept());await page.locator('li').filter({hasText:'ability_one'}).getByRole('button',{name:'Удалить'}).click();
+ await page.getByRole('alert').filter({hasText:'Сначала убери ссылку'}).waitFor();assert.equal(draft.content.entities.length,3);
+ console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');
+}finally{await browser.close();}

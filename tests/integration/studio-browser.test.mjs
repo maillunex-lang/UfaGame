@@ -38,8 +38,12 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   const page=await context.newPage();await page.goto(origin+'/game/studio/');
   await page.getByLabel('Логин',{exact:true}).fill('studio_test');await page.getByLabel('Пароль',{exact:true}).fill(password);await page.getByRole('button',{name:'Войти',exact:true}).click();
   await page.getByRole('button',{name:'Создать',exact:true}).click();await page.getByLabel('Название',{exact:true}).fill('Мобильный черновик');
+  await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+  await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+  await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('ID объекта').fill('hero_one');await page.getByLabel('Название объекта').fill('Герой');await page.getByLabel('ID фракции').fill('faction_one');await page.getByLabel('ID способностей через запятую').fill('ability_one');await page.getByRole('button',{name:'Добавить в черновик'}).click();
   await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
   await page.reload();await page.getByRole('button',{name:/Мобильный черновик · версия/}).click();assert.equal(await page.getByLabel('Название',{exact:true}).inputValue(),'Мобильный черновик');
+  await page.getByText('Герой / враг: Герой (hero_one)',{exact:false}).waitFor();
   const other=await context.newPage();await other.goto(origin+'/game/studio/');await other.getByRole('button',{name:/Мобильный черновик · версия/}).click();
   await page.getByLabel('Название',{exact:true}).fill('Версия первого редактора');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
   await other.getByLabel('Название',{exact:true}).fill('Локальная версия второго');await other.getByRole('button',{name:'Сохранить',exact:true}).click();await other.getByRole('heading',{name:'Конфликт версий',exact:true}).waitFor();
