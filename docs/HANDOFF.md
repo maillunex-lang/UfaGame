@@ -9,8 +9,8 @@
 ## Состояние
 - done: S01–S18 (доказательства — roadmap.md и docs/reports/Sxx.md).
   S10 и S16 приняты владельцем на iQOO 15R / Android 16.
-- in_progress: S51 (обследование VPS). blocked: S20 (по S19), S52 (по поздним этапам).
-- Следующий этап: S19 (экран боя в Game), затем S20 и далее по зависимостям roadmap.
+- in_progress: S19 (обработка кадров в Game, см. docs/reports/S19.md), S51 (обследование VPS). blocked: S20 (по S19), S52 (по поздним этапам).
+- Продолжить S19: поток, экран боя и его обязательные проверки, затем S20 и далее по зависимостям roadmap.
 - S18: packages/battle-core/live.mjs, services/api/src/live-battles.ts и live-routes.ts,
   миграция 011, ADR 0017. Поток и команды проверены локально с PostgreSQL и WebSocket.
   На VPS S18 не развернут, существующий nginx не настроен для WebSocket upgrade;

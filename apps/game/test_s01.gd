@@ -30,5 +30,21 @@ func _initialize() -> void:
 		check(replay.apply(event) == "applied", "apply event")
 		check(replay.apply(event) == "duplicate", "repeat event")
 	check(replay.hp == 0 and replay.sequence == 4, "final state")
+	var live = preload("res://live_replay.gd").new()
+	var snapshot := {"event_seq": 2, "step": 2, "auto": true, "result": null, "actors": [{"id": "hero", "hp": 80, "x": 1, "y": 2, "energy": 10}]}
+	check(live.begin(snapshot, 0), "live reconnect snapshot")
+	var frame := {"seq": 1, "at_ms": 100, "actors": [{"id": "hero", "hp": 90, "x": 0, "y": 0, "energy": 0}], "events": [], "command_results": [], "auto": false, "result": null}
+	check(live.apply(frame) == "replayed" and live.state.actors[0].hp == 80, "replay must not rewind snapshot")
+	check(live.apply(frame) == "duplicate", "duplicate frame")
+	frame.seq = 3
+	check(live.apply(frame) == "gap" and live.cursor == 1, "gap cannot mutate")
+	frame.seq = 2
+	check(live.apply(frame) == "replayed", "replay in order")
+	frame.seq = 3
+	frame.actors[0].hp = 60
+	check(live.apply(frame) == "applied" and live.state.actors[0].hp == 60, "new frame advances")
+	frame.seq = 4
+	frame.actors[0].id = "other"
+	check(live.apply(frame) == "invalid" and live.cursor == 3 and live.state.actors[0].hp == 60, "invalid actor cannot mutate")
 	print("S01 tests: failures=%d first=%s user_dir=%s" % [failures, first, OS.get_user_data_dir()])
 	quit(0 if failures == 0 else 1)
