@@ -1,5 +1,5 @@
 const idPattern=/^[a-z][a-z0-9_]{2,79}$/;
-const supported=new Set(['hero','ability','faction']);
+const supported=new Set(['hero','ability','faction','stage']);
 const fail=message=>{throw new Error(message);};
 const COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
 export const abilityEffects=['damage','heal','stun','knockback'],abilityTargets=['enemy','weakest_enemy','all_enemies','ally_lowest','self'];
@@ -34,6 +34,9 @@ function checkEntity(entity,all,originalId){
   if(!abilityEffects.includes(entity.data.effect)||!Number.isSafeInteger(entity.data.power)||entity.data.power<0||entity.data.power>2147483647||!Number.isSafeInteger(entity.data.cooldown_ms)||entity.data.cooldown_ms<0||entity.data.cooldown_ms>2147483647)fail('Проверь эффект, силу и время способности.');
   if(entity.data.energy_cost!==undefined&&!inRange(entity.data.energy_cost,1,1000))fail('Стоимость энергии — целое число от 1 до 1000.');
   if(entity.data.sound_resource_id!==undefined&&!idPattern.test(entity.data.sound_resource_id))fail('Проверь ID звука.');
+ }else if(entity.kind==='stage'){
+  if(!Array.isArray(entity.data.enemy_hero_ids)||entity.data.enemy_hero_ids.length<1||entity.data.enemy_hero_ids.length>5||entity.data.enemy_hero_ids.some(id=>!all.some(e=>e.id===id&&e.kind==='hero')))fail('Выбери от 1 до 5 противников.');
+  if(entity.data.time_limit_ms!==90000)fail('Длительность этапа — 90 секунд.');
  }else if(entity.kind==='faction'){
   refs(entity.data.advantage_ids,'faction',6);
   if(entity.data.advantage_ids.includes(entity.id))fail('Фракция не может иметь преимущество перед собой.');

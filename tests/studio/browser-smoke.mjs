@@ -105,12 +105,16 @@ try{
  await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('Название объекта').fill('Волк');await openId(page);await page.getByLabel('ID объекта').fill('enemy_wolf');await page.getByRole('combobox',{name:/^Фракция/}).selectOption('faction_one');await page.getByRole('group',{name:/Способности/}).getByLabel('Удар').check();
  await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Интервал атаки, мс').fill('150');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByRole('alert').filter({hasText:'кратное 100'}).waitFor();await page.getByLabel('Интервал атаки, мс').fill('700');await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByLabel('Тип объекта').selectOption('stage');await page.getByLabel('Название объекта').fill('Опушка');
+ await page.getByRole('group',{name:/Противники/}).getByLabel('Волк').check();await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByRole('heading',{name:'Этапы (бои для игры)'}).waitFor();
  await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Сначала сохрани черновик'}).waitFor();assert.equal(previews,0,'unsaved draft is not sent');
  // Autosave: no button press needed.
  await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});await page.getByRole('status').filter({hasText:'сохранён автоматически'}).waitFor();
+ assert.deepEqual(draft.content.entities.find(e=>e.kind==='stage').data,{enemy_hero_ids:['enemy_wolf'],time_limit_ms:90000});
  assert.ok(draft.content.required_capabilities.includes('battle.combat.v1'));assert.ok(draft.content.required_capabilities.includes('content.resources.v1'));assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.sprite_resource_id,'icon_one');assert.equal(draft.content.entities.find(e=>e.id==='hero_one').data.combat.hp,400);
  await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Отметь героев'}).waitFor();assert.equal(previews,0);
- await page.getByRole('group',{name:/Твоя команда/}).getByLabel('Герой',{exact:true}).check();await page.getByRole('group',{name:'Противники'}).getByLabel('Волк',{exact:true}).check();
+ await page.getByRole('group',{name:/Твоя команда/}).getByLabel('Герой',{exact:true}).check();await page.getByRole('group',{name:'Противники',exact:true}).getByLabel('Волк',{exact:true}).check();
  await page.getByRole('button',{name:'Проверить бой'}).click();
  await page.getByRole('status').filter({hasText:'атакующих'}).waitFor();assert.equal(previews,1);
  await page.locator('svg.battle-field circle').first().waitFor();await page.locator('svg[aria-label="Спрайт hero_one"] image').waitFor();assert.equal(await page.locator('svg[aria-label="Спрайт enemy_wolf"]').count(),0,'hero without sprite stays a circle');

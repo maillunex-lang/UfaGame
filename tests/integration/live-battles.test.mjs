@@ -54,8 +54,9 @@ test('live battle: authenticated stream, manual step, retries, reconnect, offlin
   first.ws.send(JSON.stringify({type:'ability',seq:1,for_step:1,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='ack'&&m.ack.seq===1)).ack.replayed,true);
   first.ws.send(JSON.stringify({type:'ability',seq:1,for_step:1,actor_id:'atk_1'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===1)).code,'SEQUENCE_CONFLICT');
   first.ws.send(JSON.stringify({type:'reward',seq:2,for_step:2}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===2)).code,'INVALID_REQUEST');
-  first.ws.send(JSON.stringify({type:'ability',seq:2,for_step:1,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===2)).code,'STALE_COMMAND');
-  first.ws.send(JSON.stringify({type:'ability',seq:3,for_step:900,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===3)).code,'OUT_OF_ORDER');
+  first.ws.send(JSON.stringify({type:'ability',seq:2,for_step:1,actor_id:'atk_0'}));assert.ok((await first.receive(m=>m.type==='ack'&&m.ack.seq===2)).ack.for_step>1,'a slightly late tap moves to the next step');
+  first.ws.send(JSON.stringify({type:'ability',seq:3,for_step:900,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===3)).code,'STALE_COMMAND');
+  first.ws.send(JSON.stringify({type:'ability',seq:5,for_step:900,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===5)).code,'OUT_OF_ORDER');
   await publish();assert.equal((await api.inject({url:'/v1/live-battles/'+initial.battle_id,headers})).json().content_version,version);
   const retryAfterPublish=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:body});assert.equal(retryAfterPublish.json().battle_id,initial.battle_id);assert.equal(retryAfterPublish.json().content_version,version);
   first.ws.close();await new Promise(resolve=>first.ws.once('close',resolve));await new Promise(resolve=>setTimeout(resolve,700));
@@ -133,4 +134,19 @@ test('live socket rejects oversized input and never accepts a token in the URL',
   const closed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Oversized socket stayed open')),8000);socket.once('close',code=>{clearTimeout(timer);resolve(code);});});
   socket.send('x'.repeat(4096));assert.equal(await closed,1009);
  }finally{if(socket)socket.terminate();await api.close();}
+});
+
+test('active live battle can be found after an app restart; none means 404',{timeout:30000},async()=>{
+ const api=await buildApp(pool);try{
+  const me=(await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:randomBytes(32).toString('base64url')}})).json();
+  const headers={authorization:`Bearer ${me.access_token}`};
+  assert.equal((await api.inject({url:'/v1/live-battles/active'})).statusCode,401);
+  assert.equal((await api.inject({url:'/v1/live-battles/active',headers})).statusCode,404);
+  await publish();
+  const created=(await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}})).json();
+  const active=await api.inject({url:'/v1/live-battles/active',headers});assert.equal(active.statusCode,200);
+  assert.equal(active.json().battle_id,created.battle_id);assert.equal(validate('live_battle_snapshot',active.json()).ok,true);
+  const busy=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}});
+  assert.equal(busy.statusCode,409);assert.equal(busy.json().error.message,'ACTIVE_BATTLE_EXISTS');
+ }finally{await api.close();}
 });

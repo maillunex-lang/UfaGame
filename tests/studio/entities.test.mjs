@@ -80,3 +80,13 @@ test('stun/knockback, ability targets and faction strength toggle battle.abiliti
  text=upsertEntity(text,{...ability},ability.id);assert.ok(!JSON.parse(text).required_capabilities.includes('battle.abilities.v2'));
  text=upsertEntity(text,{...faction,data:{advantage_ids:[],advantage_bp:15000}});assert.ok(JSON.parse(text).required_capabilities.includes('battle.abilities.v2'));assert.equal(validate('content',JSON.parse(text)).ok,true);
 });
+test('stages: 1–5 existing heroes, fixed 90 s, protected from deleting their enemies',()=>{
+ let text=upsertEntity(blank(),ability);text=upsertEntity(text,faction);text=upsertEntity(text,hero);
+ const stage={id:'stage_edge',kind:'stage',name:'Край степи',data:{enemy_hero_ids:['hero_one','hero_one'],time_limit_ms:90000}};
+ text=upsertEntity(text,stage);assert.equal(validate('content',JSON.parse(text)).ok,true);
+ assert.throws(()=>upsertEntity(text,{...stage,id:'stage_two',data:{enemy_hero_ids:[],time_limit_ms:90000}}),/противников/);
+ assert.throws(()=>upsertEntity(text,{...stage,id:'stage_two',data:{enemy_hero_ids:['ability_one'],time_limit_ms:90000}}),/противников/);
+ assert.throws(()=>upsertEntity(text,{...stage,id:'stage_two',data:{enemy_hero_ids:['hero_one'],time_limit_ms:30000}}),/90 секунд/);
+ assert.throws(()=>deleteEntity(text,'hero_one'),/ссылку/);
+ assert.equal(listEntities(text).some(e=>e.kind==='stage'),true);
+});

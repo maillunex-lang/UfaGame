@@ -5,8 +5,8 @@ type Api=(path:string,method?:string,body?:unknown,csrf?:string)=>Promise<any>;
 type Res={id:string;media_type:string;width?:number;height?:number;frames?:{x:number;y:number;width:number;height:number}[]};
 const combatLabels:Record<string,string>={hp:'Здоровье',attack:'Атака',defense:'Защита',speed:'Скорость, ед./шаг',range:'Дальность',attack_interval_ms:'Интервал атаки, мс',energy_start:'Энергия на старте',energy_per_second:'Энергия в секунду',energy_per_attack:'Энергия за атаку'};
 const combatDefaults:Record<string,string>={hp:'300',attack:'30',defense:'5',speed:'800',range:'1500',attack_interval_ms:'500',energy_start:'0',energy_per_second:'100',energy_per_attack:'100'};
-const labels={hero:'Герой / враг',ability:'Способность',faction:'Фракция'};
-const prefixes={hero:'hero',ability:'ability',faction:'faction'};
+const labels={hero:'Герой / враг',ability:'Способность',faction:'Фракция',stage:'Этап'};
+const prefixes={hero:'hero',ability:'ability',faction:'faction',stage:'stage'};
 type Kind=keyof typeof labels;
 const dataUrl=(id:string)=>'/game/server/admin/v1/resources/'+encodeURIComponent(id)+'/data';
 
@@ -36,6 +36,7 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
  function reset(nextKind:Kind=kind){setOriginal(null);setId('');setIdTouched(false);setName('');setEffect('damage');setPower('60');setCooldown('1000');setFaction('');setRefs([]);setError('');setEnergyCost('');setResourceRef('');setTarget('');setAdvantage('');setHasCombat(nextKind==='hero');setCombat(combatDefaults);setFormDirty(false);onPendingChange(false);}
  function edit(item:EditableEntity){if(formDirty&&!window.confirm('В форме есть неприменённые изменения. Продолжить?'))return;reset(item.kind);setOriginal(item.id);setKind(item.kind);setId(item.id);setName(item.name);setNotice('');
   if(item.kind==='ability'){setEffect(item.data.effect);setPower(String(item.data.power));setCooldown(String(item.data.cooldown_ms));setEnergyCost(item.data.energy_cost===undefined?'':String(item.data.energy_cost));setResourceRef(item.data.sound_resource_id??'');setTarget(item.data.target??'');}
+  if(item.kind==='stage')setRefs(item.data.enemy_hero_ids);
   if(item.kind==='faction'){setRefs(item.data.advantage_ids);setAdvantage(item.data.advantage_bp===undefined?'':String(item.data.advantage_bp/100));}
   if(item.kind==='hero'){setFaction(item.data.faction_id);setRefs(item.data.ability_ids);setResourceRef(item.data.sprite_resource_id??'');setHasCombat(!!item.data.combat);if(item.data.combat)setCombat(Object.fromEntries(Object.entries(item.data.combat).map(([k,v])=>[k,String(v)])));}
  }
@@ -43,10 +44,11 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
  function apply(){try{
   if(!name.trim())throw new Error('Введи название.');
   if(kind==='hero'&&!faction)throw new Error('Выбери фракцию героя (или создай её кнопкой выше).');
+  if(kind==='stage'&&(refs.length<1||refs.length>5))throw new Error('Отметь от 1 до 5 противников.');
   if(kind==='hero'&&refs.length===0)throw new Error('Отметь хотя бы одну способность.');
   if(kind==='ability'&&(!power.trim()||!cooldown.trim()))throw new Error('Укажи силу и перезарядку.');
   if(kind==='hero'&&hasCombat&&combatFields.some(([n])=>!(combat[n]??'').trim()))throw new Error('Заполни все боевые параметры.');
-  const data=kind==='ability'?{effect,power:Number(power),cooldown_ms:Number(cooldown),...(energyCost.trim()?{energy_cost:Number(energyCost)}:{}),...(resourceRef?{sound_resource_id:resourceRef}:{}),...(target?{target}:{})}:kind==='faction'?{advantage_ids:refs,...(advantage.trim()?{advantage_bp:Math.round(Number(advantage)*100)}:{})}:{faction_id:faction,ability_ids:refs,...(resourceRef?{sprite_resource_id:resourceRef}:{}),...(hasCombat?{combat:Object.fromEntries(combatFields.map(([n])=>[n,Number(combat[n])]))}:{})};
+  const data=kind==='stage'?{enemy_hero_ids:refs,time_limit_ms:90000}:kind==='ability'?{effect,power:Number(power),cooldown_ms:Number(cooldown),...(energyCost.trim()?{energy_cost:Number(energyCost)}:{}),...(resourceRef?{sound_resource_id:resourceRef}:{}),...(target?{target}:{})}:kind==='faction'?{advantage_ids:refs,...(advantage.trim()?{advantage_bp:Math.round(Number(advantage)*100)}:{})}:{faction_id:faction,ability_ids:refs,...(resourceRef?{sprite_resource_id:resourceRef}:{}),...(hasCombat?{combat:Object.fromEntries(combatFields.map(([n])=>[n,Number(combat[n])]))}:{})};
   onChange(upsertEntity(text,{id:autoId.trim(),name:name.trim(),kind,data},original));reset();setNotice(saved);
  }catch(e){setError((e as Error).message);}}
  function remove(item:EditableEntity){if(!window.confirm(`Удалить «${item.name}» из черновика?`))return;try{onChange(deleteEntity(text,item.id));if(original===item.id)reset();setError('');setNotice(saved);}catch(e){setError((e as Error).message);}}
@@ -65,10 +67,10 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
    {images.length===0&&<p className="hint">Картинок пока нет — загрузи PNG выше в разделе «Изображения и звуки», он появится в этом списке.</p>}
    <button type="button" onClick={quick}>Создать героя</button></div>}
   {notice&&<p role="status" className="notice">{notice}</p>}
-  {(['hero','ability','faction'] as Kind[]).map(k=>of(k).length>0&&<div key={k}><h3>{{hero:'Герои',ability:'Способности',faction:'Фракции'}[k]}</h3><ul className="entity-list">{of(k).map(e=><li key={e.id}>{k==='hero'&&<Thumb res={resById(e.data.sprite_resource_id)}/>}<span><strong>{e.name}</strong> <small>{e.id}</small></span><button type="button" className="link" aria-label={`Изменить ${e.id}`} onClick={()=>edit(e)}>Изменить</button><button type="button" className="link" aria-label={`Удалить ${e.id}`} onClick={()=>remove(e)}>Удалить</button></li>)}</ul></div>)}
+  {(['hero','ability','faction','stage'] as Kind[]).map(k=>of(k).length>0&&<div key={k}><h3>{{hero:'Герои',ability:'Способности',faction:'Фракции',stage:'Этапы (бои для игры)'}[k]}</h3><ul className="entity-list">{of(k).map(e=><li key={e.id}>{k==='hero'&&<Thumb res={resById(e.data.sprite_resource_id)}/>}<span><strong>{e.name}</strong> <small>{e.id}</small></span><button type="button" className="link" aria-label={`Изменить ${e.id}`} onClick={()=>edit(e)}>Изменить</button><button type="button" className="link" aria-label={`Удалить ${e.id}`} onClick={()=>remove(e)}>Удалить</button></li>)}</ul></div>)}
   <h3>{original?`Изменить: ${name||original}`:'Добавить вручную'}</h3>
   <div onChange={touch}>
-  <label>Тип объекта<select value={kind} disabled={!!original} onChange={e=>{const k=e.target.value as Kind;reset(k);setKind(k);}}><option value="hero">Герой / враг</option><option value="ability">Способность</option><option value="faction">Фракция</option></select></label>
+  <label>Тип объекта<select value={kind} disabled={!!original} onChange={e=>{const k=e.target.value as Kind;reset(k);setKind(k);}}><option value="hero">Герой / враг</option><option value="ability">Способность</option><option value="faction">Фракция</option><option value="stage">Этап (бой в игре)</option></select></label>
   <label>Название объекта<input value={name} maxLength={100} onChange={e=>setName(e.target.value)} placeholder={kind==='hero'?'Например: Степной волк':kind==='ability'?'Например: Удар сабли':'Например: Урал'}/></label>
   {kind==='hero'&&<>
    <label>Фракция<select value={faction} onChange={e=>setFaction(e.target.value)}><option value="">— выбери —</option>{of('faction').map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></label>
@@ -84,6 +86,7 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
   {kind==='ability'&&<><label>Эффект<select value={effect} onChange={e=>setEffect(e.target.value)}><option value="damage">Урон</option><option value="heal">Лечение</option><option value="stun">Оглушение</option><option value="knockback">Отбрасывание</option></select></label><label>{effect==='stun'?'Длительность оглушения, мс (до 5000)':effect==='knockback'?'Дальность отбрасывания (до 5000)':'Сила'}<input type="number" min="0" value={power} onChange={e=>setPower(e.target.value)} /></label>
    <label>Цель<select value={target} onChange={e=>setTarget(e.target.value)}><option value="">Обычная ({effect==='heal'?'самый раненый союзник':'ближайший враг'})</option><option value="enemy">Ближайший враг</option><option value="weakest_enemy">Враг с наименьшим здоровьем</option><option value="all_enemies">Все враги в радиусе</option><option value="ally_lowest">Самый раненый союзник</option><option value="self">Сам герой</option></select></label><label>Перезарядка, мс<input type="number" min="0" value={cooldown} onChange={e=>setCooldown(e.target.value)} /></label><label>Стоимость энергии (основная способность, пусто = 1000)<input type="number" min="1" max="1000" value={energyCost} onChange={e=>setEnergyCost(e.target.value)} /></label>
    <label>Звук<select value={resourceRef} onChange={e=>setResourceRef(e.target.value)}><option value="">Без звука</option>{sounds.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label></>}
+  {kind==='stage'&&<fieldset className="pick"><legend>Противники (до 5; первые два — впереди)</legend>{of('hero').map(h=><label key={h.id} className="check"><input type="checkbox" checked={refs.includes(h.id)} onChange={e=>toggle(h.id,e.target.checked)}/>{h.name}{h.data.combat?'':' (нет боевых параметров — в бою не сможет)'}</label>)}{of('hero').length===0&&<p className="hint">Сначала создай героев-противников.</p>}<p className="hint">Этап длится 90 секунд. В игре он появится после публикации.</p></fieldset>}
   {kind==='faction'&&<fieldset className="pick"><legend>Сильнее против фракций</legend>{of('faction').filter(f=>f.id!==original).map(f=><label key={f.id} className="check"><input type="checkbox" checked={refs.includes(f.id)} onChange={e=>toggle(f.id,e.target.checked)}/>{f.name}</label>)}{of('faction').filter(f=>f.id!==original).length===0&&<p className="hint">Других фракций пока нет.</p>}</fieldset>}
   {kind==='faction'&&<label>Сила преимущества, % урона (пусто = 120%)<input type="number" min="100" max="200" value={advantage} onChange={e=>setAdvantage(e.target.value)} placeholder="120"/></label>}
   <details><summary>Дополнительно: ID {autoId}</summary><label>ID объекта<input value={autoId} disabled={!!original} onChange={e=>{setIdTouched(true);setId(e.target.value);}} autoCapitalize="none" autoCorrect="off" spellCheck={false}/></label><p className="hint">ID создаётся из названия автоматически. Менять его нужно редко.</p></details>

@@ -16,7 +16,9 @@ test('rejects stale, out-of-order, wrong-side, duplicate and excessive future co
  let s=make();assert.throws(()=>queueLiveCommand(s,command(2)),/OUT_OF_ORDER/);assert.throws(()=>queueLiveCommand(s,command(1,6)),/STALE_COMMAND/);
  assert.throws(()=>queueLiveCommand(s,{...command(),actor_id:'def_0'}),/INVALID_ACTOR/);s=queueLiveCommand(s,command()).session;
  assert.throws(()=>queueLiveCommand(s,command(2)),/DUPLICATE_ACTOR_COMMAND/);s=advanceLiveBattle(s).session;
- assert.throws(()=>queueLiveCommand(s,command(2,1)),/STALE_COMMAND/);
+ const late=queueLiveCommand(s,command(2,1));assert.equal(late.ack.for_step,2,'a just-missed step moves to the next one');
+ const old=make();old.state.step=30;assert.throws(()=>queueLiveCommand(old,command(1,20)),/STALE_COMMAND/,'10+ steps late is stale');
+ assert.equal(queueLiveCommand(make(),command(1,1),{earliestStep:4}).ack.for_step,4,'server clock can push the step forward');
 });
 test('future command reports unready without applying twice; reconnect checkpoint and auto survive cloning',()=>{
  let s=make();s=queueLiveCommand(s,command(1,2)).session;s=advanceLiveBattle(s).session;
@@ -34,10 +36,19 @@ test('disconnected play forces auto even if an earlier queued command disables i
  assert.equal(out.session.auto,true);assert.deepEqual(out.frame.command_results,[{seq:1,status:'rejected',reason:'OFFLINE_AUTO'}]);
  assert.equal(out.session.state.actors.find(a=>a.id==='def_0').hp,60);
 });
-test('queued command is rejected at execution if the actor cannot act',()=>{
+test('charged tap waits up to 1 s for the hero to be able to act, then applies once',()=>{
  let s=make();s=queueLiveCommand(s,command()).session;s.state.actors.find(a=>a.id==='atk_0').stunned_until_step=3;
- const out=advanceLiveBattle(s);assert.deepEqual(out.frame.command_results,[{seq:1,status:'rejected',reason:'ABILITY_NOT_READY'}]);
- assert.equal(out.session.state.actors.find(a=>a.id==='def_0').hp,100);
+ const results=[];for(let i=0;i<4;i++){const out=advanceLiveBattle(s);results.push(out.frame.command_results);s=out.session;}
+ assert.deepEqual(results,[[],[],[],[{seq:1,status:'applied'}]],'waits while stunned, applies when free');
+ assert.equal(s.pending.length,0,'not applied twice');
+});
+test('queued command is rejected after the wait, or at once without energy',()=>{
+ let s=make();s=queueLiveCommand(s,command()).session;Object.assign(s.state.actors.find(a=>a.id==='atk_0'),{stunned_until_step:50,hp:100000,max_hp:100000});
+ const results=[];for(let i=0;i<12;i++){const out=advanceLiveBattle(s);results.push(...out.frame.command_results);s=out.session;}
+ assert.deepEqual(results,[{seq:1,status:'rejected',reason:'ABILITY_NOT_READY'}]);assert.equal(s.pending.length,0);
+ let e=make();e=queueLiveCommand(e,command()).session;e.state.actors.find(a=>a.id==='atk_0').energy=0;
+ const out=advanceLiveBattle(e);assert.deepEqual(out.frame.command_results,[{seq:1,status:'rejected',reason:'ABILITY_NOT_READY'}]);
+ assert.equal(out.session.state.actors.find(a=>a.id==='def_0').hp,90,'only the basic attack (10), not the ability (40)');
 });
 test('frame reports automatic mode and command results in sequence order',()=>{
  let s=make();s=queueLiveCommand(s,command()).session;s=queueLiveCommand(s,{type:'auto',seq:2,for_step:1,enabled:true}).session;

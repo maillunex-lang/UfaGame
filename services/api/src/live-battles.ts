@@ -5,7 +5,7 @@ import {transaction} from './db.ts';
 import {authorize,lockAuthorized,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {DomainError} from './errors.ts';
-import {createLiveBattle,queueLiveCommand,advanceLiveBattle,disconnectLiveBattle} from '../../../packages/battle-core/live.mjs';
+import {createLiveBattle,queueLiveCommand,advanceLiveBattle,disconnectLiveBattle,LATE_STEPS} from '../../../packages/battle-core/live.mjs';
 
 const MAX_ACTIVE=16;
 const workerUrl=new URL('./live-battle-worker.mjs',import.meta.url);
@@ -57,11 +57,12 @@ export async function submitLive(pool:Pool,token:string,id:string,connectionId:s
   if(!row)throw new DomainError('NOT_FOUND',404);
   const serverNow=(await c.query('SELECT clock_timestamp() AS server_wall_time')).rows[0].server_wall_time;
   if(row.connection_id!==connectionId||!row.connected_until||row.connected_until.getTime()<=serverNow.getTime())throw new DomainError('CONFLICT',409,'CONNECTION_REPLACED');
-  if(!row.session_state.acks.some((item:any)=>item.seq===command.seq)){
-   const deadline=row.next_tick_at.getTime()+(command.for_step-row.session_state.state.step-1)*100;
-   if(deadline<=serverNow.getTime())throw new DomainError('CONFLICT',409,'STALE_COMMAND');
-  }
-  let result;try{result=queueLiveCommand(row.session_state,command);}catch(error){const code=(error as Error).message;throw new DomainError(code==='INVALID_COMMAND'?'INVALID_REQUEST':'CONFLICT',code==='INVALID_COMMAND'?400:409,code);}
+  // First step whose server-clock deadline has not passed yet; a command up to
+  // LATE_STEPS late is moved there (mobile lag), older ones are stale.
+  const overdue=serverNow.getTime()-row.next_tick_at.getTime();
+  const earliestStep=row.session_state.state.step+1+(overdue>=0?Math.floor(overdue/100)+1:0);
+  if(!row.session_state.acks.some((item:any)=>item.seq===command.seq)&&Number.isSafeInteger(command?.for_step)&&earliestStep-command.for_step>=LATE_STEPS)throw new DomainError('CONFLICT',409,'STALE_COMMAND');
+  let result;try{result=queueLiveCommand(row.session_state,command,{earliestStep});}catch(error){const code=(error as Error).message;throw new DomainError(code==='INVALID_COMMAND'?'INVALID_REQUEST':'CONFLICT',code==='INVALID_COMMAND'?400:409,code);}
   await c.query('UPDATE live_battles SET session_state=$2 WHERE id=$1',[id,result.session]);return result.ack;
  });
 }

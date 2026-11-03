@@ -1,12 +1,19 @@
 import type {FastifyInstance,FastifyRequest} from 'fastify';
 import type {Pool} from 'pg';
 import {randomUUID} from 'node:crypto';
-import {bearer} from './auth.ts';
+import {authorize,bearer} from './auth.ts';
 import {DomainError} from './errors.ts';
 import {advanceDue,attachLive,detachLive,liveSnapshot,readFrames,renewLive,startLiveBattle,submitLive} from './live-battles.ts';
 
 export async function registerLiveRoutes(app:FastifyInstance,pool:Pool){
  app.post('/v1/live-battles',{config:{rateLimit:{max:30,timeWindow:60000}}},async request=>startLiveBattle(pool,bearer(request),request.body));
+ // The player's unfinished battle (to resume after an app restart); 404 when none.
+ app.get('/v1/live-battles/active',async request=>{
+  const auth=await authorize(pool,bearer(request));
+  const row=(await pool.query('SELECT id FROM live_battles WHERE player_id=$1 AND completed_at IS NULL',[auth.player_id])).rows[0];
+  if(!row)throw new DomainError('NOT_FOUND',404);
+  return liveSnapshot(pool,bearer(request),row.id);
+ });
  app.get('/v1/live-battles/:id',async request=>liveSnapshot(pool,bearer(request),(request.params as any).id));
  const preValidation=async(request:FastifyRequest)=>{
   const query=request.query as Record<string,unknown>;
@@ -15,7 +22,7 @@ export async function registerLiveRoutes(app:FastifyInstance,pool:Pool){
  };
  app.get('/v1/live-battles/:id/stream',{websocket:true,preValidation},(socket,request)=>{
   const token=bearer(request),id=(request.params as any).id,connectionId=randomUUID();
-  const after=(request.query as any).after;let cursor=0,snapshotSeq=0,closed=false,polling=false,windowAt=Date.now(),windowCount=0,inflight=0;
+  const after=(request.query as any).after;let cursor=0,snapshotSeq=0,closed=false,polling=false,finishing=false,windowAt=Date.now(),windowCount=0,inflight=0;
   let chain=Promise.resolve();
   const send=(value:any)=>{if(socket.readyState!==1)return;if(socket.bufferedAmount>1024*1024){socket.close(1013,'BACKPRESSURE');return;}socket.send(JSON.stringify(value));};
   const ready=attachLive(pool,token,id,connectionId).then(snapshot=>{
@@ -40,7 +47,8 @@ export async function registerLiveRoutes(app:FastifyInstance,pool:Pool){
    try{
     await ready;const snapshot=await renewLive(pool,token,id,connectionId),frames=await readFrames(pool,token,id,cursor);
     for(const frame of frames){if(frame.seq!==cursor+1)throw new Error('FRAME_GAP');send({type:'frame',frame,replayed:frame.seq<=snapshotSeq});cursor=frame.seq;}
-    if(snapshot.result!==null&&cursor>=snapshot.event_seq)socket.close(1000,'BATTLE_FINISHED');
+    // Give the client time to read the final frames before the close frame arrives.
+    if(snapshot.result!==null&&cursor>=snapshot.event_seq&&!finishing){finishing=true;setTimeout(()=>{if(socket.readyState===1)socket.close(1000,'BATTLE_FINISHED');},1000).unref();}
    }catch(error){if(socket.readyState===1)socket.close(error instanceof DomainError&&error.code==='UNAUTHORIZED'?1008:1011,'SESSION_CLOSED');}
    finally{polling=false;}
   };

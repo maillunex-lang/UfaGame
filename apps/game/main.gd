@@ -99,6 +99,10 @@ func _explain(code: String) -> String:
 		"NO_CONTENT": "Мир ещё не опубликован на сервере.",
 		"ANDROID_KEYSTORE_REQUIRED": "Нужна Android-сборка с защищённым хранилищем.",
 		"HTTPS_REQUIRED": "Нужен адрес сервера, начинающийся с https://",
+		"CONFLICT": "Предыдущий бой ещё идёт. Нажми ещё раз — игра продолжит его.",
+		"UNAUTHORIZED": "Нужно войти заново: нажми «Играть (вход гостем)».",
+		"INVALID_REQUEST": "Сервер не смог собрать бой (проверь героев и этап в Studio).",
+		"SERVICE_UNAVAILABLE": "Сервер занят, попробуй через минуту.",
 	}
 	return texts.get(code, "Ошибка: " + code)
 
@@ -171,6 +175,67 @@ func _show_hub() -> void:
 		title.add_theme_font_size_override("font_size", 20)
 		row.add_child(title)
 		hub.add_child(row)
+	_battle_section(bundle)
+
+var stage_picker: OptionButton
+var hero_checks: Dictionary = {}
+var stage_ids: Array = []
+
+func _battle_section(bundle: Dictionary) -> void:
+	label("Бой", 24, hub)
+	stage_ids = bundle.content.entities.filter(func(e): return e.get("kind") == "stage").map(func(e): return e.id)
+	var fighters: Array = bundle.content.entities.filter(func(e): return e.get("kind") == "hero" and e.get("data", {}).has("combat"))
+	if stage_ids.is_empty() or fighters.is_empty():
+		label("Чтобы сразиться, создай в Studio этап с противниками и героя с боевыми параметрами, затем опубликуй.", 18, hub)
+		return
+	stage_picker = OptionButton.new()
+	stage_picker.custom_minimum_size.y = 54
+	for e in bundle.content.entities:
+		if e.get("kind") == "stage":
+			stage_picker.add_item(str(e.get("name", e.id)))
+	hub.add_child(stage_picker)
+	label("Твоя команда (до 5):", 18, hub)
+	hero_checks.clear()
+	for e in fighters:
+		var check := CheckBox.new()
+		check.text = str(e.get("name", e.id))
+		check.custom_minimum_size.y = 48
+		check.button_pressed = hero_checks.size() == 0
+		hub.add_child(check)
+		hero_checks[e.id] = check
+	var go := Button.new()
+	go.text = "Продолжить бой" if FileAccess.file_exists("user://live_battle.json") else "В бой!"
+	go.custom_minimum_size.y = 60
+	go.pressed.connect(_start_battle)
+	hub.add_child(go)
+
+func _start_battle() -> void:
+	if busy:
+		return
+	var team: Array = hero_checks.keys().filter(func(id): return hero_checks[id].button_pressed)
+	if team.is_empty() or team.size() > 5:
+		status.text = "Отметь от 1 до 5 героев."
+		return
+	busy = true
+	status.text = "Начинаем бой…"
+	var live = preload("res://live_client.gd").new()
+	live.auth = auth
+	add_child(live)
+	var view = preload("res://battle_view.gd").new()
+	add_child(view)
+	view.setup(live, content)
+	view.closed.connect(func():
+		live.queue_free()
+		status.text = ""
+		_show_hub())
+	var result: Dictionary = await live.start(str(stage_ids[stage_picker.selected]), team)
+	busy = false
+	if not result.ok:
+		view.queue_free()
+		live.queue_free()
+		status.text = "Бой не начался: " + _explain(str(result.code))
+	elif result.get("resumed", false):
+		view.status_label.text = "Продолжаем начатый бой."
 
 func _build_account() -> void:
 	label("Аккаунт", 24)

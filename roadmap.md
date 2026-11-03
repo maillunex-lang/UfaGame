@@ -1409,3 +1409,14 @@ WebSocket upgrade; перед развертыванием резервиров�
 не подключена; боя в приложении еще нет. Нужны WebSocket-клиент, интерфейс,
 анимации, сверка результата, Android и проверка сети. APK не собирался.
 S19 in_progress, S20 остается blocked. Отчет docs/reports/S19.md.
+
+### S19 — бой в Game: клиент, экран, команды, сверка; in_progress (нужен Android)
+Game: live_client.gd, battle_view.gd, раздел «Бой» в main.gd; Studio: «Этап»; сервер:
+ожидание готовности нажатия и перенос опоздавших до 1 с команд, отложенное закрытие
+потока, `GET /v1/live-battles/active` (ADR 0017 дополнение); nginx WebSocket
+(render-websocket.py/apply-websocket.sh). Проверки: настоящий Godot — бой, команда,
+авто, обрыв/переподключение, перезапуск/продолжение, сверка итога, все кадры без
+пропусков (4/4 прогона); интеграция 36/36; check:battle 38; `npm run check`,
+check:game exit0; nginx 1.24.0: без правки WebSocket 404, с правкой работает.
+Миграций нет. Не проверено: Android и внешний WSS (нужны развертывание и Game v10).
+Подробности docs/reports/S19.md.
