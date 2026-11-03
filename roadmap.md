@@ -1420,3 +1420,9 @@ Game: live_client.gd, battle_view.gd, раздел «Бой» в main.gd; Studio
 check:game exit0; nginx 1.24.0: без правки WebSocket 404, с правкой работает.
 Миграций нет. Не проверено: Android и внешний WSS (нужны развертывание и Game v10).
 Подробности docs/reports/S19.md.
+CI на 80b531d: Repository checks 41608811840 — success. Game v10 (26 015 370 байт,
+сертификат e8959e0f…e575, capability battle.abilities.v2 в комплекте) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s19-game-test-v10/Game-arm64-v10.apk
+— повторное скачивание, SHA-256 030ee3c7…7639 совпал; на телефоне не проверена.
+Для проверки на телефоне нужны: развертывание 80b531d (миграции 011 при старте),
+nginx WebSocket (apply-websocket.sh) и опубликованный в Studio этап.
