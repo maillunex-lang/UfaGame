@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY tools/s01/stack-check/package.json tools/s01/stack-check/package.json
 COPY packages/contracts/ packages/contracts/
+COPY packages/content-validator/ packages/content-validator/
 COPY services/api/ services/api/
 COPY services/worker/package.json services/worker/package.json
 COPY apps/studio-web/package.json apps/studio-web/package.json

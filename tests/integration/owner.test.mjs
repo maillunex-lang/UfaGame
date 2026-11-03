@@ -133,3 +133,28 @@ test('draft create/save: owner authorization, CSRF, retries, conflicts, audit an
   assert.equal(validate('owner_audit_page',(await api.inject({url:'/admin/v1/audit?after=0&limit=100',headers:{cookie:session.cookie}})).json()).ok,true);
  }finally{await api.close();}
 });
+
+test('private PNG resources: authorization, validation, idempotency and atomic audit',async()=>{
+ const {crc32,deflateSync}=await import('node:zlib');
+ const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
+ const h=Buffer.alloc(13);h.writeUInt32BE(1);h.writeUInt32BE(1,4);h[8]=8;h[9]=6;
+ const image=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',h),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255]))),chunk('IEND',Buffer.alloc(0))]);
+ const api=await app();try{
+  const session=await login(api),id='asset_'+randomUUID().replaceAll('-','').slice(0,16);
+  const body={id,data_base64:image.toString('base64'),license:{name:'author-owned',attribution:'artist'},scale_bp:10000,anchor:{x:0,y:0},frames:[{x:0,y:0,width:1,height:1,duration_ms:100}],loop:true,...meta()};
+  const post=(payload,headers={})=>api.inject({method:'POST',url:'/admin/v1/resources',payload,headers:{origin,cookie:session.cookie,'x-ufa-csrf':session.csrf,...headers}});
+  assert.equal((await api.inject({method:'GET',url:'/admin/v1/resources'})).statusCode,401);
+  assert.equal((await post(body,{'x-ufa-csrf':''})).statusCode,403);
+  assert.equal((await post({...body,id:id+'_bad',data_base64:Buffer.from('not an image').toString('base64'),request_id:randomUUID()})).statusCode,400);
+  const created=await post(body);assert.equal(created.statusCode,200);assert.equal(created.json().id,id);assert.equal(created.json().width,1);
+  assert.deepEqual((await post(body)).json(),created.json());
+  assert.equal((await post({...body,license:{...body.license,attribution:'changed'}})).statusCode,409);
+  const response=await api.inject({url:'/admin/v1/resources/'+id+'/data',headers:{cookie:session.cookie}});
+  assert.equal(response.statusCode,200);assert.match(response.headers['content-type'],/^image\/png/);assert.deepEqual(response.rawPayload,image);
+  assert.equal((await api.inject({url:'/admin/v1/resources/'+id+'/data'})).statusCode,401);
+  const audit=(await pool.query("SELECT before_state,after_state FROM owner_audit WHERE action='resource.create' AND resource_id=$1",['resource:'+id])).rows;
+  assert.equal(audit.length,1);assert.equal(audit[0].before_state,null);assert.equal(audit[0].after_state.id,id);assert.ok(!JSON.stringify(audit).includes(body.data_base64));
+  const conflict=await Promise.all([post({...body,id:id+'_race',request_id:randomUUID()}),post({...body,id:id+'_race',request_id:randomUUID()})]);
+  assert.deepEqual(conflict.map(x=>x.statusCode).sort(),[200,409]);
+ }finally{await api.close();}
+});

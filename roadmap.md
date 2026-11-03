@@ -1111,3 +1111,17 @@ exit0, unit тесты и мобильный Chromium с mock API прошли; 
 Граф условий, энергия/цели, preview, публикация и появление в игре не реализованы.
 S20 blocked до S17/S19, не done; подробности docs/reports/S20.md. Нового APK и
 миграций нет. Следующий шаг — автоматические интеграционные проверки и зависимости.
+
+### S11/S10 — PNG API, preview и Android picker
+Миграция 007, owner-only API, аудит, ограничение квот/PNG и форма лицензии/preview
+подготовлены; PickerPolicy разрешает только PNG/ZIP, APK v12 собран. `npm run
+check` exit0, Chromium mobile с mock API прошел; тесты реальных API/PostgreSQL
+добавлены, ожидается CI. Миграция и UI на VPS не применялись, Android не проверен.
+Остаются аудио, другие форматы, редактор анимации, OS sandbox и связка с контентом;
+S11/S10 in_progress. Подробности docs/reports/S11.md и S10.md.
+
+### S20 — автоматическая интеграционная проверка
+GitHub Actions 41567819125 на commit 9d66e6b: source, Godot и integration
+успешны, включая мобильный браузер, реальные API/PostgreSQL и формы объектов.
+S20 blocked: граф способностей, preview, игра и публикация еще не реализованы;
+новые веб-файлы на VPS не размещались.

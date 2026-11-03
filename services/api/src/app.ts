@@ -19,7 +19,7 @@ export async function buildApp(pool:Pool,ownerOptions:OwnerOptions={origin:proce
  });
  app.get('/health/live',async()=>({status:'ok'}));
  app.get('/health/ready',async(_request,reply)=>{
-  try{const ready=await pool.query('SELECT 1 FROM schema_migrations WHERE name=$1',['006-studio-drafts.sql']);if(!ready.rowCount)throw new Error('Schema not ready');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
+  try{const ready=await pool.query('SELECT name FROM schema_migrations WHERE name = ANY($1::text[])',[['006-studio-drafts.sql','007-owner-resources.sql']]);if(ready.rowCount!==2)throw new Error('Schema not ready');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
  });
  app.get('/v1/capabilities',async()=>registry);
  app.setNotFoundHandler((request,reply)=>reply.code(404).send({error:{code:'NOT_FOUND',message:'NOT_FOUND',request_id:request.id}}));

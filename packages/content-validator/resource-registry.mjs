@@ -9,6 +9,7 @@ export class ResourceRegistry {
   if(typeof id!=='string'||!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>8*1024*1024)throw new Error('INVALID_RESOURCE');
   if(this.#resources.has(id))throw new Error('DUPLICATE_RESOURCE');
   const copy=Buffer.from(bytes),info=await inspectPngIsolated(copy);
+  anchor=anchor??{x:0,y:0};frames=frames??[{x:0,y:0,width:info.width,height:info.height,duration_ms:100}];
   const descriptor={id,media_type:info.media_type,sha256:createHash('sha256').update(copy).digest('hex'),size:copy.length,width:info.width,height:info.height,license:structuredClone(license),scale_bp,anchor:structuredClone(anchor),frames:structuredClone(frames),loop};
   if(!validate('resource_descriptor',descriptor).ok)throw new Error('INVALID_METADATA');
   if(anchor.x>=info.width||anchor.y>=info.height||frames.some(f=>f.x+f.width>info.width||f.y+f.height>info.height))throw new Error('FRAME_OUT_OF_BOUNDS');

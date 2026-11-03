@@ -109,11 +109,14 @@ public final class StudioActivity extends Activity {
     web.setWebChromeClient(new WebChromeClient() {
       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
         if(!OriginPolicy.allows(view.getUrl())) { callback.onReceiveValue(null); return true; }
+        String[] allowed=PickerPolicy.allowed(params.getAcceptTypes());
+        if(allowed.length==0){callback.onReceiveValue(null);Toast.makeText(StudioActivity.this,"Этот тип файла не поддерживается",Toast.LENGTH_LONG).show();return true;}
         if(upload!=null) upload.onReceiveValue(null);
         upload=callback;
         Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/zip");
+        if(allowed.length==1)intent.setType(allowed[0]);
+        else {intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,allowed);}
         try { startActivityForResult(intent,PICK_ZIP); }
         catch(ActivityNotFoundException error) { upload=null; callback.onReceiveValue(null); Toast.makeText(StudioActivity.this,"Нет приложения для выбора файла",Toast.LENGTH_LONG).show(); }
         return true;

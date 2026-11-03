@@ -9,7 +9,7 @@ export async function inspectPngIsolated(bytes) {
  if(active>=2)throw new Error('RESOURCE_BUSY');
  active++;
  try {return await new Promise((resolve,reject)=>{
-  const child=spawn(process.execPath,['--permission',`--allow-fs-read=${worker}`,`--allow-fs-read=${parser}`,'--max-old-space-size=64',worker],{stdio:['pipe','pipe','ignore']});
+  const child=spawn(process.execPath,['--permission',`--allow-fs-read=${worker}`,`--allow-fs-read=${parser}`,'--max-old-space-size=64',worker],{stdio:['pipe','pipe','ignore'],env:{}});
   let output='',settled=false;
   const timeout=setTimeout(()=>{child.kill('SIGKILL');finish(new Error('RESOURCE_TIMEOUT'));},5000);
   const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timeout);if(error)reject(error);else resolve(value);};

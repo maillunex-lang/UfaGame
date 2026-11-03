@@ -14,3 +14,7 @@ test('rejects corrupt images, missing frames, frame overflow and duplicate ids a
  const r=new ResourceRegistry();for(const mutate of [i=>i.bytes=Buffer.from('bad'),i=>i.frames=[],i=>i.frames[0].width=2,i=>i.license.name='']){const entry=input();mutate(entry);await assert.rejects(r.addPng(entry));assert.equal(r.list().length,0);}
  await r.addPng(input());await assert.rejects(r.addPng(input()),/DUPLICATE_RESOURCE/);assert.equal(r.list().length,1);
 });
+test('default frame covers the verified image when omitted',async()=>{
+ const r=new ResourceRegistry(),item=input();delete item.frames;delete item.anchor;
+ const result=await r.addPng(item);assert.deepEqual(result.anchor,{x:0,y:0});assert.deepEqual(result.frames,[{x:0,y:0,width:1,height:1,duration_ms:100}]);
+});
