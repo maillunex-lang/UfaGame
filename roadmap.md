@@ -1492,3 +1492,7 @@ PostgreSQL; настоящий Godot (кампания, отказ закрыт�
 подтверждения сервера, повтор без награды); check:game failures=0.
 Откат: старый код игнорирует таблицу campaign_progress.
 Не проверено: VPS и телефон. Следующий шаг: Game v12, обновление VPS, приемка владельцем.
+CI на 1ffb6af: Repository checks 41618899764 — success. Game v12 (capability
+campaign.chapters.v1; versionCode 12; сертификат e8959e0f…e575) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s22-game-test-v12/Game-arm64-v12.apk
+— повторное скачивание, SHA-256 d43c2c80…9f0a совпал; на телефоне не проверена.
