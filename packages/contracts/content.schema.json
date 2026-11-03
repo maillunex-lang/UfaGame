@@ -27,7 +27,8 @@
           "auth.guest.v1",
           "auth.password.v1",
           "battle.combat.v1",
-          "content.resources.v1"
+          "content.resources.v1",
+          "battle.abilities.v2"
         ]
       },
       "uniqueItems": true,
@@ -187,7 +188,9 @@
                   "effect": {
                     "enum": [
                       "damage",
-                      "heal"
+                      "heal",
+                      "stun",
+                      "knockback"
                     ]
                   },
                   "power": {
@@ -208,6 +211,15 @@
                   "sound_resource_id": {
                     "type": "string",
                     "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                  },
+                  "target": {
+                    "enum": [
+                      "enemy",
+                      "weakest_enemy",
+                      "all_enemies",
+                      "ally_lowest",
+                      "self"
+                    ]
                   }
                 }
               }
@@ -250,6 +262,11 @@
                     },
                     "maxItems": 6,
                     "uniqueItems": true
+                  },
+                  "advantage_bp": {
+                    "type": "integer",
+                    "minimum": 10000,
+                    "maximum": 20000
                   }
                 }
               }

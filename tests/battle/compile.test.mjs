@@ -29,7 +29,7 @@ test('compiler maps heroes, abilities, factions and stage to the v2 setup',()=>{
  const {setup,heroes}=compileContentBattle(content(),{attacker_hero_ids:['hero_batyr','hero_healer'],stage_id:'stage_forest',seed:7});
  assert.equal(setup.advantage_bp,ADVANTAGE_BP);assert.equal(setup.actors.length,5);
  const atk=setup.actors.find(a=>a.id==='atk_0');
- assert.deepEqual(atk.ability,{id:'ability_strike',effect:'damage',power:80,cost:500});
+ assert.deepEqual(atk.ability,{id:'ability_strike',effect:'damage',power:80,cost:500,cooldown_steps:10});
  assert.deepEqual(atk.auto_abilities,[{id:'ability_spark',effect:'damage',power:15,interval_steps:7}]);
  assert.equal(atk.interval_steps,5);assert.equal(atk.energy_per_step,10);
  assert.equal(setup.actors.find(a=>a.id==='atk_1').ability.cost,1000,'default cost is full energy');

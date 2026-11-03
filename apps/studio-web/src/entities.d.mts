@@ -3,6 +3,7 @@ export function listEntities(text:string):EditableEntity[];
 export function upsertEntity(text:string,entity:EditableEntity,originalId?:string|null):string;
 export function deleteEntity(text:string,id:string):string;
 export const combatFields:[string,number,number,number][];
+export const abilityEffects:string[];export const abilityTargets:string[];
 export function suggestId(name:string,prefix:string,taken?:string[]):string;
 export function defaultCombat():Record<string,number>;
 export function quickStartHero(text:string,options:{name?:string;spriteId?:string|null}):string;

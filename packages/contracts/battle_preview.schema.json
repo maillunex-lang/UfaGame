@@ -21,17 +21,52 @@
     "events_truncated"
   ],
   "properties": {
-    "api_version": {"const": 1},
-    "preview": {"const": true},
-    "draft_id": {"type": "string", "format": "uuid"},
-    "draft_revision": {"type": "integer", "minimum": 0},
-    "simulation_version": {"const": 2},
-    "seed": {"type": "integer", "minimum": 0, "maximum": 4294967295},
-    "result": {"enum": ["attacker_win", "attacker_loss"]},
-    "steps": {"type": "integer", "minimum": 1, "maximum": 900},
-    "duration_ms": {"type": "integer", "minimum": 100, "maximum": 90000},
-    "event_count": {"type": "integer", "minimum": 0},
-    "event_log_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "api_version": {
+      "const": 1
+    },
+    "preview": {
+      "const": true
+    },
+    "draft_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "draft_revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "simulation_version": {
+      "const": 2
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "result": {
+      "enum": [
+        "attacker_win",
+        "attacker_loss"
+      ]
+    },
+    "steps": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 900
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 90000
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "event_log_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "actors": {
       "type": "array",
       "minItems": 2,
@@ -39,18 +74,62 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["actor_id", "hero_id", "team", "slot", "faction_id", "max_hp", "hp", "damage_dealt", "healing_done", "damage_taken"],
+        "required": [
+          "actor_id",
+          "hero_id",
+          "team",
+          "slot",
+          "faction_id",
+          "max_hp",
+          "hp",
+          "damage_dealt",
+          "healing_done",
+          "damage_taken"
+        ],
         "properties": {
-          "actor_id": {"type": "string", "pattern": "^(atk|def)_[0-4]$"},
-          "hero_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
-          "team": {"enum": ["attacker", "defender"]},
-          "slot": {"type": "integer", "minimum": 0, "maximum": 4},
-          "faction_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"},
-          "max_hp": {"type": "integer", "minimum": 1},
-          "hp": {"type": "integer", "minimum": 0},
-          "damage_dealt": {"type": "integer", "minimum": 0},
-          "healing_done": {"type": "integer", "minimum": 0},
-          "damage_taken": {"type": "integer", "minimum": 0}
+          "actor_id": {
+            "type": "string",
+            "pattern": "^(atk|def)_[0-4]$"
+          },
+          "hero_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "team": {
+            "enum": [
+              "attacker",
+              "defender"
+            ]
+          },
+          "slot": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "faction_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "max_hp": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "damage_dealt": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "healing_done": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "damage_taken": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       }
     },
@@ -61,9 +140,16 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["at_ms", "actors"],
+        "required": [
+          "at_ms",
+          "actors"
+        ],
         "properties": {
-          "at_ms": {"type": "integer", "minimum": 0, "maximum": 90000},
+          "at_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 90000
+          },
           "actors": {
             "type": "array",
             "maxItems": 10,
@@ -71,7 +157,9 @@
               "type": "array",
               "minItems": 4,
               "maxItems": 4,
-              "items": {"type": "integer"}
+              "items": {
+                "type": "integer"
+              }
             }
           }
         }
@@ -83,17 +171,48 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["at_ms", "kind", "source_id", "target_id", "amount"],
+        "required": [
+          "at_ms",
+          "kind",
+          "source_id",
+          "target_id",
+          "amount"
+        ],
         "properties": {
-          "at_ms": {"type": "integer", "minimum": 100, "maximum": 90000},
-          "kind": {"enum": ["damage", "heal"]},
-          "source_id": {"type": "string", "pattern": "^(atk|def)_[0-4]$"},
-          "target_id": {"type": "string", "pattern": "^(atk|def)_[0-4]$"},
-          "amount": {"type": "integer", "minimum": 0},
-          "ability_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"}
+          "at_ms": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 90000
+          },
+          "kind": {
+            "enum": [
+              "damage",
+              "heal",
+              "stun",
+              "knockback"
+            ]
+          },
+          "source_id": {
+            "type": "string",
+            "pattern": "^(atk|def)_[0-4]$"
+          },
+          "target_id": {
+            "type": "string",
+            "pattern": "^(atk|def)_[0-4]$"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ability_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          }
         }
       }
     },
-    "events_truncated": {"type": "boolean"}
+    "events_truncated": {
+      "type": "boolean"
+    }
   }
 }

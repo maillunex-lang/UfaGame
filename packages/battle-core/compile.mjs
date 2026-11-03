@@ -39,6 +39,14 @@ function intervalSteps(ms, abilityId) {
   return steps;
 }
 
+/** Stun power in content is a duration in ms; the core counts 100 ms steps. */
+function abilityPower(ability) {
+  const {effect, power} = ability.data;
+  if (effect === 'stun') return Math.max(1, Math.min(50, Math.ceil(power / STEP_MS)));
+  if (effect === 'knockback') return Math.min(power, 5000);
+  return Math.min(power, 1000000);
+}
+
 function actorFor(map, heroId, team, slot) {
   const hero = lookup(map, heroId, 'hero', 'UNKNOWN_HERO');
   const combat = hero.data?.combat;
@@ -64,12 +72,20 @@ function actorFor(map, heroId, team, slot) {
       energy_per_step: combat.energy_per_second / 10,
       energy_per_attack: combat.energy_per_attack,
       faction_id: faction.id,
-      ability: {id: main.id, effect: main.data.effect, power: main.data.power, cost: main.data.energy_cost ?? 1000},
+      ability: {
+        id: main.id,
+        effect: main.data.effect,
+        power: abilityPower(main),
+        cost: main.data.energy_cost ?? 1000,
+        cooldown_steps: main.data.cooldown_ms === 0 ? 0 : intervalSteps(main.data.cooldown_ms, main.id),
+        ...(main.data.target ? {target: main.data.target} : {}),
+      },
       auto_abilities: autos.map(a => ({
         id: a.id,
         effect: a.data.effect,
-        power: a.data.power,
+        power: abilityPower(a),
         interval_steps: intervalSteps(a.data.cooldown_ms, a.id),
+        ...(a.data.target ? {target: a.data.target} : {}),
       })),
     },
   };
@@ -99,6 +115,7 @@ export function compileContentBattle(content, request) {
   const factions = factionIds.map(id => ({
     id,
     advantage_ids: map.get(id).data.advantage_ids.filter(other => factionIds.includes(other) && other !== id),
+    ...(map.get(id).data.advantage_bp !== undefined ? {advantage_bp: map.get(id).data.advantage_bp} : {}),
   }));
   const setup = {simulation_version: 2, seed, advantage_bp: ADVANTAGE_BP, factions, actors: built.map(b => b.actor)};
   return {setup, heroes: Object.fromEntries(built.map(b => [b.actor.id, b.hero_id]))};
@@ -128,6 +145,11 @@ export function runAutoBattle(setup, {frameEvery = 5, maxEvents = 500, heroes = 
       if (event.kind === 'move') continue;
       const source = totals.get(event.source_id);
       const target = totals.get(event.target_id);
+      if (event.kind === 'stun' || event.kind === 'knockback') {
+        if (events.length < maxEvents) events.push({at_ms: stepResult.at_ms, ...event});
+        else truncated = true;
+        continue;
+      }
       if (event.kind === 'damage') {
         source.damage_dealt += event.amount;
         target.damage_taken += event.amount;

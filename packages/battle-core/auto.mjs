@@ -14,8 +14,30 @@ export function createAutoBattle(input) {
  for(const f of input.factions)if(f.advantage_ids.some(id=>!factions.has(id)||id===f.id))throw new Error('INVALID_FACTION_LINK');
  for(const a of input.actors){const slot=`${a.team}:${a.slot}`;if(ids.has(a.id)||slots.has(slot))throw new Error('DUPLICATE_ACTOR_OR_SLOT');if(!factions.has(a.faction_id))throw new Error('UNKNOWN_FACTION');if(a.auto_abilities&&new Set(a.auto_abilities.map(ability=>ability.id)).size!==a.auto_abilities.length)throw new Error('DUPLICATE_ABILITY');ids.add(a.id);slots.add(slot);}
  if(!input.actors.some(a=>a.team==='attacker')||!input.actors.some(a=>a.team==='defender'))throw new Error('MISSING_TEAM');
- const actors=input.actors.map(a=>({...structuredClone(a),max_hp:a.hp,x:a.team==='attacker'?(a.slot<2?1500:500):(a.slot<2?8500:9500),y:lane[a.slot],next_attack_step:0})).sort(cmp);
+ const actors=input.actors.map(a=>({...structuredClone(a),max_hp:a.hp,x:a.team==='attacker'?(a.slot<2?1500:500):(a.slot<2?8500:9500),y:lane[a.slot],next_attack_step:0,next_ability_step:0,stunned_until_step:0})).sort(cmp);
  return {simulation_version:2,seed:input.seed,rng_state:input.seed,step:0,result:null,advantage_bp:input.advantage_bp,factions:structuredClone(input.factions).sort(cmp),actors};
+}
+const MAX_STUN_STEPS=50,MAX_KNOCKBACK=5000;
+const ratio=(a,b)=>a.hp*b.max_hp-b.hp*a.max_hp;
+/** Targets chosen by the ability's rule, from the state at the start of the step. */
+function targetsFor(actor,mode,nearest,live){
+ const allies=live.filter(a=>a.team===actor.team),inRange=live.filter(a=>a.team!==actor.team&&distance(actor,a)<=actor.range);
+ if(mode==='self')return [actor];
+ if(mode==='ally_lowest')return [allies.sort((a,b)=>ratio(a,b)||cmp(a,b))[0]];
+ if(mode==='all_enemies')return inRange.length?inRange.sort(cmp):[nearest];
+ if(mode==='weakest_enemy')return [(inRange.length?inRange:[nearest]).sort((a,b)=>a.hp-b.hp||cmp(a,b))[0]];
+ return [nearest];
+}
+function effectsOf(state,factions,actor,ability,nearest,live,extra){
+ const mode=ability.target??(ability.effect==='heal'?'ally_lowest':'enemy'),out=[];
+ for(const target of targetsFor(actor,mode,nearest,live)){
+  let amount=ability.power;
+  if(ability.effect==='damage'){const f=factions.get(actor.faction_id);if(f.advantage_ids.includes(target.faction_id))amount=Math.floor(amount*(f.advantage_bp??state.advantage_bp)/10000);}
+  else if(ability.effect==='stun')amount=Math.min(amount,MAX_STUN_STEPS);
+  else if(ability.effect==='knockback')amount=Math.min(amount,MAX_KNOCKBACK);
+  out.push({kind:ability.effect,source_id:actor.id,target_id:target.id,amount,...extra});
+ }
+ return out;
 }
 /** One fixed 100ms server step. All actions use the state at the start of the tick. */
 export function stepAutoBattle(state,options={}) {
@@ -29,6 +51,7 @@ export function stepAutoBattle(state,options={}) {
  const effects=[],events=[];
  for(const actor of live){
   const updated=byId.get(actor.id);updated.energy=Math.min(1000,actor.energy+actor.energy_per_step);
+  if(state.step<(actor.stunned_until_step??0))continue;
   const enemies=live.filter(a=>a.team!==actor.team).sort((a,b)=>distance(actor,a)-distance(actor,b)||cmp(a,b));
   if(!enemies.length)continue;
   const closest=distance(actor,enemies[0]);const tied=enemies.filter(a=>distance(actor,a)===closest);
@@ -41,24 +64,39 @@ export function stepAutoBattle(state,options={}) {
   }
   for(const ability of actor.auto_abilities??[]){
    if(state.step%ability.interval_steps!==0)continue;
-   let abilityTarget=target,abilityAmount=ability.power;
-   if(ability.effect==='heal')abilityTarget=live.filter(a=>a.team===actor.team).sort((a,b)=>a.hp*b.max_hp-b.hp*a.max_hp||cmp(a,b))[0];
-   else if(factions.get(actor.faction_id).advantage_ids.includes(abilityTarget.faction_id))abilityAmount=Math.floor(abilityAmount*state.advantage_bp/10000);
-   effects.push({kind:ability.effect,source_id:actor.id,target_id:abilityTarget.id,amount:abilityAmount,ability_id:ability.id});
+   effects.push(...effectsOf(state,factions,actor,ability,target,live,{ability_id:ability.id}));
   }
   if(state.step<actor.next_attack_step)continue;
-  const useAbility=updated.energy>=actor.ability.cost&&(actor.team==='defender'||autoAttacker||manual.has(actor.id));let amount,kind='damage';
-  if(useAbility){
-   updated.energy-=actor.ability.cost;kind=actor.ability.effect;amount=actor.ability.power;
-   if(kind==='heal')target=live.filter(a=>a.team===actor.team).sort((a,b)=>a.hp*b.max_hp-b.hp*a.max_hp||cmp(a,b))[0];
-  }else{amount=Math.max(1,actor.attack-target.defense);updated.energy=Math.min(1000,updated.energy+actor.energy_per_attack);}
-  if(kind==='damage'&&factions.get(actor.faction_id).advantage_ids.includes(target.faction_id))amount=Math.floor(amount*state.advantage_bp/10000);
+  const ready=state.step>=(actor.next_ability_step??0);
+  const useAbility=ready&&updated.energy>=actor.ability.cost&&(actor.team==='defender'||autoAttacker||manual.has(actor.id));
   updated.next_attack_step=state.step+actor.interval_steps;
-  effects.push(useAbility&&actor.ability.id?{kind,source_id:actor.id,target_id:target.id,amount,ability_id:actor.ability.id}:{kind,source_id:actor.id,target_id:target.id,amount});
+  if(useAbility){
+   updated.energy-=actor.ability.cost;updated.next_ability_step=state.step+(actor.ability.cooldown_steps??0);
+   effects.push(...effectsOf(state,factions,actor,actor.ability,target,live,actor.ability.id?{ability_id:actor.ability.id}:{}));
+  }else{
+   updated.energy=Math.min(1000,updated.energy+actor.energy_per_attack);
+   effects.push(...effectsOf(state,factions,actor,{effect:'damage',power:Math.max(1,actor.attack-target.defense),target:'enemy'},target,live,{}));
+  }
  }
  const totals=new Map();
- for(const effect of effects){const t=totals.get(effect.target_id)??{damage:0,heal:0};t[effect.kind]+=effect.amount;totals.set(effect.target_id,t);events.push(effect);}
+ for(const effect of effects){
+  events.push(effect);
+  if(effect.kind!=='damage'&&effect.kind!=='heal')continue;
+  const t=totals.get(effect.target_id)??{damage:0,heal:0};t[effect.kind]+=effect.amount;totals.set(effect.target_id,t);
+ }
  for(const [id,total] of totals){const a=byId.get(id);a.hp=Math.max(0,Math.min(a.max_hp,a.hp+total.heal-total.damage));}
+ // Control effects apply after damage, only to survivors; simultaneous, order independent.
+ for(const effect of effects){
+  const target=byId.get(effect.target_id);if(target.hp<=0)continue;
+  if(effect.kind==='stun')target.stunned_until_step=Math.max(target.stunned_until_step??0,next.step+effect.amount);
+ }
+ const pushes=new Map();
+ for(const effect of effects){
+  if(effect.kind!=='knockback')continue;
+  const source=state.actors.find(a=>a.id===effect.source_id),target=state.actors.find(a=>a.id===effect.target_id);
+  const dir=Math.sign(target.x-source.x)||(target.team==='defender'?1:-1);pushes.set(effect.target_id,(pushes.get(effect.target_id)??0)+dir*effect.amount);
+ }
+ for(const [id,dx] of pushes){const a=byId.get(id);if(a.hp>0)a.x=Math.max(0,Math.min(10000,a.x+dx));}
  if(!next.actors.some(a=>a.team==='attacker'&&a.hp>0))next.result='attacker_loss';
  else if(!next.actors.some(a=>a.team==='defender'&&a.hp>0))next.result='attacker_win';
  else if(next.step>=LIMIT)next.result='attacker_loss';

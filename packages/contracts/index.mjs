@@ -16,6 +16,8 @@ export function validate(name, value) {
     if (value.required_capabilities.some(c => !registry.capabilities.includes(c))) return {ok:false,code:'INCOMPATIBLE_CLIENT'};
     const combat = value.entities.some(e => (e.kind==='hero' && e.data.combat) || (e.kind==='ability' && e.data.energy_cost!==undefined));
     if (combat && !value.required_capabilities.includes('battle.combat.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    const abilitiesV2 = value.entities.some(e => (e.kind==='ability' && (['stun','knockback'].includes(e.data.effect) || e.data.target!==undefined)) || (e.kind==='faction' && e.data.advantage_bp!==undefined));
+    if (abilitiesV2 && !value.required_capabilities.includes('battle.abilities.v2')) return {ok:false,code:'INVALID_REQUEST'};
     const resources = value.entities.some(e => (e.kind==='hero' && e.data.sprite_resource_id!==undefined) || (e.kind==='ability' && e.data.sound_resource_id!==undefined));
     if (resources && !value.required_capabilities.includes('content.resources.v1')) return {ok:false,code:'INVALID_REQUEST'};
     const ids = new Map(value.entities.map(e => [e.id,e.kind]));

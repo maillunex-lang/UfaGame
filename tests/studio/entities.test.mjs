@@ -72,3 +72,11 @@ test('missing picture/sound links are found and can be removed without touching 
  const c=JSON.parse(text);assert.equal(c.entities.find(e=>e.id==='hero_one').data.faction_id,'faction_one');assert.equal(validate('content',c).ok,true);
  assert.ok(c.required_capabilities.includes('content.resources.v1'),'sound link remains');
 });
+test('stun/knockback, ability targets and faction strength toggle battle.abilities.v2',()=>{
+ let text=upsertEntity(blank(),{...ability,data:{...ability.data,effect:'stun',power:1500,target:'all_enemies'}});
+ assert.ok(JSON.parse(text).required_capabilities.includes('battle.abilities.v2'));assert.equal(validate('content',JSON.parse(text)).ok,true);
+ assert.throws(()=>upsertEntity(text,{...ability,id:'ability_two',data:{...ability.data,target:'everyone'}}),/цель/);
+ assert.throws(()=>upsertEntity(text,{...faction,data:{advantage_ids:[],advantage_bp:25000}}),/преимущества/);
+ text=upsertEntity(text,{...ability},ability.id);assert.ok(!JSON.parse(text).required_capabilities.includes('battle.abilities.v2'));
+ text=upsertEntity(text,{...faction,data:{advantage_ids:[],advantage_bp:15000}});assert.ok(JSON.parse(text).required_capabilities.includes('battle.abilities.v2'));assert.equal(validate('content',JSON.parse(text)).ok,true);
+});

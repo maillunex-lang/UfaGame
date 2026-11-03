@@ -52,7 +52,7 @@ export function BattlePreview({api,csrf,draftId,revision,dirty,content}:{api:Api
    <div className="row"><button type="button" className="secondary" onClick={()=>{if(frame>=preview.frames.length-1)setFrame(0);setPlaying(p=>!p);}}>{playing?'Пауза':'Воспроизвести'}</button><span>{(current.at_ms/1000).toFixed(1)} с</span></div>
    <label>Время<input type="range" min="0" max={preview.frames.length-1} value={frame} onChange={e=>{setPlaying(false);setFrame(Number(e.target.value));}} /></label>
    <table><thead><tr><th>Слот</th><th>Герой</th><th>HP</th><th>Урон</th><th>Лечение</th><th>Получено</th></tr></thead><tbody>{preview.actors.map((a,i)=><tr key={a.actor_id}><td>{a.actor_id}</td><td>{a.hero_id}</td><td>{current.actors[i][0]}/{a.max_hp}</td><td>{a.damage_dealt}</td><td>{a.healing_done}</td><td>{a.damage_taken}</td></tr>)}</tbody></table>
-   <details><summary>Журнал событий{preview.events_truncated?' (первые 500)':''}</summary><ol className="battle-log">{preview.events.map((e,i)=><li key={i}>{(e.at_ms/1000).toFixed(1)} с: {e.source_id} → {e.target_id}, {e.kind==='heal'?'лечение':'урон'} {e.amount}{e.ability_id?` (${e.ability_id})`:''}</li>)}</ol></details>
+   <details><summary>Журнал событий{preview.events_truncated?' (первые 500)':''}</summary><ol className="battle-log">{preview.events.map((e,i)=><li key={i}>{(e.at_ms/1000).toFixed(1)} с: {e.source_id} → {e.target_id}, {e.kind==='heal'?`лечение ${e.amount}`:e.kind==='stun'?`оглушение на ${(e.amount/10).toFixed(1)} с`:e.kind==='knockback'?`отбрасывание на ${e.amount}`:`урон ${e.amount}`}{e.ability_id?` (${e.ability_id})`:''}</li>)}</ol></details>
    <p className="hash">Хеш журнала: <code>{preview.event_log_sha256}</code></p>
   </div>}
  </section>;
