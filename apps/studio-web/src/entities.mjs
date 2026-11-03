@@ -64,3 +64,22 @@ export function deleteEntity(text,id){
  }
  content.entities=content.entities.filter(e=>e.id!==id);syncCapability(content);return JSON.stringify(content,null,2);
 }
+const translit={а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya',ә:'a',ө:'o',ү:'u',ҡ:'k',ғ:'g',ҙ:'z',ҫ:'s',һ:'h',ң:'n'};
+/** Readable stable ID from a (Russian/Bashkir) name: prefix_translit, unique among taken ids. */
+export function suggestId(name,prefix,taken=[]){
+ const base=[...String(name).toLowerCase()].map(c=>translit[c]??c).join('').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,60)||'new';
+ const used=new Set(taken);let id=`${prefix}_${base}`,n=2;
+ while(used.has(id))id=`${prefix}_${base}_${n++}`;
+ return id;
+}
+export const defaultCombat=()=>Object.fromEntries(combatFields.map(([name])=>[name,{hp:300,attack:30,defense:5,speed:800,range:1500,attack_interval_ms:500,energy_start:0,energy_per_second:100,energy_per_attack:100}[name]]));
+/** One step: ensures a faction and a basic strike exist, then adds a battle-ready hero. */
+export function quickStartHero(text,{name,spriteId=null}){
+ const content=documentFrom(text),ids=content.entities.map(e=>e.id);
+ let factionId=content.entities.find(e=>e.kind==='faction')?.id;
+ if(!factionId){factionId=suggestId('Нейтральные','faction',ids);text=upsertEntity(text,{id:factionId,kind:'faction',name:'Нейтральные',data:{advantage_ids:[]}});ids.push(factionId);}
+ let abilityId=content.entities.find(e=>e.kind==='ability')?.id;
+ if(!abilityId){abilityId=suggestId('Удар','ability',ids);text=upsertEntity(text,{id:abilityId,kind:'ability',name:'Удар',data:{effect:'damage',power:60,cooldown_ms:1000}});ids.push(abilityId);}
+ const heroName=String(name??'').trim()||'Новый герой';
+ return upsertEntity(text,{id:suggestId(heroName,'hero',ids),kind:'hero',name:heroName,data:{faction_id:factionId,ability_ids:[abilityId],...(spriteId?{sprite_resource_id:spriteId}:{}),combat:defaultCombat()}});
+}

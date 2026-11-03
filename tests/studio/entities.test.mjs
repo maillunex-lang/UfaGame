@@ -47,3 +47,17 @@ test('sprite and sound references toggle content.resources.v1 and reject malform
  text=upsertEntity(text,{...hero},hero.id);text=upsertEntity(text,{...ability},ability.id);
  assert.ok(!JSON.parse(text).required_capabilities.includes('content.resources.v1'));
 });
+import {suggestId,quickStartHero} from '../../apps/studio-web/src/entities.mjs';
+test('IDs are generated from Russian/Bashkir names and stay unique',()=>{
+ assert.equal(suggestId('Батыр','hero'),'hero_batyr');assert.equal(suggestId('Салауат Юлаев','hero'),'hero_salauat_yulaev');
+ assert.equal(suggestId('Ҡыҙ','hero'),'hero_kyz');assert.equal(suggestId('!!!','ability'),'ability_new');
+ assert.equal(suggestId('Батыр','hero',['hero_batyr','hero_batyr_2']),'hero_batyr_3');assert.equal(suggestId('5555','sprite'),'sprite_5555');
+});
+test('quick start creates faction, strike and a battle-ready hero in one valid step',()=>{
+ let text=quickStartHero(blank(),{name:'Батыр',spriteId:'hero_sprite'});const c=JSON.parse(text);
+ assert.deepEqual(c.entities.map(e=>e.id),['faction_neytralnye','ability_udar','hero_batyr']);
+ assert.equal(c.entities[2].data.sprite_resource_id,'hero_sprite');assert.ok(c.entities[2].data.combat);
+ assert.ok(c.required_capabilities.includes('battle.combat.v1')&&c.required_capabilities.includes('content.resources.v1'));assert.equal(validate('content',c).ok,true);
+ text=quickStartHero(text,{name:'Батыр'});assert.equal(JSON.parse(text).entities.length,4,'reuses faction and ability, new unique hero id');
+ assert.equal(JSON.parse(text).entities[3].id,'hero_batyr_2');
+});

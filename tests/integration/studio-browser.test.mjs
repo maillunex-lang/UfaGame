@@ -13,6 +13,13 @@ import {chromium} from 'playwright';
 import {migrate} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
 import {createOwner} from '../../services/api/src/owner.ts';
+const openId=async p=>{await p.locator('details:has(> summary:has-text("Дополнительно: ID"))').evaluate(d=>{d.open=true;});};
+const addEntity=async(p,{kind,id,name,faction,abilities=[]})=>{
+ await p.getByLabel('Тип объекта').selectOption(kind);await p.getByLabel('Название объекта').fill(name);await openId(p);await p.getByLabel('ID объекта').fill(id);
+ if(kind==='hero'){await p.getByRole('combobox',{name:/^Фракция/}).selectOption(faction);for(const a of abilities)await p.getByRole('group',{name:/Способности/}).getByLabel(a).check();}
+ await p.getByRole('button',{name:'Добавить в черновик'}).click();
+};
+
 
 test('mobile Studio browser uses real HTTPS API: save, reload, concurrent conflict and diff', {timeout:90000},async()=>{
  const temp=await mkdtemp(join(tmpdir(),'ufa-studio-browser-'));
@@ -49,19 +56,31 @@ test('mobile Studio browser uses real HTTPS API: save, reload, concurrent confli
   await page.getByRole('button',{name:'Сохранить кадры'}).click();await page.getByRole('button',{name:'Настроить кадры'}).waitFor();
   const storedResource=(await pool.query('SELECT descriptor,revision FROM owner_resources WHERE id=$1',['icon_one'])).rows[0];assert.equal(storedResource.revision,1);assert.equal(storedResource.descriptor.frames[0].duration_ms,250);assert.equal(storedResource.descriptor.loop,true);
   await page.getByRole('button',{name:'Создать',exact:true}).click();await page.getByLabel('Название',{exact:true}).fill('Мобильный черновик');
-  await page.getByLabel('ID объекта').fill('ability_one');await page.getByLabel('Название объекта').fill('Удар');await page.getByRole('button',{name:'Добавить в черновик'}).click();
-  await page.getByLabel('Тип объекта').selectOption('faction');await page.getByLabel('ID объекта').fill('faction_one');await page.getByLabel('Название объекта').fill('Фракция');await page.getByRole('button',{name:'Добавить в черновик'}).click();
-  await page.getByLabel('Тип объекта').selectOption('hero');await page.getByLabel('ID объекта').fill('hero_one');await page.getByLabel('Название объекта').fill('Герой');await page.getByLabel('ID фракции').fill('faction_one');await page.getByLabel('ID способностей через запятую').fill('ability_one');await page.getByRole('button',{name:'Добавить в черновик'}).click();
-  await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+  await addEntity(page,{kind:'ability',id:'ability_one',name:'Удар'});
+  await addEntity(page,{kind:'faction',id:'faction_one',name:'Фракция'});
+  await addEntity(page,{kind:'hero',id:'hero_one',name:'Герой',faction:'faction_one',abilities:['Удар']});
+  await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
   await page.reload();await page.getByRole('button',{name:/Мобильный черновик · версия/}).click();assert.equal(await page.getByLabel('Название',{exact:true}).inputValue(),'Мобильный черновик');
-  await page.getByText('Герой / враг: Герой (hero_one)',{exact:false}).waitFor();
+  await page.locator('.entity-list li').filter({hasText:'hero_one'}).waitFor();
   const other=await context.newPage();await other.goto(origin+'/game/studio/');await other.getByRole('button',{name:/Мобильный черновик · версия/}).click();
-  await page.getByLabel('Название',{exact:true}).fill('Версия первого редактора');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
-  await other.getByLabel('Название',{exact:true}).fill('Локальная версия второго');await other.getByRole('button',{name:'Сохранить',exact:true}).click();await other.getByRole('heading',{name:'Конфликт версий',exact:true}).waitFor();
+  await page.getByLabel('Название',{exact:true}).fill('Версия первого редактора');await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+  await other.getByLabel('Название',{exact:true}).fill('Локальная версия второго');await other.getByRole('button',{name:'Сохранить черновик'}).click();await other.getByRole('heading',{name:'Конфликт версий',exact:true}).waitFor();
   await other.locator('.conflict').getByText('Версия первого редактора',{exact:true}).waitFor();
-  assert.equal(await other.getByLabel('Название',{exact:true}).inputValue(),'Локальная версия второго');assert.equal(await other.getByRole('button',{name:'Сохранить',exact:true}).isDisabled(),true);
+  assert.equal(await other.getByLabel('Название',{exact:true}).inputValue(),'Локальная версия второго');assert.equal(await other.getByRole('button',{name:'Сохранить черновик'}).isDisabled(),true);
   assert.equal(await other.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await other.getByText('Сравнить с открытой версией',{exact:true}).click();await other.getByRole('heading',{name:'Было',exact:true}).waitFor();
+  // Owner path without IDs: quick start with a picture, then the sticky save bar.
+  const fresh=await context.newPage();await fresh.goto(origin+'/game/studio/');
+  await fresh.getByRole('button',{name:'Создать',exact:true}).click();await fresh.getByRole('heading',{name:'Быстрый старт'}).waitFor();
+  await fresh.getByLabel('Имя героя').fill('Батыр');await fresh.locator('.quickstart').getByLabel('Картинка героя').selectOption('icon_one');
+  await fresh.getByRole('button',{name:'Создать героя'}).click();await fresh.getByRole('status').filter({hasText:'Герой создан'}).waitFor();
+  await fresh.locator('.save-bar').filter({hasText:'Есть несохранённые изменения'}).waitFor();
+  if(process.env.UFA_SCREENSHOT_DIR)await fresh.screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/quickstart.png',fullPage:true});
+  await fresh.getByRole('button',{name:'Сохранить черновик'}).click();await fresh.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+  const quick=(await pool.query("SELECT content FROM studio_drafts WHERE content->'entities' @> '[{\"id\":\"hero_batyr\"}]'")).rows[0].content;
+  const batyr=quick.entities.find(e=>e.id==='hero_batyr');assert.equal(batyr.data.sprite_resource_id,'icon_one');assert.ok(batyr.data.combat);
+  assert.deepEqual(quick.entities.map(e=>e.id),['faction_neytralnye','ability_udar','hero_batyr']);
+  assert.equal(await fresh.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  }finally{
   if(browser)await browser.close();if(front){front.closeAllConnections();await new Promise(r=>front.close(r));}if(api)await api.close();if(pool)await pool.end();await control.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await control.end();await rm(temp,{recursive:true,force:true});
  }
