@@ -74,8 +74,10 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S60 | Отложенные направления с отдельными статусами | S57 | todo |
 
 ## Следующий шаг
-S10: полноценная Android-оболочка Studio и запрос владельца о сохранении пароля.
-S17: продолжить серверный бой. S51 — завершить обследование и отчет по VPS.
+S17/S20: серверный preview боя из черновика готов в Git (commit 4371e4a), не развернут
+на VPS. Далее: развернуть API+статику владельцем по командам из чата и проверить на
+телефоне; S11 — связь ресурсов с героями для preview; S12–S14 — валидатор и импорт.
+S10: device-проверки Studio APK. S51 — завершить обследование и отчет по VPS.
 
 ## Подробные этапы
 ### S01. Проверка стека и технический прототип
@@ -1142,3 +1144,27 @@ S20 blocked: граф способностей, preview, игра и публи�
 source, Godot, integration с PostgreSQL/браузером и isolated stack. Это не
 развертывание на VPS и не проверка Android. S11 in_progress; S10–S20 не завершены.
 Создан docs/HANDOFF.md и обновлен PROMPT_CONTINUE.md для передачи другому ИИ.
+
+### S17/S20 — боевые параметры героя и серверный preview боя
+Ветка `claude/ufagame-s10-s20-continue-nu48zr` (продолжает `codex/s10-studio-android`
+с 732816d), commit 4371e4a. Контракт: необязательные `hero.data.combat` и
+`ability.data.energy_cost`, capability `battle.combat.v1` (ADR 0012). Файлы:
+packages/battle-core/compile.mjs, packages/contracts/battle_preview*.schema.json,
+services/api/src/owner.ts (`POST /admin/v1/drafts/:id/battle-preview`),
+apps/studio-web/src/BattlePreview.tsx, EntityEditor.tsx, entities.mjs,
+infra/studio-test/Dockerfile (+battle-core), тесты battle/studio/integration.
+Бой считает сервер по сохраненной ревизии; клиент не может передать результат;
+preview ничего не пишет и наград не выдает.
+Проверки (Node 24.22.1, локальная PostgreSQL 16.15, Chromium /opt/pw-browsers):
+`npm run check` exit0; `check:battle` 24 passed; `check:studio` 6 passed;
+`check:studio:browser` passed (mock API + настоящий battle-core); интеграция с
+реальной PostgreSQL 23/24 — единственный провал Godot (`spawn godot ENOENT`, нет
+бинарника в среде, к изменениям не относится). Замер 5×5/900 шагов ≈66 мс локально,
+не VPS. CI на 4371e4a: Repository checks 41576912599 (source, Godot, integration) — success; Studio isolated test stack 41576987480 (Docker-образ API с battle-core + PostgreSQL, health/ready) — success.
+Миграций нет; откат — revert (черновики с combat тогда не пройдут старую схему).
+Не проверено: VPS (не развернуто), телефон, нагрузка. Новый APK не нужен (Android-код
+не менялся) и не собирался: приватного ключа подписи в этой среде нет.
+S17 in_progress (граф эффектов, баланс фракций из контента, cooldown основной
+способности, бой игрока после S15); S20 blocked по S19. Отчеты: docs/reports/S17.md,
+docs/reports/S20.md. Следующий шаг — развернуть на тестовом VPS и проверить preview
+на телефоне, затем S11 (ресурсы героя в preview) и S12–S14.

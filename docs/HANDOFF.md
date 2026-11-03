@@ -1,7 +1,10 @@
 # Передача UfaGame другому исполнителю
 
 Обновлено 2026-11-03. Рабочий репозиторий:
-https://github.com/maillunex-lang/UfaGame, ветка `codex/s10-studio-android`.
+https://github.com/maillunex-lang/UfaGame. Последняя работа — ветка
+`claude/ufagame-s10-s20-continue-nu48zr` (содержит всю `codex/s10-studio-android`
+плюс commit 4371e4a: боевые параметры героя и серверный preview боя, ADR 0012).
+Прежняя ветка `codex/s10-studio-android` этим не изменялась.
 Сначала fetch этой ветки, проверь `git status`, историю, `AGENTS.md`,
 `PROJECT_SPEC.md`, `ARCHITECTURE.md`, `OPEN_DECISIONS.md`, `roadmap.md`,
 `PROMPT_CONTINUE.md`, нужные отчеты `docs/reports/` и `prompts/stages/`.
@@ -83,3 +86,18 @@ Android toolchain и приватные ключи в прошлой среде 
 следуй отчетам и различай mock от реальной PostgreSQL/device проверки.
 После каждого этапа отдельно обновляй roadmap и отчеты; незавершенное оставляй
 in_progress/blocked. В конце сообщи ссылки GitHub и точные ограничения.
+
+## Дополнение 2026-11-03: preview боя (S17/S20)
+
+Commit 4371e4a: `hero.data.combat`, `ability.data.energy_cost`, capability
+`battle.combat.v1`, компилятор черновика в бой v2, owner endpoint
+`POST /admin/v1/drafts/:id/battle-preview`, панель «Проверка боя на сервере» в
+Studio. Миграций нет; API Docker-образу нужен `packages/battle-core/` (Dockerfile
+обновлен). На VPS не развернуто — команды выдаются владельцу в чат.
+
+Воспроизведение проверок без Docker-демона: `pg_ctlcluster 16 main start`, роль и
+БД для текущего пользователя, затем `PGHOST=/var/run/postgresql PGUSER=<роль>
+PGDATABASE=<бд> npm run db:migrate`, `npm run build:studio-web`,
+`node tools/sync-contracts.mjs`, `node --test --test-concurrency=1
+tests/integration/*.test.mjs`; браузер — `UFA_CHROMIUM_PATH=/opt/pw-browsers/chromium`.
+Godot в такой среде отсутствует — его тест падает с ENOENT, проверяется в CI.
