@@ -1250,3 +1250,10 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s16-game-test-v8/Gam
 Блокер done: установка v8 на Android и загрузка с тестового VPS (нужны миграция
 009 и публикация версии через Studio). Следующий шаг: развернуть S11–S16 на VPS,
 затем S17–S19.
+
+### VPS — проверка корня портала (read-only, владелец)
+`curl -sI https://tts-ufa.ru/` → HTTP 405 (`allow: GET`, HEAD не поддерживается
+приложением портала); `curl -sL` → 200 на `https://tts-ufa.ru/admin/login`. Ответ 307
+корня — штатное перенаправление портала на вход, не следствие изменений UfaGame
+(nginx не менялся). Вопрос закрыт. Развертывание S11–S16 (96bb084) владельцем еще
+не выполнено.
