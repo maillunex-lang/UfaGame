@@ -1,0 +1,70 @@
+{
+  "format": "ug-content/1",
+  "package_id": "ufa_batyrs_starter",
+  "package_version": "1.0.0",
+  "game_id": "ufagame",
+  "base_content_version": "draft_001",
+  "required_capabilities": [
+    "battle.combat.v1",
+    "content.core.v1",
+    "content.resources.v1"
+  ],
+  "dependencies": [],
+  "files": [
+    {
+      "path": "operations.json",
+      "size": 1031,
+      "sha256": "311a21c01fbbec495d18034c2a684863c704edf2eb1e11a81b35b11c11089fa1"
+    },
+    {
+      "path": "resources/sprite_batyr.json",
+      "size": 450,
+      "sha256": "5f392be7ae85c703faa24c837ec8a15530377cba9f3797356b5e418217b57cd5"
+    },
+    {
+      "path": "assets/sprite_batyr.png",
+      "size": 74,
+      "sha256": "c297ffce514f24ac1107a96e9aca507ad8d399ef78153ea8578983b05b1a943c"
+    },
+    {
+      "path": "entities/faction_ural.json",
+      "size": 139,
+      "sha256": "953e91e0ad638802b259b2440f8bed865e1d9b082788ac204eedc434a9d60f20"
+    },
+    {
+      "path": "entities/faction_steppe.json",
+      "size": 115,
+      "sha256": "8e30bb4c52cdf6d7e56fe0e94a55c387d4edb829e4f0b083c1379886c38aa2b3"
+    },
+    {
+      "path": "entities/ability_sabre.json",
+      "size": 188,
+      "sha256": "ea0e222edd79908e51d8df9107a920df00bf9f6cb976c26b41b068fcf43ceb3c"
+    },
+    {
+      "path": "entities/ability_kurai.json",
+      "size": 164,
+      "sha256": "1bd29bdd57c507829a172c014fa8e14f07fb916d2f4f8f44a9897b2096d3c601"
+    },
+    {
+      "path": "entities/hero_batyr.json",
+      "size": 474,
+      "sha256": "8c0a2c71410e05d32359be876fb048efcaaf4d707f1e67cccd3e9f5641874697"
+    },
+    {
+      "path": "entities/enemy_wolf.json",
+      "size": 424,
+      "sha256": "0beee4d62ec81964d154d7c3a763c60b0fde9b5b2df9a7d38aee73358293d2ce"
+    },
+    {
+      "path": "entities/stage_steppe_edge.json",
+      "size": 198,
+      "sha256": "1d00bfb637f26a74c9eca0a3a5b4f657818108117163a1fb923a24b4c74d0ec4"
+    },
+    {
+      "path": "README.md",
+      "size": 266,
+      "sha256": "581d1ca8579fbbcdc73f77497753c34349517aa9d4175c0004255a4b62958488"
+    }
+  ]
+}

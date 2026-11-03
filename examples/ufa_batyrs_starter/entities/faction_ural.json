@@ -1,0 +1,10 @@
+{
+  "id": "faction_ural",
+  "kind": "faction",
+  "name": "Урал",
+  "data": {
+    "advantage_ids": [
+      "faction_steppe"
+    ]
+  }
+}

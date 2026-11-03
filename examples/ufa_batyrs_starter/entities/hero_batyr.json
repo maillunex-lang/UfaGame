@@ -1,0 +1,24 @@
+{
+  "id": "hero_batyr",
+  "kind": "hero",
+  "name": "Батыр",
+  "data": {
+    "faction_id": "faction_ural",
+    "ability_ids": [
+      "ability_sabre",
+      "ability_kurai"
+    ],
+    "sprite_resource_id": "sprite_batyr",
+    "combat": {
+      "hp": 300,
+      "attack": 30,
+      "defense": 5,
+      "speed": 800,
+      "range": 1500,
+      "attack_interval_ms": 500,
+      "energy_start": 0,
+      "energy_per_second": 100,
+      "energy_per_attack": 100
+    }
+  }
+}

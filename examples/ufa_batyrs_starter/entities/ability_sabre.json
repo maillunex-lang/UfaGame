@@ -1,0 +1,11 @@
+{
+  "id": "ability_sabre",
+  "kind": "ability",
+  "name": "Удар сабли",
+  "data": {
+    "effect": "damage",
+    "power": 80,
+    "cooldown_ms": 1000,
+    "energy_cost": 600
+  }
+}

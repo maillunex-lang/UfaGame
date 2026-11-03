@@ -1,0 +1,12 @@
+{
+  "id": "stage_steppe_edge",
+  "kind": "stage",
+  "name": "Край степи",
+  "data": {
+    "enemy_hero_ids": [
+      "enemy_wolf",
+      "enemy_wolf"
+    ],
+    "time_limit_ms": 90000
+  }
+}

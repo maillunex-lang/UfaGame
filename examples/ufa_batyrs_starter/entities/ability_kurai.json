@@ -1,0 +1,10 @@
+{
+  "id": "ability_kurai",
+  "kind": "ability",
+  "name": "Напев курая",
+  "data": {
+    "effect": "heal",
+    "power": 25,
+    "cooldown_ms": 3000
+  }
+}

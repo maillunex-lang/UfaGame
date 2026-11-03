@@ -1,0 +1,8 @@
+{
+  "id": "faction_steppe",
+  "kind": "faction",
+  "name": "Степь",
+  "data": {
+    "advantage_ids": []
+  }
+}

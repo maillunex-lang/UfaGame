@@ -1,0 +1,30 @@
+{
+  "id": "sprite_batyr",
+  "file": "assets/sprite_batyr.png",
+  "license": {
+    "name": "CC0, пример UfaGame",
+    "attribution": ""
+  },
+  "loop": true,
+  "scale_bp": 10000,
+  "anchor": {
+    "x": 0,
+    "y": 0
+  },
+  "frames": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "duration_ms": 200
+    },
+    {
+      "x": 1,
+      "y": 0,
+      "width": 1,
+      "height": 1,
+      "duration_ms": 200
+    }
+  ]
+}

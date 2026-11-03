@@ -1,0 +1,22 @@
+{
+  "id": "enemy_wolf",
+  "kind": "hero",
+  "name": "Степной волк",
+  "data": {
+    "faction_id": "faction_steppe",
+    "ability_ids": [
+      "ability_sabre"
+    ],
+    "combat": {
+      "hp": 220,
+      "attack": 30,
+      "defense": 5,
+      "speed": 1200,
+      "range": 500,
+      "attack_interval_ms": 500,
+      "energy_start": 0,
+      "energy_per_second": 100,
+      "energy_per_attack": 100
+    }
+  }
+}

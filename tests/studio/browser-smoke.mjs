@@ -4,14 +4,18 @@ import {extname,resolve} from 'node:path';
 import {crc32,deflateSync} from 'node:zlib';
 import {chromium} from 'playwright';
 import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../packages/battle-core/compile.mjs';
-let draft=null,logged=false,resources=[],pngBytes=null,previews=0,wavBytes=null;
+import {createHash} from 'node:crypto';
+import {inspectArchive,PackageError} from '../../packages/content-validator/archive.mjs';
+import {planImport} from '../../packages/content-validator/plan-import.mjs';
+import {exportContent} from '../../packages/content-validator/export.mjs';
+let exported=null,imports=0,draft=null,logged=false,resources=[],pngBytes=null,previews=0,wavBytes=null;
 const wavFile=(()=>{const data=Buffer.alloc(1600),fmt=Buffer.alloc(16);fmt.writeUInt16LE(1,0);fmt.writeUInt16LE(1,2);fmt.writeUInt32LE(8000,4);fmt.writeUInt32LE(16000,8);fmt.writeUInt16LE(2,12);fmt.writeUInt16LE(16,14);const c=(id,b)=>{const x=Buffer.alloc(8);x.write(id,0,'ascii');x.writeUInt32LE(b.length,4);return Buffer.concat([x,b]);};const body=Buffer.concat([Buffer.from('WAVE'),c('fmt ',fmt),c('data',data)]);const head=Buffer.alloc(8);head.write('RIFF',0,'ascii');head.writeUInt32LE(body.length,4);return Buffer.concat([head,body]);})();
 const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
 const header=Buffer.alloc(13);header.writeUInt32BE(2);header.writeUInt32BE(1,4);header[8]=8;header[9]=6;
 const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',header),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,255,4,5,6,255]))),chunk('IEND',Buffer.alloc(0))]);
 const browser=await chromium.launch({executablePath:process.env.UFA_CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
 try{
- const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});
  await context.route('https://studio.test/**',async route=>{
   const req=route.request(),url=new URL(req.url()),path=url.pathname;
   if(path.startsWith('/game/server/')){
@@ -26,6 +30,20 @@ try{
    else if(path.endsWith('/resources/icon_one')&&method==='PATCH'){const v=req.postDataJSON();if(v.expected_revision!==resources[0].revision){status=409;body={error:{code:'CONFLICT'}};}else{resources[0]={...resources[0],...v,revision:resources[0].revision+1};body=resources[0];}}
    else if(path.endsWith('/drafts')&&method==='GET'){body={drafts:draft?[{id:draft.id,name:draft.name,revision:draft.revision}]:[]};}
    else if(path.endsWith('/drafts')&&method==='POST'){const v=req.postDataJSON();draft={id:v.id,name:v.name,content:v.content,revision:0};body=draft;}
+   else if(path.endsWith('/export')&&method==='GET'){
+    const ids=url.searchParams.get('ids');const bytes={icon_one:pngBytes,sound_one:wavBytes};
+    const map=new Map(resources.map(r=>[r.id,{descriptor:{...r,sha256:createHash('sha256').update(bytes[r.id]).digest('hex')},bytes:bytes[r.id]}]));
+    let zip;try{zip=await exportContent(draft.content,{ids:ids?ids.split(','):null,resources:map});}catch(e){console.error('export mock failed',e);throw e;}exported=zip;
+    return route.fulfill({status:200,contentType:'application/zip',headers:{'Content-Disposition':'attachment; filename="ufagame-draft.zip"'},body:zip});}
+   else if(path.endsWith('/import/preflight')||path.endsWith('/import/apply')){
+    const v=req.postDataJSON(),bytes={icon_one:pngBytes,sound_one:wavBytes};
+    const existing=new Map(resources.map(r=>[r.id,{sha256:createHash('sha256').update(bytes[r.id]).digest('hex'),media_type:r.media_type}]));
+    if(v.expected_revision!==draft.revision){status=409;body={error:{code:'CONFLICT',message:'CONFLICT'}};}
+    else try{const plan=await planImport(await inspectArchive(Buffer.from(v.zip_base64,'base64')),draft,{expectedRevision:v.expected_revision,existingResources:existing,resolutions:v.resolutions??{}});
+     if(path.endsWith('/preflight'))body={draft_id:draft.id,draft_revision:draft.revision,package_sha256:'x',ready:plan.content!==null,report:plan.report};
+     else if(!plan.content){status=409;body={error:{code:'CONFLICT',message:'IMPORT_CONFLICTS_UNRESOLVED'}};}
+     else{imports++;draft={...draft,content:plan.content,revision:draft.revision+1};body={draft,package_sha256:'x',report:plan.report,created_resources:[]};}}
+    catch(e){if(!(e instanceof PackageError))throw e;status=422;body={error:{code:'INVALID_REQUEST',message:[e.code,e.file,e.field].filter(Boolean).join(':')}};}}
    else if(path.endsWith('/battle-preview')&&method==='POST'){const v=req.postDataJSON();previews++;
     if(v.expected_revision!==draft.revision){status=409;body={error:{code:'CONFLICT',message:'CONFLICT'}};}
     else try{const c=compileContentBattle(draft.content,v);body={api_version:1,preview:true,draft_id:draft.id,draft_revision:draft.revision,...runAutoBattle(c.setup,{heroes:c.heroes})};}
@@ -83,6 +101,28 @@ try{
  await page.getByRole('button',{name:'Воспроизвести'}).click();await page.waitForFunction(()=>document.querySelector('input[type=range]')?.value!==document.querySelector('input[type=range]')?.max);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'battle preview has no horizontal overflow');
  await page.screenshot({path:process.env.UFA_SCREENSHOT||'/tmp/studio-battle-preview.png',fullPage:false});
+ // Export the hero with dependencies, then change the draft and import the package back.
+ await page.getByRole('region',{name:'Импорт и экспорт'}).getByLabel('Герой (hero_one)').check();
+ assert.match(await page.getByRole('link',{name:'Скачать выбранное (1)'}).getAttribute('href'),/\/export\?ids=hero_one$/);
+ // Download handling of route-fulfilled responses is unreliable in headless Chromium; fetch the link target from the page instead.
+ const href=await page.getByRole('link',{name:'Скачать выбранное (1)'}).getAttribute('href');
+ const zip=Buffer.from(await page.evaluate(async h=>{const r=await fetch(h,{credentials:'same-origin'});if(r.headers.get('content-type')!=='application/zip')throw new Error('type');return Array.from(new Uint8Array(await r.arrayBuffer()));},href));assert.deepEqual(zip,exported);const pkg=await inspectArchive(zip);
+ assert.deepEqual(pkg.entities.filter(Boolean).map(e=>e.id),['ability_one','faction_one','hero_one']);assert.equal(pkg.resources[0].meta.id,'icon_one');
+ await page.getByRole('region',{name:'Импорт и экспорт'}).getByLabel('ZIP-пакет').setInputFiles({name:'bad.zip',mimeType:'application/zip',buffer:Buffer.from('not a zip')});
+ await page.getByRole('button',{name:'Проверить пакет'}).click();await page.getByRole('status').filter({hasText:'не является корректным ZIP'}).waitFor();
+ await page.getByRole('button',{name:'Отменить'}).click();await page.getByRole('status').filter({hasText:'Импорт отменён'}).waitFor();
+ const before=draft.revision;
+ await page.locator('li').filter({hasText:'ability_one'}).getByRole('button',{name:'Изменить'}).click();await page.getByLabel('Сила').fill('42');await page.getByRole('button',{name:'Применить изменения'}).click();
+ await page.getByRole('button',{name:'Сохранить',exact:true}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ await page.getByRole('region',{name:'Импорт и экспорт'}).getByLabel('ZIP-пакет').setInputFiles({name:'hero.zip',mimeType:'application/zip',buffer:zip});
+ await page.getByRole('button',{name:'Проверить пакет'}).click();await page.getByRole('status').filter({hasText:'Есть конфликты'}).waitFor();
+ await page.getByText('data.power').waitFor({state:'attached'});
+ assert.equal(await page.getByRole('button',{name:'Применить импорт'}).isDisabled(),true,'apply blocked until conflicts resolved');
+ await page.getByRole('group',{name:'Решение для ability_one'}).getByLabel('Оставить моё').check();
+ await page.getByRole('button',{name:'Применить импорт'}).click();await page.getByRole('status').filter({hasText:'Импорт применён'}).waitFor();
+ assert.equal(imports,1);assert.equal(draft.revision,before+2);assert.equal(draft.content.entities.find(e=>e.id==='ability_one').data.power,42,'manual choice kept owner value');
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'import UI has no horizontal overflow');
+ console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');
  console.log('Chromium mobile: WAV upload+player, hero sprite ref, combat form, unsaved/invalid preview rejected, sprite replay — passed (mock API with real battle-core)');
 }finally{await browser.close();}

@@ -1,0 +1,50 @@
+[
+  {
+    "op": "create",
+    "entity_type": "resource",
+    "id": "sprite_batyr",
+    "source": "resources/sprite_batyr.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "faction",
+    "id": "faction_ural",
+    "source": "entities/faction_ural.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "faction",
+    "id": "faction_steppe",
+    "source": "entities/faction_steppe.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "ability",
+    "id": "ability_sabre",
+    "source": "entities/ability_sabre.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "ability",
+    "id": "ability_kurai",
+    "source": "entities/ability_kurai.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "hero",
+    "id": "hero_batyr",
+    "source": "entities/hero_batyr.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "hero",
+    "id": "enemy_wolf",
+    "source": "entities/enemy_wolf.json"
+  },
+  {
+    "op": "create",
+    "entity_type": "stage",
+    "id": "stage_steppe_edge",
+    "source": "entities/stage_steppe_edge.json"
+  }
+]
