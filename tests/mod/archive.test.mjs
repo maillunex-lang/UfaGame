@@ -37,11 +37,19 @@ test('rejects tampering, unlisted files and unknown capabilities',async()=>{
  const entries=goodEntries();entries[2][1]=Buffer.from('{}');await assert.rejects(inspectArchive(archive(entries)));
  await assert.rejects(inspectArchive(archive([...goodEntries(),['extra.json',Buffer.from('{}')]])));
  const unknown=goodEntries(),manifest=JSON.parse(unknown[0][1]);manifest.required_capabilities=['unknown.effect.v1'];unknown[0][1]=json(manifest);
- await assert.rejects(inspectArchive(archive(unknown)),/Unsupported capability/);
+ await assert.rejects(inspectArchive(archive(unknown)),/UNSUPPORTED_CAPABILITY: manifest.json \(unknown.effect.v1\)/);
+ const bad=goodEntries();bad[2][1]=Buffer.from('{}');await assert.rejects(inspectArchive(archive(bad)),/(SIZE|HASH)_MISMATCH: entities\/ability_one.json/);
+ await assert.rejects(inspectArchive(archive([...goodEntries(),['entities/extra.json',Buffer.from('{}')]])),/UNLISTED_FILE: entities\/extra.json/);
 });
 test('rejects unsupported operations, wrong source identity and resource files',async()=>{
  const rewrite=(fn)=>{const e=goodEntries(),m=JSON.parse(e[0][1]);fn(e,m);for(const item of m.files){const found=e.find(([n])=>n===item.path);if(found){item.size=found[1].length;item.sha256=digest(found[1]);}}e[0][1]=json(m);return e;};
  await assert.rejects(inspectArchive(archive(rewrite(e=>{e[1][1]=json([{op:'execute',entity_type:'ability',id:'ability_one',source:'entities/ability_one.json'}]);}))));
- await assert.rejects(inspectArchive(archive(rewrite(e=>{e[2][1]=json({id:'wrong_id',kind:'ability'});}))),/identity/);
- await assert.rejects(inspectArchive(archive(rewrite((e,m)=>{const b=Buffer.from('not a png');e.push(['assets/a.png',b]);m.files.push({path:'assets/a.png',size:b.length,sha256:digest(b)});}))),/Assets are not supported/);
+ await assert.rejects(inspectArchive(archive(rewrite(e=>{e[2][1]=json({id:'wrong_id',kind:'ability'});}))),/IDENTITY_MISMATCH: entities\/ability_one.json \(id\)/);
+ // A listed asset that no resource uses is hidden data and is rejected.
+ await assert.rejects(inspectArchive(archive(rewrite((e,m)=>{const b=Buffer.from('not a png');e.push(['assets/a.png',b]);m.files.push({path:'assets/a.png',size:b.length,sha256:digest(b)});}))),/UNUSED_FILE: assets\/a.png/);
+ // Code-like and unsupported asset types cannot even be listed.
+ for(const path of ['assets/a.js','assets/a.gd','assets/a.tscn','assets/a.ogg','resources/a.png','entities/a.zip'])
+  await assert.rejects(inspectArchive(archive(rewrite((e,m)=>{const b=Buffer.from('x');e.push([path,b]);m.files.push({path,size:1,sha256:digest(b)});}))),/SCHEMA_INVALID: manifest.json/,path);
+ await assert.rejects(inspectArchive(archive(rewrite(e=>{e[1][1]=json([{op:'create',entity_type:'ability',id:'ability_one',source:'entities/ability_one.json'},{op:'create',entity_type:'ability',id:'ability_one',source:'entities/ability_one.json'}]);}))),/DUPLICATE_OPERATION/);
+ await assert.rejects(inspectArchive(archive(rewrite(e=>{e[2][1]=Buffer.from('{"id": "ability_one",');}))),/JSON_INVALID: entities\/ability_one.json/);
 });

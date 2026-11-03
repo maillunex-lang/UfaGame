@@ -8,6 +8,9 @@ import {validate,resourceRefs} from '@ufagame/contracts';
 import {hashPassword,verifyPassword} from './passwords.ts';
 import {ResourceRegistry} from '../../../packages/content-validator/resource-registry.mjs';
 import {compileContentBattle,runAutoBattle,BattleCompileError} from '../../../packages/battle-core/compile.mjs';
+import {inspectArchive,PackageError} from '../../../packages/content-validator/archive.mjs';
+import {planImport} from '../../../packages/content-validator/plan-import.mjs';
+import {exportContent} from '../../../packages/content-validator/export.mjs';
 
 export const OWNER_COOKIE='__Secure-ufagame-owner';
 export interface OwnerOptions {origin?:string;cookiePath?:string}
@@ -173,6 +176,77 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
    try{compiled=compileContentBattle(row.content,b);}
    catch(error){if(error instanceof BattleCompileError)throw new DomainError('INVALID_REQUEST',422,error.entity_id?`${error.code}:${error.entity_id}`:error.code);throw error;}
    return {api_version:1,preview:true,draft_id:row.id,draft_revision:row.revision,...runAutoBattle(compiled.setup,{heroes:compiled.heroes})};
+  });
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const packageError=(error:unknown):never=>{
+   if(error instanceof PackageError)throw new DomainError('INVALID_REQUEST',422,[error.code,error.file,error.field].filter(Boolean).join(':').slice(0,160));
+   if((error as Error).message==='RESOURCE_BUSY')throw new DomainError('SERVICE_UNAVAILABLE',503);
+   throw error;
+  };
+  async function existingResources(){
+   return new Map((await pool.query("SELECT id,descriptor->>'sha256' AS sha256,descriptor->>'media_type' AS media_type FROM owner_resources")).rows.map(r=>[r.id,{sha256:r.sha256,media_type:r.media_type}]));
+  }
+  async function preparePlan(id:string,b:any,draft:{revision:number;content:any}){
+   const bytes=Buffer.from(b.zip_base64,'base64');
+   if(!bytes.length||bytes.toString('base64')!==b.zip_base64)throw new DomainError('INVALID_REQUEST');
+   try{
+    const inspection=await inspectArchive(bytes);
+    const plan=await planImport(inspection,draft,{expectedRevision:b.expected_revision,existingResources:await existingResources(),resolutions:b.resolutions??{}});
+    return {plan,package_sha256:createHash('sha256').update(bytes).digest('hex')};
+   }catch(error){
+    if(error instanceof PackageError&&error.code==='STALE_DRAFT')throw new DomainError('CONFLICT',409);
+    return packageError(error);
+   }
+  }
+  const importLimits={bodyLimit:12*1024*1024,config:{rateLimit:{max:20,timeWindow:60000}}};
+  admin.post('/drafts/:id/import/preflight',importLimits,async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);await activeOwner(pool,token);
+   const id=(request.params as any).id,b=request.body as any;
+   if(!uuid.test(id))throw new DomainError('INVALID_REQUEST');requireBody('import_preflight_request',b);
+   const draft=(await pool.query('SELECT id,revision,content FROM studio_drafts WHERE id=$1',[id])).rows[0];
+   if(!draft)throw new DomainError('NOT_FOUND',404);
+   const {plan,package_sha256}=await preparePlan(id,b,draft);
+   return {draft_id:id,draft_revision:draft.revision,package_sha256,ready:plan.content!==null,report:plan.report};
+  });
+  admin.post('/drafts/:id/import/apply',importLimits,async request=>{
+   const token=cookieToken(request);verifyCsrf(request,token);
+   const id=(request.params as any).id,b=request.body as any;
+   if(!uuid.test(id))throw new DomainError('INVALID_REQUEST');requireBody('import_apply_request',b);
+   const action='draft.import',packageSha=createHash('sha256').update(b.zip_base64).digest('hex');
+   const fp=fingerprint(action,b.reason,[id,b.expected_revision,packageSha,b.resolutions]);
+   return transaction(pool,async c=>{
+    await lockOwner(c,token);
+    const old=(await c.query('SELECT * FROM owner_audit WHERE owner_id=1 AND request_id=$1',[b.request_id])).rows[0];
+    if(old){if(old.fingerprint!==fp||old.action!==action)throw new DomainError('CONFLICT',409);return old.after_state;}
+    const before=(await c.query('SELECT id,revision,name,content FROM studio_drafts WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!before)throw new DomainError('NOT_FOUND',404);
+    if(before.revision!==b.expected_revision||before.revision>=2147483646)throw new DomainError('CONFLICT',409);
+    await c.query('SELECT pg_advisory_xact_lock(783110)');
+    const {plan,package_sha256}=await preparePlan(id,b,before);
+    if(!plan.content)throw new DomainError('CONFLICT',409,'IMPORT_CONFLICTS_UNRESOLVED');
+    const usage=(await c.query('SELECT count(*)::integer AS n, COALESCE(sum(octet_length(payload)),0)::bigint AS bytes FROM owner_resources')).rows[0];
+    const added=plan.resources.reduce((sum:number,r:any)=>sum+r.bytes.length,0);
+    if(usage.n+plan.resources.length>128||Number(usage.bytes)+added>32*1024*1024)throw new DomainError('CONFLICT',409,'RESOURCE_QUOTA');
+    for(const r of plan.resources){
+     try{await c.query('INSERT INTO owner_resources(id,descriptor,payload) VALUES($1,$2,$3)',[r.descriptor.id,r.descriptor,r.bytes]);}
+     catch(error){if((error as any).code==='23505')throw new DomainError('CONFLICT',409,'RESOURCE_EXISTS:'+r.descriptor.id);throw error;}
+    }
+    const changed=(await c.query('UPDATE studio_drafts SET content=$2,revision=revision+1,updated_at=now() WHERE id=$1 RETURNING id,revision,name,content',[id,plan.content])).rows[0];
+    const result={draft:changed,package_sha256,report:plan.report,created_resources:plan.resources.map((r:any)=>r.descriptor.id)};
+    await audit(c,action,b.reason,b.request_id,{id:before.id,revision:before.revision,name:before.name,content:before.content},result,fp,'draft:'+id);
+    return result;
+   });
+  });
+  admin.get('/drafts/:id/export',{config:{rateLimit:{max:20,timeWindow:60000}}},async(request,reply)=>{
+   await activeOwner(pool,cookieToken(request));const id=(request.params as any).id,q=request.query as any;
+   if(!uuid.test(id)||Object.keys(q).some(k=>k!=='ids')||(q.ids!==undefined&&(typeof q.ids!=='string'||!/^[a-z][a-z0-9_]{2,79}(,[a-z][a-z0-9_]{2,79}){0,999}$/.test(q.ids))))throw new DomainError('INVALID_REQUEST');
+   const draft=(await pool.query('SELECT id,revision,content FROM studio_drafts WHERE id=$1',[id])).rows[0];
+   if(!draft)throw new DomainError('NOT_FOUND',404);
+   const refs=resourceRefs(draft.content).map(r=>r.resource_id);
+   const resources=new Map((await pool.query('SELECT id,descriptor,payload FROM owner_resources WHERE id = ANY($1::text[])',[refs])).rows.map(r=>[r.id,{descriptor:r.descriptor,bytes:r.payload}]));
+   let zip:Buffer;
+   try{zip=await exportContent(draft.content,{ids:q.ids?q.ids.split(','):null,resources});}catch(error){return packageError(error);}
+   return reply.header('X-Content-Type-Options','nosniff').header('Content-Disposition',`attachment; filename="ufagame-draft-r${draft.revision}.zip"`).type('application/zip').send(zip);
   });
   admin.get('/resources',async request=>{
    await activeOwner(pool,cookieToken(request));

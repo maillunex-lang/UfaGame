@@ -27,7 +27,8 @@
           "item",
           "stage",
           "ui_label",
-          "dialogue_template"
+          "dialogue_template",
+          "resource"
         ]
       },
       "id": {
@@ -37,12 +38,11 @@
       "source": {
         "type": "string",
         "maxLength": 240,
-        "pattern": "^entities/([A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.json$"
+        "pattern": "^(entities|resources)/([A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.json$"
       },
-      "expected_revision": {
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 2147483647
+      "expected_sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
       },
       "compensation_rule_id": {
         "type": "string",
@@ -63,7 +63,7 @@
             "source"
           ],
           "properties": {
-            "expected_revision": false,
+            "expected_sha256": false,
             "compensation_rule_id": false,
             "source": {}
           }
@@ -80,12 +80,12 @@
         "then": {
           "required": [
             "source",
-            "expected_revision"
+            "expected_sha256"
           ],
           "properties": {
             "compensation_rule_id": false,
             "source": {},
-            "expected_revision": {}
+            "expected_sha256": {}
           }
         }
       },
@@ -99,11 +99,40 @@
         },
         "then": {
           "required": [
-            "expected_revision"
+            "expected_sha256"
           ],
           "properties": {
             "source": false,
-            "expected_revision": {}
+            "expected_sha256": {}
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "entity_type": {
+              "const": "resource"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "op": {
+              "const": "create",
+              "type": "string"
+            },
+            "source": {
+              "pattern": "^resources/([A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.json$",
+              "type": "string"
+            }
+          }
+        },
+        "else": {
+          "properties": {
+            "source": {
+              "pattern": "^entities/([A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.json$",
+              "type": "string"
+            }
           }
         }
       }

@@ -5,7 +5,7 @@ GitHub: публичный https://github.com/maillunex-lang/UfaGame; досту
 
 ## Статусы и порядок
 todo - не начато; in_progress - реализуется; blocked - конкретный блокер; done - реализовано и проверено.
-S01–S09 done; S10, S11, S17 и S51 in_progress; S52 blocked; остальные этапы — по таблице. Подготовка промпта не означает выполнение этапа.
+S01–S09 и S11 done; S10, S12, S17 и S51 in_progress; S52 blocked; остальные этапы — по таблице. Подготовка промпта не означает выполнение этапа.
 S01–S24: постепенный технический срез; S01–S53: первая рабочая версия с выбранными базовыми режимами; S54–S57: полнота/проверки/публичный запуск; S58–S60: поздние расширения.
 План сложного проекта не является гарантией сроков. Каждый этап при необходимости дробится на подзадачи с сохранением зависимостей и приемки.
 Частично доступную работу продолжать независимо, но недоступную проверку не отмечать done.
@@ -22,8 +22,8 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S08 | Владелец комбайна и аудит | S07 | done |
 | S09 | Каркас веб-комбайна и черновики | S08 | done |
 | S10 | Game Studio Android APK | S04, S09 | in_progress |
-| S11 | Реестр ресурсов и анимации | S03, S09 | in_progress |
-| S12 | Контракт ZIP-модификации | S03, S11 | blocked |
+| S11 | Реестр ресурсов и анимации | S03, S09 | done |
+| S12 | Контракт ZIP-модификации | S03, S11 | in_progress |
 | S13 | Защищенный валидатор ZIP | S12 | blocked |
 | S14 | Импорт, экспорт и разрешение конфликтов | S09, S13 | blocked |
 | S15 | Публикация контента и version pointer | S14 | todo |
@@ -1180,3 +1180,25 @@ docs/reports/S20.md. Следующий шаг — развернуть на т�
 HTTPS отдает новый JS. Корень портала ответил HTTP 307 вместо прежнего 200: nginx и
 портал не изменялись, нужна read-only проверка Location. Проверка preview на
 телефоне еще не выполнена. Откат: команды из чата с `$B`.
+
+### S11 — аудио, ссылки контента на ресурсы, спрайты; этап done
+Commits 9120ec9 (проверка PCM WAV по сигнатуре в дочернем процессе) и 1dfef30
+(API/UI аудио, `hero.sprite_resource_id`/`ability.sound_resource_id` с capability
+`content.resources.v1` и проверкой ссылок при сохранении, спрайты в повторе боя).
+Файлы: packages/content-validator/{wav,png-worker,isolated-png,resource-registry}.mjs,
+packages/contracts/{resource_descriptor,content}.schema.json, index.mjs,
+services/api/src/owner.ts, apps/studio-web/src/{ResourceEditor,EntityEditor,
+BattlePreview,ResourceFrames}.tsx, entities.mjs, PickerPolicy.java, тесты.
+Проверки: `npm run check` exit0; `check:mod` 22; `check:studio` 7; Chromium mobile
+(mock) passed; интеграция с реальной PostgreSQL+Chromium 24/25 (провал только
+Godot ENOENT в среде); PickerPolicyTest passed. CI на 1dfef30 — см. отчет S11.
+Критерии S11 выполнены автоматическими проверками (поврежденный файл, превышение,
+отсутствующий кадр, цикл анимации, тип по содержимому, ссылки). Ограничения:
+только PNG и PCM WAV; изоляция — дочерний процесс с лимитами, не контейнер ОС;
+удаления ресурсов нет. Не проверено: VPS (новые API/веб не развернуты), телефон.
+Миграций нет; откат — revert (черновики со ссылками на ресурсы перестанут
+проходить старую схему).
+Studio v13 (WAV в выборе файлов) подписана прежним ключом, опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s11-studio-test-v13/Studio-v13.apk
+— повторное скачивание, SHA-256 107b9734…d73f совпал; на телефоне не проверена.
+Следующий шаг — S12–S14 (ZIP с ресурсами, импорт/экспорт), затем S15.

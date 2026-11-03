@@ -240,3 +240,68 @@ test('WAV resources and content resource references: type by bytes, audio metada
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM studio_drafts')).rows[0].n,before+1);
  }finally{await api.close();}
 });
+
+test('ZIP export/import: owner-only, preflight report, conflicts, idempotent apply, atomic rollback',async()=>{
+ const {crc32,deflateSync}=await import('node:zlib');
+ const {inspectArchive}=await import('../../packages/content-validator/archive.mjs');
+ const chunk=(name,data)=>{const tag=Buffer.from(name),size=Buffer.alloc(4),sum=Buffer.alloc(4);size.writeUInt32BE(data.length);sum.writeUInt32BE(crc32(Buffer.concat([tag,data])));return Buffer.concat([size,tag,data,sum]);};
+ const png=px=>{const h=Buffer.alloc(13);h.writeUInt32BE(1);h.writeUInt32BE(1,4);h[8]=8;h[9]=6;return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',h),chunk('IDAT',deflateSync(Buffer.from([0,1,2,3,px]))),chunk('IEND',Buffer.alloc(0))]);};
+ const api=await app();const failId=randomUUID();try{
+  const session=await login(api),headers={origin,cookie:session.cookie,'x-ufa-csrf':session.csrf},suffix=randomUUID().replaceAll('-','').slice(0,10);
+  const sprite='zip_sprite_'+suffix;
+  assert.equal((await api.inject({method:'POST',url:'/admin/v1/resources',payload:{id:sprite,data_base64:png(7).toString('base64'),license:{name:'own',attribution:''},scale_bp:10000,loop:false,...meta()},headers})).statusCode,200);
+  const content={schema_version:1,content_version:'zip_base',required_capabilities:['content.core.v1','content.resources.v1'],entities:[
+   {id:'faction_one',kind:'faction',name:'Ф',data:{advantage_ids:[]}},
+   {id:'ability_one',kind:'ability',name:'Удар',data:{effect:'damage',power:5,cooldown_ms:0}},
+   {id:'ability_spare',kind:'ability',name:'Запас',data:{effect:'heal',power:1,cooldown_ms:0}},
+   {id:'hero_one',kind:'hero',name:'Г',data:{faction_id:'faction_one',ability_ids:['ability_one'],sprite_resource_id:sprite}}]};
+  const create=async(c)=>{const id=randomUUID();assert.equal((await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id,name:'ZIP',content:c,...meta()},headers})).statusCode,200);return id;};
+  const source=await create(content);
+  const exp=(id,query='')=>api.inject({url:`/admin/v1/drafts/${id}/export${query}`,headers:{cookie:session.cookie}});
+  assert.equal((await api.inject({url:`/admin/v1/drafts/${source}/export`})).statusCode,401);
+  for(const q of ['?ids=Bad','?ids=hero_one&x=1','?other=1'])assert.equal((await exp(source,q)).statusCode,400,q);
+  assert.equal((await exp(source,'?ids=hero_missing')).statusCode,422);
+  const full=await exp(source);assert.equal(full.statusCode,200);assert.match(full.headers['content-type'],/^application\/zip/);assert.match(full.headers['content-disposition'],/attachment; filename="ufagame-draft-r0.zip"/);
+  const part=await exp(source,'?ids=hero_one');const inspected=await inspectArchive(part.rawPayload);
+  assert.deepEqual(inspected.entities.filter(Boolean).map(e=>e.id),['faction_one','ability_one','hero_one'],'dependencies included, unrelated excluded');
+  assert.equal(inspected.resources[0].meta.id,sprite);
+  const zip=part.rawPayload.toString('base64');
+  const target=await create({...content,entities:[]});
+  const pre=(payload,h=headers)=>api.inject({method:'POST',url:`/admin/v1/drafts/${target}/import/preflight`,payload,headers:h});
+  const apply=(payload)=>api.inject({method:'POST',url:`/admin/v1/drafts/${target}/import/apply`,payload,headers});
+  assert.equal((await pre({expected_revision:0,zip_base64:zip},{origin,cookie:session.cookie})).statusCode,403);
+  assert.equal((await pre({expected_revision:0,zip_base64:Buffer.from('not a zip').toString('base64')})).statusCode,422);
+  assert.equal((await pre({expected_revision:5,zip_base64:zip})).statusCode,409);
+  const report=await pre({expected_revision:0,zip_base64:zip});assert.equal(report.statusCode,200);assert.equal(report.json().ready,true);
+  assert.deepEqual(report.json().report.items.map(i=>[i.id,i.status]),[[sprite,'unchanged'],['faction_one','create'],['ability_one','create'],['hero_one','create']]);
+  assert.equal((await api.inject({url:'/admin/v1/drafts/'+target,headers:{cookie:session.cookie}})).json().revision,0,'preflight writes nothing');
+  const body={expected_revision:0,zip_base64:zip,resolutions:{},...meta()};
+  const applied=await apply(body);assert.equal(applied.statusCode,200);assert.equal(applied.json().draft.revision,1);assert.equal(applied.json().draft.content.entities.length,3);
+  assert.deepEqual((await apply(body)).json(),applied.json(),'same request_id replays');
+  assert.equal((await apply({...body,request_id:randomUUID()})).statusCode,409,'stale revision');
+  // Owner edits the imported ability; the same package now conflicts.
+  const edited={...applied.json().draft.content};edited.entities=edited.entities.map(e=>e.id==='ability_one'?{...e,data:{...e.data,power:99}}:e);
+  assert.equal((await api.inject({method:'PUT',url:'/admin/v1/drafts/'+target,payload:{name:'ZIP',content:edited,expected_revision:1,...meta()},headers})).statusCode,200);
+  const conflict=await pre({expected_revision:2,zip_base64:zip});const item=conflict.json().report.items.find(i=>i.id==='ability_one');
+  assert.equal(conflict.json().ready,false);assert.equal(item.conflict,'ENTITY_EXISTS');assert.deepEqual(item.diff,[{path:'data.power',before:99,after:5}]);
+  const unresolved=await apply({expected_revision:2,zip_base64:zip,resolutions:{},...meta()});assert.equal(unresolved.statusCode,409);assert.equal(unresolved.json().error.message,'IMPORT_CONFLICTS_UNRESOLVED');
+  const kept=await apply({expected_revision:2,zip_base64:zip,resolutions:{'entity:ability_one':'draft'},...meta()});assert.equal(kept.statusCode,200);
+  assert.equal(kept.json().draft.content.entities.find(e=>e.id==='ability_one').data.power,99);
+  // A package with a new resource whose audit insert fails must leave draft and resources untouched.
+  const newSprite='zip_new_'+suffix;
+  const yazl=(await import('yazl')).default,{createHash}=await import('node:crypto');
+  const enc=v=>Buffer.from(JSON.stringify(v)),sha=b=>createHash('sha256').update(b).digest('hex');
+  const files=[['operations.json',enc([{op:'create',entity_type:'resource',id:newSprite,source:`resources/${newSprite}.json`}])],[`resources/${newSprite}.json`,enc({id:newSprite,file:`assets/${newSprite}.png`,license:{name:'own',attribution:''},loop:false})],[`assets/${newSprite}.png`,png(9)]];
+  const manifest={format:'ug-content/1',package_id:'fail_pack',package_version:'1.0.0',game_id:'ufagame',base_content_version:'zip_base',required_capabilities:['content.core.v1'],dependencies:[],files:files.map(([path,b])=>({path,size:b.length,sha256:sha(b)}))};
+  const z=new yazl.ZipFile();z.addBuffer(enc(manifest),'manifest.json');for(const [p,b] of files)z.addBuffer(b,p);z.end();
+  const failZip=await new Promise(r=>{const parts=[];z.outputStream.on('data',c=>parts.push(c));z.outputStream.on('end',()=>r(Buffer.concat(parts)));});
+  await pool.query(`CREATE FUNCTION owner_audit_import_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.request_id='${failId}'::uuid THEN RAISE EXCEPTION 'import audit failure'; END IF; RETURN NEW; END $$`);
+  await pool.query('CREATE TRIGGER owner_audit_import_fail BEFORE INSERT ON owner_audit FOR EACH ROW EXECUTE FUNCTION owner_audit_import_fail()');
+  const failed=await apply({expected_revision:3,zip_base64:failZip.toString('base64'),resolutions:{},reason:'atomic import test',request_id:failId});
+  assert.equal(failed.statusCode,500);
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM owner_resources WHERE id=$1',[newSprite])).rows[0].n,0,'resource rolled back');
+  assert.equal((await api.inject({url:'/admin/v1/drafts/'+target,headers:{cookie:session.cookie}})).json().revision,3,'draft unchanged');
+ }finally{
+  await pool.query('DROP TRIGGER IF EXISTS owner_audit_import_fail ON owner_audit');await pool.query('DROP FUNCTION IF EXISTS owner_audit_import_fail()');await api.close();
+ }
+});
