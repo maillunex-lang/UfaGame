@@ -1526,3 +1526,7 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s22-game-test-v12/Ga
 Новое: infra/studio-test/update.sh (обновление одной командой с автооткатом,
 сухой прогон успеха и отката). Не проверено: VPS и телефон.
 Следующий шаг: Game v13, обновление VPS через update.sh, приемка владельцем.
+CI на 3ab9556: Repository checks 41622834478 — success. Game v13 (capability
+heroes.progression.v1; versionCode 13; сертификат e8959e0f…e575) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s23-s24-s28-game-test-v13/Game-arm64-v13.apk
+— повторное скачивание, SHA-256 f628c8b2…cf03 совпал; на телефоне не проверена.
