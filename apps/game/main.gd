@@ -17,6 +17,9 @@ var progress: ProgressBar
 var progress_label: Label
 var hub: VBoxContainer
 var download_all_button: Button
+var pages := {}
+var tabs: TabContainer
+var start_button: Button
 
 func label(value: String, size := 20, parent: Container = null) -> Label:
 	var item := Label.new()
@@ -43,41 +46,97 @@ func action(title: String, callback: Callable) -> Button:
 	column.add_child(button)
 	return button
 
+func _panel(color: Color, border: Color, radius := 12) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = color
+	box.border_color = border
+	box.set_border_width_all(1)
+	box.set_corner_radius_all(radius)
+	box.content_margin_left = 14
+	box.content_margin_right = 14
+	box.content_margin_top = 9
+	box.content_margin_bottom = 9
+	return box
+
+func _setup_theme() -> void:
+	var skin := Theme.new()
+	skin.default_font_size = 20
+	skin.set_color("font_color", "Label", Color("edf2ed"))
+	skin.set_color("font_color", "Button", Color("f8f5e9"))
+	skin.set_color("font_hover_color", "Button", Color.WHITE)
+	skin.set_color("font_disabled_color", "Button", Color("91a3a0"))
+	skin.set_stylebox("normal", "Button", _panel(Color("27675e"), Color("4f9385")))
+	skin.set_stylebox("hover", "Button", _panel(Color("327c6d"), Color("9bc6a2")))
+	skin.set_stylebox("pressed", "Button", _panel(Color("194b45"), Color("d2b66d")))
+	skin.set_stylebox("disabled", "Button", _panel(Color("27373a"), Color("455453")))
+	skin.set_stylebox("normal", "LineEdit", _panel(Color("1b3035"), Color("55736b"), 8))
+	skin.set_stylebox("panel", "TabContainer", _panel(Color("192b32"), Color("344d48")))
+	skin.set_stylebox("tab_selected", "TabContainer", _panel(Color("27675e"), Color("7db8a0"), 6))
+	skin.set_stylebox("tab_unselected", "TabContainer", _panel(Color("1a292e"), Color("344d48"), 6))
+	skin.set_font_size("font_size", "TabContainer", 16)
+	theme = skin
+
 func _ready() -> void:
 	assert(preload("res://contract_registry.gd").supports(["battle.hp.v1", "auth.guest.v1"]))
-	var scroll := ScrollContainer.new()
-	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	scroll.offset_left = 20
-	scroll.offset_right = -20
-	scroll.offset_top = 60
-	scroll.offset_bottom = -30
-	add_child(scroll)
-	column = VBoxContainer.new()
-	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_theme_constant_override("separation", 14)
-	scroll.add_child(column)
+	_setup_theme()
+	var background := ColorRect.new()
+	background.color = Color("111c25")
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+	var layout := VBoxContainer.new()
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.offset_left = 20
+	layout.offset_right = -20
+	layout.offset_top = 48
+	layout.offset_bottom = -28
+	layout.add_theme_constant_override("separation", 8)
+	add_child(layout)
+	var heading := Label.new()
+	heading.text = "UFA  •  БАШКОРТОСТАН"
+	heading.add_theme_font_size_override("font_size", 25)
+	heading.add_theme_color_override("font_color", Color("e8cf89"))
+	layout.add_child(heading)
+	status = Label.new()
+	status.text = "Подключаемся к миру…"
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.add_theme_font_size_override("font_size", 17)
+	layout.add_child(status)
+	progress = ProgressBar.new()
+	progress.custom_minimum_size.y = 12
+	progress.visible = false
+	layout.add_child(progress)
+	progress_label = Label.new()
+	progress_label.add_theme_font_size_override("font_size", 16)
+	layout.add_child(progress_label)
+	tabs = TabContainer.new()
+	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.add_child(tabs)
+	for page_name in ["Карта", "Герои", "Задания", "Награды", "Настройки"]:
+		var scroll := ScrollContainer.new()
+		scroll.name = page_name
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		tabs.add_child(scroll)
+		var page := VBoxContainer.new()
+		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		page.add_theme_constant_override("separation", 12)
+		scroll.add_child(page)
+		pages[page_name] = page
+	column = pages["Настройки"]
+	hub = pages["Карта"]
 	auth = preload("res://auth_client.gd").new()
 	add_child(auth)
 	content = preload("res://content_client.gd").new()
 	content.auth = auth
 	add_child(content)
 	content.progress_changed.connect(_on_progress)
-	label("UfaGame", 32)
-	label("Добро пожаловать в Башкортостан! Сначала игра войдёт гостем и скачает описание мира и картинки героев. Скачанное хранится на телефоне и повторно не загружается.")
+	label("Настройки игры", 26)
+	label("Здесь можно проверить обновления, скачать ресурсы и управлять аккаунтом.", 18)
 	base_url = field("Адрес игрового сервера")
 	base_url.text = auth.state.get("base_url", DEFAULT_SERVER)
-	action("Играть (вход гостем)", _start)
-	progress = ProgressBar.new()
-	progress.custom_minimum_size.y = 24
-	progress.visible = false
-	column.add_child(progress)
-	progress_label = label("")
-	status = label("")
-	download_all_button = action("Скачать всё (звуки и остальные файлы)", _download_all)
+	start_button = action("Подключиться / обновить мир", _start)
+	download_all_button = action("Скачать все ресурсы", _download_all)
 	download_all_button.visible = false
-	hub = VBoxContainer.new()
-	hub.add_theme_constant_override("separation", 10)
-	column.add_child(hub)
 	_build_account()
 	_show_hub()
 	if auth.state.has("session"):
@@ -147,14 +206,24 @@ func _download_all() -> void:
 	_show_hub()
 
 func _show_hub() -> void:
-	for child in hub.get_children():
-		child.queue_free()
+	for page_name in ["Карта", "Герои", "Задания", "Награды"]:
+		for child in pages[page_name].get_children():
+			child.queue_free()
 	var bundle: Dictionary = content.active()
 	download_all_button.visible = not bundle.is_empty()
 	if bundle.is_empty():
+		label("Приключение начинается здесь", 27, hub)
+		label("Подключись к миру, чтобы открыть карту и собрать команду.", 19, hub)
+		var connect_button := Button.new()
+		connect_button.text = "Играть"
+		connect_button.custom_minimum_size.y = 64
+		connect_button.pressed.connect(_start)
+		hub.add_child(connect_button)
 		return
 	var missing: int = bundle.resources.filter(func(r): return not content.downloaded(r)).size()
-	label("Мир %s · файлов не скачано: %d" % [bundle.content_version, missing], 18, hub)
+	label("Твоё приключение", 28, hub)
+	if missing > 0:
+		label("Осталось скачать файлов: %d" % missing, 16, hub)
 	progression = bundle.content.entities.any(func(e): return e.get("kind") == "progression")
 	if progression:
 		_battle_section(bundle)
@@ -269,11 +338,11 @@ func _battle_section(bundle: Dictionary) -> void:
 
 func _add_views() -> void:
 	if quests_view != null:
-		hub.add_child(quests_view)
+		pages["Задания"].add_child(quests_view)
 	if economy_view != null:
-		hub.add_child(economy_view)
+		pages["Награды"].add_child(economy_view)
 	if heroes_view != null:
-		hub.add_child(heroes_view)
+		pages["Герои"].add_child(heroes_view)
 
 ## One request at a time (one HTTP client): roster first, then the campaign.
 func _load_online(bundle: Dictionary, with_campaign: bool) -> void:

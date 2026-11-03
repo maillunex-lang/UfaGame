@@ -8,3 +8,5 @@ godot --headless --path apps/game --editor --import --quit
 godot --headless --path apps/game --script res://test_s01.gd
 godot --headless --path apps/game --script res://test_s01.gd
 godot --headless --path apps/game --quit-after 300
+
+godot --headless --path apps/game --script res://test_ui.gd
