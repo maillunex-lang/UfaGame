@@ -97,8 +97,13 @@ func run() -> void:
 	check(live.set_auto(false) > 0, "manual mode can be restored")
 	check(await wait_until(func(): return live.replay.state.get("auto") == false), "manual mode restored")
 	# Too early (still walking): the server refuses, the client reports it.
-	check(live.send_ability("atk_0") > 0, "early ability command sent")
-	check(await wait_until(func(): return applied_results.size() > 0, 5.0), "server answers an early tap within 1 s (applied in reach, otherwise refused)")
+	var early_seq: int = live.send_ability("atk_0")
+	check(early_seq > 0, "early ability command sent")
+	check(await wait_until(func(): return applied_results.any(func(r): return int(r.seq) == early_seq), 5.0), "server answers an early tap within 1 s (applied in reach, otherwise refused)")
+	# The early tap may have landed while reconnecting; wait past the ability's
+	# one-second cooldown before asserting the next use can be applied.
+	await create_timer(1.5).timeout
+	check(await wait_until(func(): return view.actors.has("atk_0") and int(view.actors["atk_0"].energy) >= 500, 10.0), "hero has energy for the next ability")
 	# In range (the hero already hits): the manual main ability is applied.
 	var hits := [false]
 	live.frame_received.connect(func(frame, _s):
