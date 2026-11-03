@@ -1241,7 +1241,12 @@ apps/game/content_client.gd, main.gd (русский вход/загрузчик
 Проверки: настоящий Godot 4.6.3 — перезапуск без повторной загрузки, обрыв и
 докачка `.part`, поврежденный файл, неверный хеш, нехватка места (бюджет),
 несовместимость — все passed; полная интеграция 28/28; `npm run check` exit0.
-Game v8 собрана (26 МБ, сертификат как у v7), публикация — после CI.
+CI на e7fdd13: Repository checks 41580894410 — success. Game v8 (26 МБ, сертификат
+как у v7) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s16-game-test-v8/Game-arm64-v8.apk
+— повторное скачивание, SHA-256 1c921679…17d4 совпал; на телефоне не проверена.
+Для VPS подготовлен infra/studio-test/apply-body-limit.sh (+render-body-limit.py):
+`client_max_body_size 16m` только в /game/server/, бэкап, nginx -t, проверки, откат.
 Блокер done: установка v8 на Android и загрузка с тестового VPS (нужны миграция
 009 и публикация версии через Studio). Следующий шаг: развернуть S11–S16 на VPS,
 затем S17–S19.

@@ -101,3 +101,24 @@ PGDATABASE=<бд> npm run db:migrate`, `npm run build:studio-web`,
 `node tools/sync-contracts.mjs`, `node --test --test-concurrency=1
 tests/integration/*.test.mjs`; браузер — `UFA_CHROMIUM_PATH=/opt/pw-browsers/chromium`.
 Godot в такой среде отсутствует — его тест падает с ENOENT, проверяется в CI.
+
+## Дополнение 2026-11-03 (вторая часть сессии): S11–S16
+
+Ветки `main`, `codex/s10-studio-android` и `claude/ufagame-s10-s20-continue-nu48zr`
+синхронизированы (владелец разрешил работу со всеми ветками). S11–S15 done, S16
+in_progress (нужна проверка на телефоне). Studio v13/v14 и Game v8 опубликованы
+(ссылки в roadmap). Подпись: владелец передал резервную копию ключей; в среде она
+распакована вне репозитория (`UFAGAME_SIGNING_DIR`), в git не попадает.
+
+Сборочная среда этой сессии (повторить в новой): Android SDK cmdline-tools →
+`sdkmanager "build-tools;36.0.0" "platforms;android-36" "platform-tools"` в
+/opt/android-sdk; JDK 21; Godot 4.6.3 + export templates 4.6.3 (путь SDK в
+editor_settings); `UFAGAME_GAME_ONLY=1 bash tools/android/build.sh <code>` для Game,
+`bash tools/android/build-studio-test.sh <code>` для Studio. Публикация — временная
+ветка `artifact-staging/apk-*` с release-manifest.json (workflow создает Release и
+удаляет ветку); пушить ее после зеленого CI исходного commit и без signature.txt
+(gitleaks ложно срабатывает на digest публичного ключа).
+
+VPS: развернут commit 4371e4a (S17/S20 preview). Не развернуты S11–S16 (миграция 009,
+новые API и веб). Команды выданы владельцу в чат. Следующие этапы: S16 (телефон),
+S17–S20.
