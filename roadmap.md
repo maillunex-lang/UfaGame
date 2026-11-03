@@ -1530,3 +1530,10 @@ CI на 3ab9556: Repository checks 41622834478 — success. Game v13 (capability
 heroes.progression.v1; versionCode 13; сертификат e8959e0f…e575) опубликована:
 https://github.com/maillunex-lang/UfaGame/releases/download/s23-s24-s28-game-test-v13/Game-arm64-v13.apk
 — повторное скачивание, SHA-256 f628c8b2…cf03 совпал; на телефоне не проверена.
+Развертывание (владелец, 2026-11-03): `update.sh 601de9e` на тестовом VPS — проверки до,
+pg_dump 440K (/srv/ufagame-test/backup-20261103-115653-3799933), API собран, миграция
+013 применена (health/ready ok), Studio собран и заменён, проверки после: портал, API,
+Studio ok, WebSocket-маршрут 401 (доходит до API). Первый реальный запуск скрипта прошёл
+без отката. Косметика: одно сообщение curl «Connection reset» во время старта API
+скрыто в следующей версии скрипта. Осталось: проверка на телефоне (Studio + Game v13).
+

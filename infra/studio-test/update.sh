@@ -22,7 +22,7 @@ main() {
   [[ -z $(git status --porcelain --untracked-files=no) ]] || { echo 'Source tree has local changes; stopping'; exit 1; }
 
   portal() { curl -fsSL --max-time 15 --max-redirs 5 -o /dev/null https://tts-ufa.ru/; }
-  ready() { curl -fsS --max-time 10 http://127.0.0.1:8055/health/ready | grep -q '"ok"'; }
+  ready() { curl -fsS --max-time 10 http://127.0.0.1:8055/health/ready 2>/dev/null | grep -q '"ok"'; }
   public_ready() { curl -fsS --max-time 15 https://tts-ufa.ru/game/server/health/ready | grep -q '"ok"'; }
   studio() { curl -fsS --max-time 15 https://tts-ufa.ru/game/studio/ | grep -q '<div id="root">'; }
   wait_ready() { local i; for i in $(seq 1 45); do ready && return 0; sleep 2; done; return 1; }
