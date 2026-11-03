@@ -106,7 +106,8 @@ test('S29 AFK: server time only, 12 h cap (+VIP hours), claim once, parallel cla
  const api=await buildApp(pool);await api.ready();try{
   await publish(economyContent());const p=await player(api);const h=await p.get('/v1/heroes');
   let a=await p.get('/v1/afk','afk');assert.deepEqual(a.per_hour,{gold:3600,hero_exp:360});assert.equal(a.cap_hours,12);
-  let r=await p.post('/v1/afk/claim',{request_id:randomUUID()});assert.equal(r.statusCode,200);assert.deepEqual(r.json().claimed,{},'nothing yet');
+  await shift(p.g.player_id,1);a=await p.get('/v1/afk');assert.ok(a.accrued.gold>=3600,'window started at the first look, not at the first claim');
+  let r=await p.post('/v1/afk/claim',{request_id:randomUUID()});assert.equal(r.statusCode,200);assert.ok(r.json().claimed.gold>=3600);
   await shift(p.g.player_id,2);
   a=await p.get('/v1/afk','afk');assert.ok(a.accrued.gold>=7200&&a.accrued.gold<7260,JSON.stringify(a.accrued));
   const id=randomUUID(),gold0=await p.bal('gold');

@@ -1582,4 +1582,7 @@ CI на 584f5b0: Repository checks 41629491201 — success. Game v14 (capabiliti
 summon.v1, afk.v1; versionCode 14; сертификат e8959e0f…e575) опубликована:
 https://github.com/maillunex-lang/UfaGame/releases/download/s25-s27-s29-game-test-v14/Game-arm64-v14.apk
 — повторное скачивание, SHA-256 35e37bb4…c3cf совпал; на телефоне не проверена.
+Уточнение S29 (до развертывания): окно AFK начинается при первом открытии (GET /v1/afk
+создаёт состояние по времени сервера), а не при первом «Забрать». Тест дополнен.
+Только API; Game v14 не меняется.
 

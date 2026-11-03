@@ -135,7 +135,10 @@ export async function registerEconomy(app:FastifyInstance,pool:Pool){
   return vipView(c,playerId,v.content);
  });});
 
- app.get('/v1/afk',async request=>{const s=await authorize(pool,bearer(request));return (await afkView(pool,s.player_id,await world(pool))).view;});
+ // The first look at AFK starts the window (server time), so income runs from the first visit.
+ app.get('/v1/afk',async request=>{const s=await authorize(pool,bearer(request));const v=await world(pool);
+  if(tableOf(v.content,'afk')&&!await loadAfk(pool,s.player_id))await transaction(pool,async c=>{await c.query('SELECT id FROM players WHERE id=$1 FOR UPDATE',[s.player_id]);if(!await loadAfk(c,s.player_id)){const {state}=await settleAfk(c,s.player_id,v);await saveAfk(c,s.player_id,state);}});
+  return (await afkView(pool,s.player_id,v)).view;});
  app.post('/v1/afk/claim',limited,async request=>{const b=request.body as any;requireBody('afk_claim_request',b);return tx(request,async(c,playerId,v)=>{
   const old=(await c.query('SELECT response FROM afk_claims WHERE player_id=$1 AND request_id=$2',[playerId,b.request_id])).rows[0];if(old)return old.response;
   const {state,now}=await afkView(c,playerId,v);
