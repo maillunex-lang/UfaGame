@@ -1191,7 +1191,7 @@ services/api/src/owner.ts, apps/studio-web/src/{ResourceEditor,EntityEditor,
 BattlePreview,ResourceFrames}.tsx, entities.mjs, PickerPolicy.java, тесты.
 Проверки: `npm run check` exit0; `check:mod` 22; `check:studio` 7; Chromium mobile
 (mock) passed; интеграция с реальной PostgreSQL+Chromium 24/25 (провал только
-Godot ENOENT в среде); PickerPolicyTest passed. CI на 1dfef30 — см. отчет S11.
+Godot ENOENT в среде); PickerPolicyTest passed. CI на 1dfef30: Repository checks 41578314518 — success (вторая попытка; первая упала на ложном срабатывании gitleaks по временной ветке релиза, см. S10).
 Критерии S11 выполнены автоматическими проверками (поврежденный файл, превышение,
 отсутствующий кадр, цикл анимации, тип по содержимому, ссылки). Ограничения:
 только PNG и PCM WAV; изоляция — дочерний процесс с лимитами, не контейнер ОС;
