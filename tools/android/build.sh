@@ -9,7 +9,7 @@ s04_code=${1:?Usage: bash tools/android/build.sh versionCode}
 export PATH="$JAVA_HOME/bin:$PATH"
 s04_tools="$ANDROID_HOME/build-tools/36.0.0"
 s04_android="$ANDROID_HOME/platforms/android-36/android.jar"
-s04_output="$PWD/build/android/$s04_code"
+s04_output="$PWD/build/android/${UFAGAME_GAME_ONLY:+game-}$s04_code"
 mkdir -p "$s04_output"
 s04_tmp=$(mktemp -d)
 trap 'rm -rf -- "$s04_tmp"' EXIT
@@ -41,6 +41,20 @@ jar cf "$s04_tmp/plugin/plugin.jar" -C "$s04_tmp/plugin/classes" .
 python3 tools/android/inject-plugin.py "$s04_output/Game-arm64.apk" "$s04_tmp/plugin/dex/classes.dex" "$s04_tmp/plugin/unsigned.apk"
 "$s04_tools/zipalign" -P 16 -f 4 "$s04_tmp/plugin/unsigned.apk" "$s04_output/Game-arm64.apk"
 "$s04_tools/apksigner" sign --ks "$UFAGAME_SIGNING_DIR/game.keystore" --ks-key-alias game --ks-pass "file:$UFAGAME_SIGNING_DIR/password.txt" "$s04_output/Game-arm64.apk"
+if [[ "${UFAGAME_GAME_ONLY:-}" == 1 ]]; then
+ # Game-only release: Studio has its own versionCode line (build-studio-test.sh).
+ "$s04_tools/apksigner" verify --verbose --print-certs "$s04_output/Game-arm64.apk" > "$s04_output/Game-arm64.signature.txt"
+ "$s04_tools/aapt" dump badging "$s04_output/Game-arm64.apk" > "$s04_output/Game-arm64.badging.txt"
+ python3 - "$s04_output" <<'PY'
+import json,hashlib,sys
+from pathlib import Path
+p=Path(sys.argv[1]);b=(p/'Game-arm64.apk').read_bytes()
+report=[{'name':'Game-arm64','bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'device_update_tested':False}]
+assert report[0]['bytes']<=95000000
+(p/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+PY
+ exit 0
+fi
 mkdir -p "$s04_tmp/studio/gen" "$s04_tmp/studio/classes" "$s04_tmp/studio/dex"
 python3 - "$s04_tmp/studio/AndroidManifest.xml" "$s04_code" <<'PY'
 from pathlib import Path

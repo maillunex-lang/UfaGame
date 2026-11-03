@@ -65,7 +65,14 @@ export async function registerContent(app:FastifyInstance,pool:Pool){
   if(typeof sha!=='string'||!/^[a-f0-9]{64}$/.test(sha))throw new DomainError('INVALID_REQUEST');
   const row=(await pool.query('SELECT media_type,payload FROM resource_blobs WHERE sha256=$1',[sha])).rows[0];
   if(!row)throw new DomainError('NOT_FOUND',404);
-  return reply.header('Cache-Control','private, max-age=31536000, immutable').header('X-Content-Type-Options','nosniff').header('Content-Security-Policy',"default-src 'none'; sandbox").type(row.media_type).send(row.payload);
+  reply.header('Cache-Control','private, max-age=31536000, immutable').header('X-Content-Type-Options','nosniff').header('Content-Security-Policy',"default-src 'none'; sandbox").header('Accept-Ranges','bytes').type(row.media_type);
+  const range=request.headers.range;
+  if(range===undefined)return reply.send(row.payload);
+  // Single byte range only (resume of .part files); anything else is refused.
+  const match=typeof range==='string'?/^bytes=(\d{1,10})-(\d{1,10})?$/.exec(range):null;
+  const size=row.payload.length,start=match?Number(match[1]):-1,end=match&&match[2]!==undefined?Math.min(Number(match[2]),size-1):size-1;
+  if(!match||start>=size||end<start)return reply.code(416).header('Content-Range',`bytes */${size}`).send(Buffer.alloc(0));
+  return reply.code(206).header('Content-Range',`bytes ${start}-${end}/${size}`).send(row.payload.subarray(start,end+1));
  });
 }
 export {registry};

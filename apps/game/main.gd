@@ -1,27 +1,29 @@
 extends Control
+## S16: Russian entry screen, content loader and a minimal hub from published content.
+## Account management (bind/login/recover) from S06/S07 stays below.
 
-const Store = preload("res://prototype/store.gd")
-const Replay = preload("res://prototype/replay.gd")
-var replay = Replay.new()
-var events: Array = []
-var index := 0
-var text: Label
+const DEFAULT_SERVER := "https://tts-ufa.ru/game/server"
 var status: Label
 var base_url: LineEdit
 var auth
+var content
 var login_field: LineEdit
 var password_field: LineEdit
 var recovery_field: LineEdit
 var recovery_output: LineEdit
 var busy := false
 var column: VBoxContainer
+var progress: ProgressBar
+var progress_label: Label
+var hub: VBoxContainer
+var download_all_button: Button
 
-func label(value: String) -> Label:
+func label(value: String, size := 20, parent: Container = null) -> Label:
 	var item := Label.new()
 	item.text = value
 	item.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	item.add_theme_font_size_override("font_size", 20)
-	column.add_child(item)
+	item.add_theme_font_size_override("font_size", size)
+	(parent if parent != null else column).add_child(item)
 	return item
 
 func field(placeholder: String, secret := false) -> LineEdit:
@@ -33,12 +35,13 @@ func field(placeholder: String, secret := false) -> LineEdit:
 	column.add_child(item)
 	return item
 
-func action(title: String, callback: Callable) -> void:
+func action(title: String, callback: Callable) -> Button:
 	var button := Button.new()
 	button.text = title
 	button.custom_minimum_size.y = 54
 	button.pressed.connect(callback)
 	column.add_child(button)
+	return button
 
 func _ready() -> void:
 	assert(preload("res://contract_registry.gd").supports(["battle.hp.v1", "auth.guest.v1"]))
@@ -53,21 +56,118 @@ func _ready() -> void:
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 14)
 	scroll.add_child(column)
-	label("UfaGame — техническая сборка")
-	text = label("")
-	var bytes := FileAccess.get_file_as_bytes("res://prototype/events.json")
-	var result := Store.retain(bytes, FileAccess.get_sha256("res://prototype/events.json"))
-	events = JSON.parse_string(bytes.get_string_from_utf8())
-	label("Ресурс: " + result + "\n" + OS.get_user_data_dir())
-	text.text = "Локальная запись событий. HP: 100"
 	auth = preload("res://auth_client.gd").new()
 	add_child(auth)
-	action("Проверить защищенное хранилище", _probe_storage)
-	label("Гостевой аккаунт")
-	base_url = field("HTTPS-адрес тестового сервера")
-	base_url.text = auth.state.get("base_url", "")
-	status = label("Для аккаунта нужен тестовый сервер. Локальный HP выше — только запись.")
-	action("Подключиться / продолжить гостя", _connect)
+	content = preload("res://content_client.gd").new()
+	content.auth = auth
+	add_child(content)
+	content.progress_changed.connect(_on_progress)
+	label("UfaGame", 32)
+	label("Добро пожаловать в Башкортостан! Сначала игра войдёт гостем и скачает описание мира и картинки героев. Скачанное хранится на телефоне и повторно не загружается.")
+	base_url = field("Адрес игрового сервера")
+	base_url.text = auth.state.get("base_url", DEFAULT_SERVER)
+	action("Играть (вход гостем)", _start)
+	progress = ProgressBar.new()
+	progress.custom_minimum_size.y = 24
+	progress.visible = false
+	column.add_child(progress)
+	progress_label = label("")
+	status = label("")
+	download_all_button = action("Скачать всё (звуки и остальные файлы)", _download_all)
+	download_all_button.visible = false
+	hub = VBoxContainer.new()
+	hub.add_theme_constant_override("separation", 10)
+	column.add_child(hub)
+	_build_account()
+	_show_hub()
+	if auth.state.has("session"):
+		_start()
+
+func _on_progress(done: int, total: int) -> void:
+	progress.visible = true
+	progress.max_value = max(total, 1)
+	progress.value = done
+	progress_label.text = "Загрузка файла: %d из %d КБ" % [int(done / 1024), int(ceil(total / 1024.0))]
+
+func _explain(code: String) -> String:
+	var texts := {
+		"NETWORK_UNAVAILABLE": "Нет связи с сервером. Скачанное раньше сохранено; продолжим, когда появится сеть.",
+		"HASH_MISMATCH": "Файл повреждён при загрузке и отброшен. Попробуй ещё раз.",
+		"STORAGE_FULL": "Не хватает места для файлов игры. Освободи место и повтори.",
+		"STORAGE_WRITE_FAILED": "Не удалось записать файл на телефон (возможно, нет места).",
+		"INCOMPATIBLE_CLIENT": "Для новой версии мира нужно обновить приложение. Пока работает прежняя версия.",
+		"NO_CONTENT": "Мир ещё не опубликован на сервере.",
+		"ANDROID_KEYSTORE_REQUIRED": "Нужна Android-сборка с защищённым хранилищем.",
+		"HTTPS_REQUIRED": "Нужен адрес сервера, начинающийся с https://",
+	}
+	return texts.get(code, "Ошибка: " + code)
+
+func _start() -> void:
+	if busy:
+		return
+	busy = true
+	status.text = "Вход…"
+	var connected: Dictionary = await auth.connect_guest(base_url.text.strip_edges())
+	if not connected.ok:
+		status.text = _explain(str(connected.code)) + "\nСохранённые данные не удалены."
+		busy = false
+		_show_hub()
+		return
+	status.text = "Загружаем мир…"
+	var result: Dictionary = await content.sync()
+	progress.visible = false
+	progress_label.text = ""
+	if result.ok:
+		status.text = ("Без сети: работает сохранённая версия " if result.get("offline", false) else "Версия мира: ") + str(result.version)
+	else:
+		status.text = _explain(str(result.code)) + ("\nРаботает сохранённая версия " + str(result.version) if str(result.get("version", "")) != "" else "")
+	busy = false
+	_show_hub()
+
+func _download_all() -> void:
+	if busy:
+		return
+	busy = true
+	status.text = "Скачиваем все файлы…"
+	var result: Dictionary = await content.sync(true)
+	progress.visible = false
+	progress_label.text = ""
+	status.text = "Все файлы скачаны." if result.ok else _explain(str(result.code))
+	busy = false
+	_show_hub()
+
+func _show_hub() -> void:
+	for child in hub.get_children():
+		child.queue_free()
+	var bundle: Dictionary = content.active()
+	download_all_button.visible = not bundle.is_empty()
+	if bundle.is_empty():
+		return
+	var missing: int = bundle.resources.filter(func(r): return not content.downloaded(r)).size()
+	label("Мир %s · файлов не скачано: %d" % [bundle.content_version, missing], 18, hub)
+	label("Герои", 24, hub)
+	for entity in bundle.content.entities:
+		if entity.get("kind") != "hero":
+			continue
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		var picture := TextureRect.new()
+		picture.custom_minimum_size = Vector2(64, 64)
+		picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		picture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		var sprite = entity.get("data", {}).get("sprite_resource_id")
+		if sprite is String:
+			picture.texture = content.texture(sprite)
+		row.add_child(picture)
+		var title := Label.new()
+		title.text = str(entity.get("name", entity.get("id", "")))
+		title.add_theme_font_size_override("font_size", 20)
+		row.add_child(title)
+		hub.add_child(row)
+
+func _build_account() -> void:
+	label("Аккаунт", 24)
 	label("Логин: 3–32 латинских буквы, цифры или _. Пароль: 12–128 символов.")
 	login_field = field("Логин")
 	login_field.max_length = 32
@@ -83,31 +183,7 @@ func _ready() -> void:
 	recovery_output = field("Новый код появится здесь")
 	recovery_output.editable = false
 	action("Скопировать новый код", _copy_code)
-	var timer := Timer.new()
-	timer.wait_time = 1.0
-	timer.timeout.connect(_tick)
-	add_child(timer)
-	timer.start()
-
-func _connect() -> void:
-	if busy:
-		return
-	busy = true
-	status.text = "Подключение…"
-	var result: Dictionary = await auth.connect_guest(base_url.text.strip_edges())
-	if result.ok:
-		status.text = "Игрок: " + str(result.data.player_id) + "\nБаланс: " + JSON.stringify(result.data.balances)
-	else:
-		status.text = "Не удалось подключиться: " + str(result.code) + "\nСохраненные данные не удалены."
-	busy = false
-
-func _tick() -> void:
-	if index >= events.size():
-		return
-	var result: String = replay.apply(events[index])
-	index += 1
-	text.text = "Локальное событие: %d / %s\nHP: %d" % [index, result, replay.hp]
-
+	action("Проверить защищенное хранилище", _probe_storage)
 
 func finish_account(result: Dictionary, has_code: bool) -> void:
 	password_field.clear()
@@ -115,7 +191,7 @@ func finish_account(result: Dictionary, has_code: bool) -> void:
 	if result.ok:
 		if has_code:
 			recovery_output.text = str(result.data.recovery_code)
-		status.text = "Готово. Сохрани новый код вне игры." if has_code else "Вход выполнен. Можно загрузить прогресс кнопкой выше."
+		status.text = "Готово. Сохрани новый код вне игры." if has_code else "Вход выполнен."
 	else:
 		status.text = "Ошибка: " + str(result.code) + "\nДанные аккаунта не удалены. Если ответ привязки или восстановления потерян, войди заданным паролем и выпусти новый код."
 	busy = false
@@ -152,7 +228,6 @@ func _copy_code() -> void:
 	if not recovery_output.text.is_empty():
 		DisplayServer.clipboard_set(recovery_output.text)
 		status.text = "Код скопирован. Сохрани его в надежном месте."
-
 
 func _probe_storage() -> void:
 	if busy:

@@ -317,7 +317,9 @@ test('content publish (S15): immutable versions, pointer races, failure atomicit
   const caps=registry.capabilities.join(',');
   const client=(h={})=>api.inject({url:'/v1/content/current',headers:{authorization:`Bearer ${guest.access_token}`,'x-ufa-capabilities':caps,...h}});
   assert.equal((await api.inject({url:'/v1/content/current',headers:{'x-ufa-capabilities':caps}})).statusCode,401);
-  assert.equal((await client()).statusCode,404,'nothing published yet');
+  const initial=(await api.inject({url:'/admin/v1/content/releases',headers:{cookie:session.cookie}})).json().pointer;
+  const base=initial?.pointer_revision??0;
+  if(!initial)assert.equal((await client()).statusCode,404,'nothing published yet');
   const sprite='pub_sprite_'+suffix;
   assert.equal((await api.inject({method:'POST',url:'/admin/v1/resources',payload:{id:sprite,data_base64:png(11).toString('base64'),license:{name:'own',attribution:''},scale_bp:10000,loop:false,...meta()},headers})).statusCode,200);
   const content={schema_version:1,content_version:'draft_pub',required_capabilities:['content.core.v1','content.resources.v1'],entities:[
@@ -329,10 +331,10 @@ test('content publish (S15): immutable versions, pointer races, failure atomicit
   assert.equal((await post(`/admin/v1/drafts/${draftId}/publish/preflight`,{expected_revision:0},{origin,cookie:session.cookie})).statusCode,403);
   assert.equal((await post(`/admin/v1/drafts/${draftId}/publish/preflight`,{expected_revision:1})).statusCode,409);
   const pre=(await post(`/admin/v1/drafts/${draftId}/publish/preflight`,{expected_revision:0})).json();
-  assert.equal(pre.ready,true);assert.deepEqual(pre.diff,{added:['ability_one','faction_one','hero_one'],removed:[],changed:[]});assert.equal(pre.resource_count,1);assert.deepEqual(pre.warnings,['HERO_WITHOUT_COMBAT:hero_one']);
-  const firstBody={expected_revision:0,expected_pointer_revision:0,...meta()};
+  assert.equal(pre.ready,true);if(!initial)assert.deepEqual(pre.diff,{added:['ability_one','faction_one','hero_one'],removed:[],changed:[]});assert.equal(pre.resource_count,1);assert.deepEqual(pre.warnings,['HERO_WITHOUT_COMBAT:hero_one']);
+  const firstBody={expected_revision:0,expected_pointer_revision:base,...meta()};
   const first=await post(`/admin/v1/drafts/${draftId}/publish`,firstBody);assert.equal(first.statusCode,200);
-  const v1=first.json();assert.match(v1.content_version,/^pub_\d{6}$/);assert.equal(v1.pointer_revision,1);
+  const v1=first.json();assert.match(v1.content_version,/^pub_\d{6}$/);assert.equal(v1.pointer_revision,base+1);
   assert.deepEqual((await post(`/admin/v1/drafts/${draftId}/publish`,firstBody)).json(),v1,'same request_id replays');
   // Client receives the whole compatible bundle and the blob by hash.
   const bundle=await client();assert.equal(bundle.statusCode,200);assert.equal(validate('content_bundle',bundle.json()).ok,true);
@@ -340,24 +342,28 @@ test('content publish (S15): immutable versions, pointer races, failure atomicit
   assert.equal((await client({'if-none-match':bundle.headers.etag})).statusCode,304);
   const blob=await api.inject({url:'/v1/content/blobs/'+bundle.json().resources[0].sha256,headers:{authorization:`Bearer ${guest.access_token}`}});
   assert.equal(blob.statusCode,200);assert.deepEqual(blob.rawPayload,png(11));assert.match(blob.headers['cache-control'],/immutable/);
+  const blobUrl='/v1/content/blobs/'+bundle.json().resources[0].sha256,auth={authorization:`Bearer ${guest.access_token}`};
+  const part=await api.inject({url:blobUrl,headers:{...auth,range:'bytes=10-19'}});assert.equal(part.statusCode,206);assert.deepEqual(part.rawPayload,png(11).subarray(10,20));assert.equal(part.headers['content-range'],`bytes 10-19/${png(11).length}`);
+  const tail=await api.inject({url:blobUrl,headers:{...auth,range:'bytes=20-'}});assert.equal(tail.statusCode,206);assert.deepEqual(tail.rawPayload,png(11).subarray(20));
+  for(const r of ['bytes=9999-','bytes=5-1','bytes=0-1,4-5','items=0-1'])assert.equal((await api.inject({url:blobUrl,headers:{...auth,range:r}})).statusCode,416,r);
   assert.equal((await client({'x-ufa-capabilities':''})).statusCode,400);
   const old=await client({'x-ufa-capabilities':'content.core.v1,battle.hp.v1'});assert.equal(old.statusCode,409);assert.equal(old.json().error.code,'INCOMPATIBLE_CLIENT');assert.equal(old.json().error.message,'INCOMPATIBLE_CLIENT:content.resources.v1');
   // Same snapshot again: nothing to publish.
   assert.equal((await post(`/admin/v1/drafts/${draftId}/publish/preflight`,{expected_revision:0})).json().unchanged,true);
-  const same=await post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:0,expected_pointer_revision:1,...meta()});assert.equal(same.statusCode,409);assert.equal(same.json().error.message,'NO_CHANGES');
+  const same=await post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:0,expected_pointer_revision:base+1,...meta()});assert.equal(same.statusCode,409);assert.equal(same.json().error.message,'NO_CHANGES');
   // Change the draft; two concurrent publishes from the same pointer: one wins.
   const changed={...content,entities:content.entities.map(e=>e.id==='ability_one'?{...e,data:{...e.data,power:9}}:e)};
   assert.equal((await api.inject({method:'PUT',url:'/admin/v1/drafts/'+draftId,payload:{name:'Публикация',content:changed,expected_revision:0,...meta()},headers})).statusCode,200);
-  const race=await Promise.all([post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:1,expected_pointer_revision:1,...meta()}),post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:1,expected_pointer_revision:1,...meta()})]);
+  const race=await Promise.all([post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:1,expected_pointer_revision:base+1,...meta()}),post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:1,expected_pointer_revision:base+1,...meta()})]);
   assert.deepEqual(race.map(r=>r.statusCode).sort(),[200,409]);const v2=race.find(r=>r.statusCode===200).json();
-  assert.deepEqual(v2.diff,{added:[],removed:[],changed:['ability_one']});assert.equal(v2.pointer_revision,2);
+  assert.deepEqual(v2.diff,{added:[],removed:[],changed:['ability_one']});assert.equal(v2.pointer_revision,base+2);
   // Failure between prepare and commit: nothing becomes active, no version row stays.
   const changed2={...changed,entities:changed.entities.map(e=>e.id==='ability_one'?{...e,data:{...e.data,power:13}}:e)};
   assert.equal((await api.inject({method:'PUT',url:'/admin/v1/drafts/'+draftId,payload:{name:'Публикация',content:changed2,expected_revision:1,...meta()},headers})).statusCode,200);
   const versionsBefore=(await pool.query('SELECT count(*)::int AS n FROM content_versions')).rows[0].n;
   await pool.query(`CREATE FUNCTION content_release_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.request_id='${failId}'::uuid THEN RAISE EXCEPTION 'release failure'; END IF; RETURN NEW; END $$`);
   await pool.query('CREATE TRIGGER content_release_fail BEFORE INSERT ON content_releases FOR EACH ROW EXECUTE FUNCTION content_release_fail()');
-  const failed=await post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:2,expected_pointer_revision:2,reason:'failure test',request_id:failId});assert.equal(failed.statusCode,500);
+  const failed=await post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:2,expected_pointer_revision:base+2,reason:'failure test',request_id:failId});assert.equal(failed.statusCode,500);
   await pool.query('DROP TRIGGER content_release_fail ON content_releases');await pool.query('DROP FUNCTION content_release_fail()');
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM content_versions')).rows[0].n,versionsBefore,'no partial version');
   assert.equal((await client()).json().content_version,v2.content_version,'pointer unchanged after failure');
@@ -366,16 +372,16 @@ test('content publish (S15): immutable versions, pointer races, failure atomicit
   await assert.rejects(pool.query('DELETE FROM resource_blobs'),/immutable/);
   // Rollback the pointer to v1; stale/unknown/current targets are refused.
   const rollback=(payload)=>post('/admin/v1/content/pointer',payload);
-  assert.equal((await rollback({content_version:v1.content_version,expected_pointer_revision:1,...meta()})).statusCode,409);
-  assert.equal((await rollback({content_version:'pub_999999',expected_pointer_revision:2,...meta()})).statusCode,404);
-  assert.equal((await rollback({content_version:v2.content_version,expected_pointer_revision:2,...meta()})).statusCode,409);
-  const rbBody={content_version:v1.content_version,expected_pointer_revision:2,...meta()};
-  const rb=await rollback(rbBody);assert.equal(rb.statusCode,200);assert.equal(rb.json().pointer_revision,3);
+  assert.equal((await rollback({content_version:v1.content_version,expected_pointer_revision:base+1,...meta()})).statusCode,409);
+  assert.equal((await rollback({content_version:'pub_999999',expected_pointer_revision:base+2,...meta()})).statusCode,404);
+  assert.equal((await rollback({content_version:v2.content_version,expected_pointer_revision:base+2,...meta()})).statusCode,409);
+  const rbBody={content_version:v1.content_version,expected_pointer_revision:base+2,...meta()};
+  const rb=await rollback(rbBody);assert.equal(rb.statusCode,200);assert.equal(rb.json().pointer_revision,base+3);
   assert.deepEqual((await rollback(rbBody)).json(),rb.json(),'rollback replay');
   const back=(await client()).json();assert.equal(back.content_version,v1.content_version);assert.equal(back.content.entities.find(e=>e.id==='ability_one').data.power,5);
   const journal=(await api.inject({url:'/admin/v1/content/releases',headers:{cookie:session.cookie}})).json();
-  assert.deepEqual(journal.pointer,{content_version:v1.content_version,pointer_revision:3});
-  assert.deepEqual(journal.releases.map(r=>[r.action,r.to_version,r.pointer_revision]),[['rollback',v1.content_version,3],['publish',v2.content_version,2],['publish',v1.content_version,1]]);
+  assert.deepEqual(journal.pointer,{content_version:v1.content_version,pointer_revision:base+3});
+  assert.deepEqual(journal.releases.slice(0,3).map(r=>[r.action,r.to_version,r.pointer_revision]),[['rollback',v1.content_version,base+3],['publish',v2.content_version,base+2],['publish',v1.content_version,base+1]]);
   assert.equal((await pool.query("SELECT count(*)::int AS n FROM owner_audit WHERE action IN ('content.publish','content.rollback')")).rows[0].n,3);
  }finally{
   await pool.query('DROP TRIGGER IF EXISTS content_release_fail ON content_releases');await pool.query('DROP FUNCTION IF EXISTS content_release_fail()');await api.close();
