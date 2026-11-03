@@ -8,4 +8,8 @@ try {
  // Dispatch by magic bytes only; extensions and client MIME types are ignored.
  const info=bytes.subarray(0,8).equals(PNG)?inspectPng(bytes):bytes.toString('ascii',0,4)==='RIFF'?inspectWav(bytes):(()=>{throw new Error('UNKNOWN_TYPE');})();
  process.stdout.write(JSON.stringify(info));
-} catch {process.stderr.write('RESOURCE_INVALID');process.exitCode=1;}
+} catch(error) {
+ // Only a fixed code leaves the worker (never file data).
+ const code=/^(PNG|WAV)_[A-Z_]{3,30}$/.test(error?.code??error?.message??'')?(error.code??error.message):'RESOURCE_INVALID';
+ process.stderr.write(code);process.exitCode=1;
+}

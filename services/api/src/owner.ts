@@ -350,7 +350,7 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
    if(!bytes.length||bytes.length>8*1024*1024||bytes.toString('base64')!==b.data_base64)throw new DomainError('INVALID_REQUEST');
    const registry=new ResourceRegistry();let descriptor:any;
    try {descriptor=await registry.addResource({id:b.id,bytes,license:b.license,scale_bp:b.scale_bp,anchor:b.anchor,frames:b.frames,loop:b.loop});}
-   catch(error){const m=(error as Error).message;if(m==='RESOURCE_BUSY')throw new DomainError('SERVICE_UNAVAILABLE',503);if(m==='AUDIO_FRAMES_UNSUPPORTED')throw new DomainError('INVALID_REQUEST',422,m);throw new DomainError('INVALID_REQUEST');}
+   catch(error){const m=(error as Error).message,reason=(error as any).reason;if(m==='RESOURCE_BUSY')throw new DomainError('SERVICE_UNAVAILABLE',503);if(m==='AUDIO_FRAMES_UNSUPPORTED'||m==='FRAME_OUT_OF_BOUNDS'||m==='INVALID_METADATA'||m==='DUPLICATE_RESOURCE')throw new DomainError('INVALID_REQUEST',422,m);if(m==='RESOURCE_INVALID')throw new DomainError('INVALID_REQUEST',422,'RESOURCE_INVALID:'+(reason??'RESOURCE_INVALID'));throw new DomainError('INVALID_REQUEST');}
    const action='resource.create',fp=fingerprint(action,b.reason,[descriptor]);
    return transaction(pool,async c=>{
     await lockOwner(c,token);

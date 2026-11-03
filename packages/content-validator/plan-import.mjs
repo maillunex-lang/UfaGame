@@ -72,7 +72,7 @@ export async function planImport(inspection, draft, {expectedRevision = -1, exis
         item.media_type = descriptor.media_type;
       } catch (error) {
         if (error.message === 'RESOURCE_BUSY') throw error;
-        reject('RESOURCE_INVALID', meta.file, error.message);
+        reject('RESOURCE_INVALID', meta.file, error.reason ?? error.message);
       }
     }
     items.push(item);

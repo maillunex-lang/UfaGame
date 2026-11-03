@@ -145,7 +145,12 @@ test('private PNG resources: authorization, validation, idempotency and atomic a
   const post=(payload,headers={})=>api.inject({method:'POST',url:'/admin/v1/resources',payload,headers:{origin,cookie:session.cookie,'x-ufa-csrf':session.csrf,...headers}});
   assert.equal((await api.inject({method:'GET',url:'/admin/v1/resources'})).statusCode,401);
   assert.equal((await post(body,{'x-ufa-csrf':''})).statusCode,403);
-  assert.equal((await post({...body,id:id+'_bad',data_base64:Buffer.from('not an image').toString('base64'),request_id:randomUUID()})).statusCode,400);
+  const notImage=await post({...body,id:id+'_bad',data_base64:Buffer.from('not an image').toString('base64'),request_id:randomUUID()});
+  assert.equal(notImage.statusCode,422);assert.equal(notImage.json().error.message,'RESOURCE_INVALID:RESOURCE_INVALID');
+  const h16=Buffer.from(h);h16[8]=16;const deep=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',h16),chunk('IDAT',deflateSync(Buffer.alloc(9))),chunk('IEND',Buffer.alloc(0))]);
+  const sixteen=await post({...body,id:id+'_deep',data_base64:deep.toString('base64'),frames:undefined,anchor:undefined,request_id:randomUUID()});
+  assert.equal(sixteen.statusCode,422);assert.equal(sixteen.json().error.message,'RESOURCE_INVALID:PNG_BIT_DEPTH');
+  assert.equal((await post({...body,id:'5555',request_id:randomUUID()})).statusCode,400,'numeric id is rejected by schema');
   const created=await post(body);assert.equal(created.statusCode,200);assert.equal(created.json().id,id);assert.equal(created.json().width,1);
   assert.deepEqual((await post(body)).json(),created.json());
   assert.equal((await post({...body,license:{...body.license,attribution:'changed'}})).statusCode,409);

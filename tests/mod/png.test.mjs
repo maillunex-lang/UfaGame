@@ -28,3 +28,21 @@ test('compressed payload with appended bytes is rejected even with a valid CRC',
  const data=Buffer.concat([deflateSync(Buffer.from([0,1,2,3,255])),Buffer.from('junk')]);
  assert.throws(()=>inspectPng(Buffer.concat([signature,chunk('IHDR',header),chunk('IDAT',data),chunk('IEND',Buffer.alloc(0))])));
 });
+import {inspectResourceIsolated} from '../../packages/content-validator/isolated-png.mjs';
+const pngOf=({w=2,h=1,depth=8,color=6,interlace=0,plte=null,rows=null})=>{
+ const {crc32:c,deflateSync:d}=zlibMod;const chunk=(n,data)=>{const t=Buffer.from(n),l=Buffer.alloc(4),s=Buffer.alloc(4);l.writeUInt32BE(data.length);s.writeUInt32BE(c(Buffer.concat([t,data])));return Buffer.concat([l,t,data,s]);};
+ const head=Buffer.alloc(13);head.writeUInt32BE(w);head.writeUInt32BE(h,4);head[8]=depth;head[9]=color;head[12]=interlace;
+ const ch={0:1,2:3,3:1,4:2,6:4}[color]??1,raw=rows??Buffer.concat(Array.from({length:h},()=>Buffer.concat([Buffer.from([0]),Buffer.alloc(w*ch)])));
+ return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',head),...(plte?[chunk('PLTE',plte)]:[]),chunk('IDAT',d(raw)),chunk('IEND',Buffer.alloc(0))]);
+};
+import * as zlibMod from 'node:zlib';
+test('palette PNG is accepted; unsupported variants report specific safe codes',async()=>{
+ assert.equal(inspectPng(pngOf({color:3,plte:Buffer.from([255,0,0,0,255,0])})).width,2);
+ const code=b=>{try{inspectPng(b);return 'ok';}catch(e){return e.code;}};
+ assert.equal(code(pngOf({w:4097})),'PNG_DIMENSIONS');assert.equal(code(pngOf({w:2001,h:2001})),'PNG_DIMENSIONS');
+ assert.equal(code(pngOf({depth:16})),'PNG_BIT_DEPTH');assert.equal(code(pngOf({interlace:1})),'PNG_INTERLACED');
+ assert.equal(code(pngOf({color:5})),'PNG_COLOR_TYPE');assert.equal(code(pngOf({color:3})),'PNG_CORRUPT','palette image without PLTE');
+ assert.equal(code(pngOf({color:3,plte:Buffer.from([1,2,3]),rows:Buffer.from([0,0,5])})),'PNG_CORRUPT','index outside palette');
+ await assert.rejects(inspectResourceIsolated(pngOf({depth:16})),e=>e.reason==='PNG_BIT_DEPTH');
+ await assert.rejects(inspectResourceIsolated(Buffer.from('<?php echo 1; ?> not an image at all.......')),e=>e.reason==='RESOURCE_INVALID');
+});

@@ -21,7 +21,7 @@ function documentFrom(text){
  return content;
 }
 function checkEntity(entity,all,originalId){
- if(!entity||!supported.has(entity.kind)||!idPattern.test(entity.id)||typeof entity.name!=='string'||!entity.name.trim()||entity.name.length>100)fail('Проверь ID и название объекта.');
+ if(!entity||!supported.has(entity.kind)||!idPattern.test(entity.id)||typeof entity.name!=='string'||!entity.name.trim()||entity.name.length>100)fail('Проверь ID и название. ID: маленькая латинская буква в начале, дальше латиница, цифры или _, 3–80 символов (например hero_batyr).');
  if(originalId&&entity.id!==originalId)fail('ID существующего объекта менять нельзя.');
  if(all.some(e=>e.id===entity.id&&e.id!==originalId))fail('Этот ID уже используется.');
  const refs=(ids,kind,max,min=0)=>{

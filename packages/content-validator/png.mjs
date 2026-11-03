@@ -1,12 +1,13 @@
 import {crc32,inflateSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 const signature=Buffer.from([137,80,78,71,13,10,26,10]);
-const fail=()=>{throw new Error('Invalid or unsupported PNG');};
+/** Error codes are stable and safe to show (no file content): PNG_CORRUPT, PNG_DIMENSIONS, PNG_BIT_DEPTH, PNG_COLOR_TYPE, PNG_INTERLACED. */
+const fail=(code='PNG_CORRUPT')=>{const e=new Error('Invalid or unsupported PNG');e.code=code;throw e;};
 /** Bounded PNG validation for an intentionally narrow non-interlaced 8-bit subset.
  * Not connected to uploads: production decoding must run isolated. */
 export function inspectPng(bytes) {
  if(!Buffer.isBuffer(bytes)||bytes.length<45||bytes.length>8*1024*1024||!bytes.subarray(0,8).equals(signature))fail();
- let pos=8,width=0,height=0,channels=0,seenHeader=false,seenData=false,seenEnd=false,endedData=false;
+ let pos=8,width=0,height=0,channels=0,colorType=-1,paletteSize=0,seenHeader=false,seenData=false,seenEnd=false,endedData=false;
  const parts=[];
  while(pos<bytes.length){
   if(bytes.length-pos<12)fail();const length=bytes.readUInt32BE(pos);
@@ -16,9 +17,17 @@ export function inspectPng(bytes) {
   if(!seenHeader&&type!=='IHDR')fail();
   if(type==='IHDR'){
    if(seenHeader||length!==13)fail();seenHeader=true;width=data.readUInt32BE(0);height=data.readUInt32BE(4);
-   const colors={0:1,2:3,4:2,6:4};channels=colors[data[9]]??0;
-   if(!width||!height||width>4096||height>4096||width*height>4000000||data[8]!==8||!channels||data[10]!==0||data[11]!==0||data[12]!==0)fail();
+   const colors={0:1,2:3,3:1,4:2,6:4};colorType=data[9];channels=colors[colorType]??0;
+   if(!width||!height)fail();
+   if(width>4096||height>4096||width*height>4000000)fail('PNG_DIMENSIONS');
+   if(!channels)fail('PNG_COLOR_TYPE');
+   if(data[8]!==8)fail('PNG_BIT_DEPTH');
+   if(data[10]!==0||data[11]!==0)fail();
+   if(data[12]!==0)fail('PNG_INTERLACED');
+  }else if(type==='PLTE'){
+   if(seenData||paletteSize||length%3!==0||length<3||length>768||colorType===0||colorType===4)fail();paletteSize=length/3;
   }else if(type==='IDAT'){
+   if(colorType===3&&!paletteSize)fail();
    if(endedData||seenEnd)fail();seenData=true;parts.push(data);
   }else if(type==='IEND'){
    if(!seenData||seenEnd||length!==0)fail();seenEnd=true;
@@ -35,6 +44,7 @@ export function inspectPng(bytes) {
  const stride=width*channels,decoded=Buffer.alloc(stride*height);
  for(let y=0;y<height;y++){
   const filter=raw[y*row];if(filter>4)fail();
+  // Palette indices must exist in PLTE; checked after unfiltering below.
   for(let x=0;x<stride;x++){
    const i=y*stride+x,left=x>=channels?decoded[i-channels]:0,up=y>0?decoded[i-stride]:0,upLeft=y>0&&x>=channels?decoded[i-stride-channels]:0;
    let predictor=0;
@@ -45,5 +55,6 @@ export function inspectPng(bytes) {
    decoded[i]=(raw[y*row+1+x]+predictor)&255;
   }
  }
+ if(colorType===3)for(const index of decoded)if(index>=paletteSize)fail();
  return {media_type:'image/png',width,height,pixel_sha256:createHash('sha256').update(decoded).digest('hex')};
 }

@@ -63,6 +63,8 @@ try{
  });
  const page=await context.newPage();await page.goto('https://studio.test/game/studio/');
  await page.getByLabel('Логин',{exact:true}).fill('owner');await page.getByLabel('Пароль',{exact:true}).fill('demo-password');await page.getByRole('button',{name:'Войти',exact:true}).click();
+ await page.getByLabel('ID ресурса').fill('5555');await page.getByLabel('Лицензия').fill('Я');await page.getByLabel('Файл PNG или WAV').setInputFiles({name:'1000153986.png',mimeType:'image/png',buffer:png});
+ await page.getByRole('button',{name:'Добавить ресурс'}).click();await page.getByRole('status').filter({hasText:'Неверный ID ресурса'}).waitFor();assert.equal(resources.length,0,'invalid id is not sent');
  await page.getByLabel('ID ресурса').fill('icon_one');await page.getByLabel('Лицензия').fill('Собственная работа');
  await page.getByLabel('Файл PNG или WAV').setInputFiles({name:'icon.png',mimeType:'image/png',buffer:png});await page.getByRole('button',{name:'Добавить ресурс'}).click();
  await page.getByRole('status').filter({hasText:'Ресурс добавлен'}).waitFor();await page.waitForFunction(()=>document.querySelector('img[alt="Ресурс icon_one"]')?.naturalWidth===2);
