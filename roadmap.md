@@ -1270,3 +1270,9 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s16-game-test-v8/Gam
 Backup nginx: /srv/ufagame-test/nginx-backup-9bTW35/original.conf.
 Не проверено: Studio v14 и Game v8 на телефоне, публикация с телефона и загрузка
 мира игрой с VPS (критерий завершения S16).
+
+### VPS — обновление до 8587cc6 (выполнил владелец)
+2026-11-03 06:08: API пересобран на 8587cc6 (понятные причины отказа ресурса, проверка
+ID, PNG с палитрой), health/ready `{"status":"ok"}`; миграций нет. Статика
+`index-B5ST_7k-.js`/`index-CIzEynZv.css` совпала с локальной сборкой. nginx и БД не
+менялись. Ожидается повторная проверка загрузки ресурса и S16 на телефоне.
