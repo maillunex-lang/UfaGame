@@ -1448,4 +1448,5 @@ OpenStreetMap Nominatim 63/63; ошибка Wikidata (Фёдоровский р�
 S21-geo-check.json, tools/geo/*. Проверки: contracts 14, studio 13, Chromium
 mobile, интеграция 37/37, `npm run check` exit0. Миграций нет. Не проверено: VPS и
 телефон; карта в Game — S22 (зависит от S19/S20).
+CI на d631995: Repository checks 41612468851 — success.
 Следующий шаг: проверка S19 владельцем; затем S20, S22.
