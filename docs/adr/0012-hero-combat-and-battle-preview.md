@@ -27,7 +27,7 @@
 - `ability_ids[0]` — основная способность (энергия, cost = `energy_cost` или 1000);
   остальные — авто-способности с `interval_steps = max(1, ceil(cooldown_ms/100))`,
   больше 900 шагов — ошибка `ABILITY_COOLDOWN_TOO_LONG`. `cooldown_ms` основной
-  способности пока не используется (ограничение, записано в отчет);
+  способности используется как `cooldown_steps` с ADR 0016;
 - `interval_steps = attack_interval_ms/100`, `energy_per_step = energy_per_second/10`;
 - фракции — только встречающиеся в бою (не больше 6), ссылки преимущества
   обрезаются до участников; `advantage_bp` временно фиксирован 12000 (x1.2) до
