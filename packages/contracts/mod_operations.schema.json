@@ -28,7 +28,8 @@
           "stage",
           "ui_label",
           "dialogue_template",
-          "resource"
+          "resource",
+          "location"
         ]
       },
       "id": {

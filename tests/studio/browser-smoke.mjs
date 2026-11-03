@@ -106,7 +106,7 @@ try{
  await page.getByLabel('Боевые параметры (нужны для проверки боя)').check();await page.getByLabel('Интервал атаки, мс').fill('150');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByRole('alert').filter({hasText:'кратное 100'}).waitFor();await page.getByLabel('Интервал атаки, мс').fill('700');await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByLabel('Тип объекта').selectOption('stage');await page.getByLabel('Название объекта').fill('Опушка');
- await page.getByRole('group',{name:/Противники/}).getByLabel('Волк').check();await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.getByRole('group',{name:/Противники \(до 5/}).getByLabel('Волк').check();await page.getByRole('button',{name:'Добавить в черновик'}).click();
  await page.getByRole('heading',{name:'Этапы (бои для игры)'}).waitFor();
  await page.getByRole('button',{name:'Проверить бой'}).click();await page.getByRole('alert').filter({hasText:'Сначала сохрани черновик'}).waitFor();assert.equal(previews,0,'unsaved draft is not sent');
  // Autosave: no button press needed.
@@ -161,6 +161,31 @@ try{
  await saveNow(page);
  assert.equal(draft.revision,revBefore+1);assert.equal(draft.content.entities.find(e=>e.id==='hero_ghost').data.sprite_resource_id,undefined);
  console.log('Chromium mobile: missing picture link explained, fixed in one tap, saved — passed (mock API)');
+ // Map of Bashkortostan: import, open a district, add a point by tap, link a stage, art layer.
+ const map=page.getByRole('region',{name:'Карта'});
+ await map.getByRole('button',{name:'Добавить районы и города'}).click();await map.getByRole('status').filter({hasText:'Добавлено мест: 64'}).waitFor();
+ await map.getByRole('button',{name:'Бурзянский район'}).click();await map.getByRole('img',{name:'Район: Бурзянский район'}).waitFor();
+ const box=await map.locator('svg.geo-map').boundingBox();await page.mouse.click(box.x+box.width*0.55,box.y+box.height*0.6);
+ await map.getByRole('status').filter({hasText:'Новая точка'}).waitFor();
+ await map.getByLabel('Название точки').fill('Пещера Шульган-Таш');await map.getByRole('button',{name:'Добавить точку'}).click();
+ await map.getByRole('status').filter({hasText:'Точка добавлена'}).waitFor();await map.locator('.entity-list li').filter({hasText:'Пещера Шульган-Таш'}).waitFor();
+ if(process.env.UFA_SCREENSHOT_DIR)await map.screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/map-district.png'});
+ await page.getByLabel('Тип объекта').selectOption('stage');await page.getByLabel('Название объекта').fill('Пещера');
+ await page.getByRole('group',{name:/Противники \(до 5/}).getByLabel('Волк').check();await page.getByLabel('Место на карте').selectOption({label:'Пещера Шульган-Таш (Бурзянский район)'});
+ await page.getByRole('button',{name:'Добавить в черновик'}).click();
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});
+ const saved=draft.content.entities;const cave=saved.find(e=>e.kind==='location'&&e.name==='Пещера Шульган-Таш');
+ assert.ok(cave&&cave.data.parent_id==='district_burzyanskiy'&&cave.data.source.kind==='manual');
+ assert.equal(saved.find(e=>e.kind==='stage'&&e.name==='Пещера').data.location_id,cave.id);
+ assert.ok(draft.content.required_capabilities.includes('world.locations.v1'));assert.equal(saved.filter(e=>e.kind==='location').length,65);
+ await map.getByRole('button',{name:'Республика'}).click();await map.getByRole('img',{name:'Республика Башкортостан'}).waitFor();
+ if(process.env.UFA_SCREENSHOT_DIR)await map.screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/map-republic.png'});
+ await map.getByLabel('Художественная карта').check();await map.getByLabel('Картинка художественной карты').selectOption('icon_one');
+ await map.getByRole('status').filter({hasText:'Художественная карта выбрана'}).waitFor();
+ await map.getByLabel('Схема по координатам').check();await map.getByLabel('Или выбери район/город из списка').selectOption({label:'г. Уфа'});await map.getByLabel('Художественная карта').check();
+ await map.locator('.art-map').click({position:{x:5,y:5}});await map.getByRole('status').filter({hasText:'«г. Уфа» поставлено'}).waitFor();
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'map has no horizontal overflow');
+ console.log('Chromium mobile: map import, district navigation, point by tap, stage linked to point, art layer — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');

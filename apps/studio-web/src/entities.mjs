@@ -1,7 +1,8 @@
 const idPattern=/^[a-z][a-z0-9_]{2,79}$/;
-const supported=new Set(['hero','ability','faction','stage']);
+const supported=new Set(['hero','ability','faction','stage','location']);
+const listed=new Set(['hero','ability','faction','stage']);
 const fail=message=>{throw new Error(message);};
-const COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
+const WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
 export const abilityEffects=['damage','heal','stun','knockback'],abilityTargets=['enemy','weakest_enemy','all_enemies','ally_lowest','self'];
 /** Field, min, max, step (multipleOf) for hero combat stats; mirrors content.schema.json. */
 export const combatFields=[['hp',1,1000000,1],['attack',0,1000000,1],['defense',0,1000000,1],['speed',0,5000,1],['range',0,20000,1],['attack_interval_ms',100,90000,100],['energy_start',0,1000,1],['energy_per_second',0,10000,10],['energy_per_attack',0,1000,1]];
@@ -13,8 +14,9 @@ function toggle(content,capability,needed){
 }
 function syncCapability(content){
  toggle(content,COMBAT_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.combat)||(e?.kind==='ability'&&e.data?.energy_cost!==undefined)));
+ toggle(content,WORLD_CAPABILITY,content.entities.some(e=>e?.kind==='location'||(e?.kind==='stage'&&e.data?.location_id!==undefined)));
  toggle(content,ABILITIES_CAPABILITY,content.entities.some(e=>(e?.kind==='ability'&&(['stun','knockback'].includes(e.data?.effect)||e.data?.target!==undefined))||(e?.kind==='faction'&&e.data?.advantage_bp!==undefined)));
- toggle(content,RESOURCE_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.sprite_resource_id!==undefined)||(e?.kind==='ability'&&e.data?.sound_resource_id!==undefined)));
+ toggle(content,RESOURCE_CAPABILITY,content.entities.some(e=>(e?.kind==='hero'&&e.data?.sprite_resource_id!==undefined)||(e?.kind==='ability'&&e.data?.sound_resource_id!==undefined)||(e?.kind==='location'&&e.data?.art!==undefined)));
 }
 function documentFrom(text){
  let content;try{content=JSON.parse(text);}catch{fail('Исправь JSON черновика перед редактированием.');}
@@ -34,9 +36,12 @@ function checkEntity(entity,all,originalId){
   if(!abilityEffects.includes(entity.data.effect)||!Number.isSafeInteger(entity.data.power)||entity.data.power<0||entity.data.power>2147483647||!Number.isSafeInteger(entity.data.cooldown_ms)||entity.data.cooldown_ms<0||entity.data.cooldown_ms>2147483647)fail('Проверь эффект, силу и время способности.');
   if(entity.data.energy_cost!==undefined&&!inRange(entity.data.energy_cost,1,1000))fail('Стоимость энергии — целое число от 1 до 1000.');
   if(entity.data.sound_resource_id!==undefined&&!idPattern.test(entity.data.sound_resource_id))fail('Проверь ID звука.');
+ }else if(entity.kind==='location'){
+  checkLocation(entity,all);
  }else if(entity.kind==='stage'){
   if(!Array.isArray(entity.data.enemy_hero_ids)||entity.data.enemy_hero_ids.length<1||entity.data.enemy_hero_ids.length>5||entity.data.enemy_hero_ids.some(id=>!all.some(e=>e.id===id&&e.kind==='hero')))fail('Выбери от 1 до 5 противников.');
   if(entity.data.time_limit_ms!==90000)fail('Длительность этапа — 90 секунд.');
+  if(entity.data.location_id!==undefined&&!all.some(e=>e.id===entity.data.location_id&&e.kind==='location'&&e.data.level==='point'))fail('Этап можно привязать только к существующей точке на карте.');
  }else if(entity.kind==='faction'){
   refs(entity.data.advantage_ids,'faction',6);
   if(entity.data.advantage_ids.includes(entity.id))fail('Фракция не может иметь преимущество перед собой.');
@@ -52,7 +57,7 @@ function checkEntity(entity,all,originalId){
   }
  }
 }
-export function listEntities(text){return documentFrom(text).entities.filter(e=>e&&supported.has(e.kind)).map(e=>structuredClone(e));}
+export function listEntities(text){return documentFrom(text).entities.filter(e=>e&&listed.has(e.kind)).map(e=>structuredClone(e));}
 export function upsertEntity(text,entity,originalId=null){
  const content=documentFrom(text),all=content.entities;
  if(originalId&&!all.some(e=>e.id===originalId&&e.kind===entity.kind))fail('Объект уже изменён или удалён.');
@@ -67,7 +72,7 @@ export function deleteEntity(text,id){
  for(const other of content.entities){
   if(other.id===id)continue;
   const data=other.data??{};
-  if(data.faction_id===id||(Array.isArray(data.ability_ids)&&data.ability_ids.includes(id))||(Array.isArray(data.advantage_ids)&&data.advantage_ids.includes(id))||(Array.isArray(data.enemy_hero_ids)&&data.enemy_hero_ids.includes(id)))fail(`Сначала убери ссылку из «${other.name}».`);
+  if(data.parent_id===id||data.location_id===id||data.faction_id===id||(Array.isArray(data.ability_ids)&&data.ability_ids.includes(id))||(Array.isArray(data.advantage_ids)&&data.advantage_ids.includes(id))||(Array.isArray(data.enemy_hero_ids)&&data.enemy_hero_ids.includes(id)))fail(`Сначала убери ссылку из «${other.name}».`);
  }
  content.entities=content.entities.filter(e=>e.id!==id);syncCapability(content);return JSON.stringify(content,null,2);
 }
@@ -103,4 +108,29 @@ export function dropResourceRef(text,entityId){
  if(!e)fail('Объект не найден.');
  if(e.data)delete e.data.sprite_resource_id;if(e.data)delete e.data.sound_resource_id;
  syncCapability(content);return JSON.stringify(content,null,2);
+}
+
+/** Republic extents (same as the contract): not a border polygon. */
+export const BOUNDS={min_lat_e6:51500000,max_lat_e6:56600000,min_lon_e6:53100000,max_lon_e6:60050000};
+const PARENT_LEVELS={republic:[],district:['republic'],city:['republic'],point:['district','city']};
+export function distanceKm(a,b){const r=d=>d*Math.PI/1.8e8,dLat=r(b.lat_e6-a.lat_e6),dLon=r(b.lon_e6-a.lon_e6);const h=Math.sin(dLat/2)**2+Math.cos(r(a.lat_e6))*Math.cos(r(b.lat_e6))*Math.sin(dLon/2)**2;return 2*6371*Math.asin(Math.sqrt(h));}
+function checkLocation(entity,all){
+ const d=entity.data??{};
+ if(!['republic','district','city','point'].includes(d.level))fail('Неизвестный уровень места.');
+ if(!Number.isSafeInteger(d.lat_e6)||!Number.isSafeInteger(d.lon_e6))fail('Укажи координаты места.');
+ if(d.level==='republic'){if(d.parent_id!==undefined)fail('У республики нет родителя.');return;}
+ const parent=all.find(e=>e.id===d.parent_id&&e.kind==='location');
+ if(!parent||!PARENT_LEVELS[d.level].includes(parent.data.level))fail(d.level==='point'?'Точку нужно поставить внутри района или города.':'Район и город должны входить в республику.');
+ if(d.lat_e6<BOUNDS.min_lat_e6||d.lat_e6>BOUNDS.max_lat_e6||d.lon_e6<BOUNDS.min_lon_e6||d.lon_e6>BOUNDS.max_lon_e6)fail('Место вне Башкортостана.');
+ if(d.level==='point'&&distanceKm(d,parent.data)>150)fail('Точка дальше 150 км от центра своего района — проверь район или координаты.');
+ if(!d.source||!['wikidata','manual'].includes(d.source.kind))fail('Укажи источник места.');
+}
+export function listLocations(text){return documentFrom(text).entities.filter(e=>e?.kind==='location').map(e=>structuredClone(e));}
+/** Adds the republic/districts/cities that are missing in the draft (existing ids are kept as they are). */
+export function importGeography(text,dataset){
+ const content=documentFrom(text),have=new Set(content.entities.map(e=>e.id));
+ let added=0;
+ for(const e of dataset.entities){if(have.has(e.id))continue;content.entities.push(structuredClone(e));added++;}
+ syncCapability(content);
+ return {text:JSON.stringify(content,null,2),added};
 }

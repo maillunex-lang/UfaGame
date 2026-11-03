@@ -1,4 +1,4 @@
-export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage';name:string;data:Record<string,any>};
+export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage'|'location';name:string;data:Record<string,any>};
 export function listEntities(text:string):EditableEntity[];
 export function upsertEntity(text:string,entity:EditableEntity,originalId?:string|null):string;
 export function deleteEntity(text:string,id:string):string;
@@ -10,3 +10,8 @@ export function quickStartHero(text:string,options:{name?:string;spriteId?:strin
 export type MissingRef={entity_id:string;entity_name:string;resource_id:string;what:string};
 export function missingResourceRefs(text:string,resources:{id:string;media_type:string}[]):MissingRef[];
 export function dropResourceRef(text:string,entityId:string):string;
+export type Location={id:string;kind:'location';name:string;data:{level:'republic'|'district'|'city'|'point';parent_id?:string;lat_e6:number;lon_e6:number;name_ba?:string;centre_name?:string;description?:string;source:{kind:string;id?:string;note?:string;corrected?:unknown};art?:{resource_id:string;x:number;y:number}}};
+export const BOUNDS:{min_lat_e6:number;max_lat_e6:number;min_lon_e6:number;max_lon_e6:number};
+export function distanceKm(a:{lat_e6:number;lon_e6:number},b:{lat_e6:number;lon_e6:number}):number;
+export function listLocations(text:string):Location[];
+export function importGeography(text:string,dataset:{entities:unknown[]}):{text:string;added:number};

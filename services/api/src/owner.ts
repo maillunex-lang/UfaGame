@@ -162,8 +162,10 @@ export async function registerOwner(app:FastifyInstance,pool:Pool,options:OwnerO
     await audit(c,action,b.reason,b.request_id,before,changed,fp,'draft:'+id);return changed;
    });
   }
-  admin.post('/drafts',async request=>writeDraft(request,true));
-  admin.put('/drafts/:id',async request=>writeDraft(request,false));
+  // Drafts with geography and many objects exceed the 16 KB default; 2 MiB is still bounded.
+  const draftBody={bodyLimit:2*1024*1024};
+  admin.post('/drafts',draftBody,async request=>writeDraft(request,true));
+  admin.put('/drafts/:id',draftBody,async request=>writeDraft(request,false));
   admin.post('/drafts/:id/battle-preview',{config:{rateLimit:{max:20,timeWindow:60000}}},async request=>{
    const token=cookieToken(request);verifyCsrf(request,token);await activeOwner(pool,token);
    const id=(request.params as any).id,b=request.body as any;

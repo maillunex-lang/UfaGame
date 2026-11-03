@@ -1,0 +1,4297 @@
+{
+  "head" : {
+    "vars" : [ "item", "ru", "ba", "type", "coord", "centre", "centreRu", "centreCoord" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q481602"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1046921"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аскарово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.516666666 53.333333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Әбйәлил районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Абзелиловский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.5 53.41667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1378418"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1018495"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Раевский"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.946666666 54.065833333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Әлшәй районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Альшеевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.95611111 54.01666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q777030"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1051697"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Архангельское"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.779722222 54.403888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Архангел районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Архангельский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.96666667 54.53333333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q777030"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1051697"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Архангельское"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.779722222 54.403888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Архангел районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Архангельский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.83333 54.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q390284"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4071310"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аскино"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.579166666 56.086944444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Асҡын районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аскинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.58333 56.08333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q390284"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4071310"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аскино"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.578333333 56.09)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Асҡын районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аскинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.58333 56.08333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q781569"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4459655"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Толбазы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.8825 54.024166666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ауырғазы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Аургазинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.89416667 54.00583333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q788737"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q104374"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Баймак"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.316666666 52.583333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Баймаҡ районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Баймакский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.31666667 52.6)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q788939"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4075849"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.802647 55.176353)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Баҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.80277778 55.17638889)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q788939"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4075849"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.802777777 55.178888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Баҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.80277778 55.17638889)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q788939"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4075849"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.802647 55.176353)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Баҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.75 55.16667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q788939"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4075849"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.802777777 55.178888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Баҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бакалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.75 55.16667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q523472"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4440073"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старобалтачево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.927307 56.001214)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балтас районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Балтачевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.93305556 56.01666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q523472"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4440073"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старобалтачево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.928055555 56.001666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балтас районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Балтачевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.93305556 56.01666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q523472"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4440073"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старобалтачево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.927307 56.001214)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балтас районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Балтачевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.94582 55.98916)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q523472"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4440073"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старобалтачево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.928055555 56.001666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балтас районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Балтачевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.94582 55.98916)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702952"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q104703"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "городское поселение Белебей"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.133333333 54.1)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бәләбәй районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белебеевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.25 54.16667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702952"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q104703"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "городское поселение Белебей"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.133333333 54.1)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бәләбәй районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белебеевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.133333 54.1)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q258760"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4323223"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Новобелокатай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.955 55.706111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балаҡатай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белокатайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.0 55.75)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q258760"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4323223"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Новобелокатай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.95797 55.70662)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балаҡатай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белокатайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.0 55.75)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q258760"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4323223"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Новобелокатай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.955 55.706111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балаҡатай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белокатайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.95805556 55.70666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q258760"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q4323223"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Новобелокатай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.95797 55.70662)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Балаҡатай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белокатайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.95805556 55.70666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q792513"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q104778"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белорецк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.4 53.966666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Белорет районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Белорецкий район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.6 53.83333333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702957"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1993266"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбуляк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.272222222 53.691111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бишбүләк районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбулякский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.25 53.75)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702957"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1993266"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбуляк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.2642 53.6967)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бишбүләк районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбулякский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.25 53.75)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702957"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1993266"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбуляк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.272222222 53.691111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бишбүләк районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбулякский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.27222222 53.69111111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702957"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1993266"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбуляк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.2642 53.6967)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бишбүләк районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бижбулякский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.27222222 53.69111111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703477"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q105133"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бирск"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.533333333 55.416666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бөрө районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бирский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.533333 55.416667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q804279"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1056036"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Языково"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.016111111 54.691666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Благовар районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Благоварский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.01611111 54.69166667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q804290"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q105179"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Благовещенск"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.983333333 55.033333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Благовещен районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Благовещенский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.98333333 55.03333333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703465"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1058293"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Буздяк"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.530833333 54.571111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бүздәк районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Буздякский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.53083333 54.57111111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852022"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1970320"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.405555555 55.8425)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Борай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.40555556 55.8425)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852022"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1970320"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.40834 55.84069)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Борай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.40555556 55.8425)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852022"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1970320"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.405555555 55.8425)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Борай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.33333 55.83333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852022"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1970320"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.40834 55.84069)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Борай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бураевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.33333 55.83333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852243"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3739840"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старосубхангулово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.433333333 53.1)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бөрйән районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бурзянский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.5 53.16667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q852243"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3739840"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Старосубхангулово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.433333333 53.1)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Бөрйән районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Бурзянский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.43333333 53.1)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q678695"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q591613"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Красноусольский"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.468612 53.894668)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ғафури районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Гафурийский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.75 54.0)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q678695"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q591613"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Красноусольский"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.468612 53.894668)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ғафури районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Гафурийский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.46861111 53.89472222)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q15190396"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q158731"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Межгорье"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.816666666 54.05)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Межгорье ҡалаһы ЯАББ ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ ЗАТО город Межгорье"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.96000001 54.24000001)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638619"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q102737"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Агидель"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.933333333 55.9)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ағиҙел ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Агидель"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.933333 55.9)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638651"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q155968"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кумертау"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.783333333 52.766666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Күмертау ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Кумертау"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.78333333 52.76666667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638651"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q155968"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кумертау"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.783333333 52.766666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Күмертау ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Кумертау"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.75 52.75)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638665"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q172601"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Нефтекамск"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.25 56.083333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Нефтекама ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Нефтекамск"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638669"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q176325"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Октябрьский"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.483333333 54.483333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Октябрьский ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Октябрьский"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.483333 54.483333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638671"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q193443"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Салават"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.933333333 53.366666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Салауат ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Салават"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.933333 53.366667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638676"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q194438"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Сибай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.65 52.7)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Сибай ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Сибай"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.65 52.7)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q16638678"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q196489"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлитамак"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.961388888 53.619444444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Стәрлетамаҡ ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Стерлитамак"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.95 53.633333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q15190285"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q911"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Уфа"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.9475 54.726111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Өфө ҡалаһы ҡала округы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q13626398"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Городской округ город Уфа"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.96666667 54.73333333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703468"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q134740"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Давлеканово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.033333333 54.216666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дәүләкән районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Давлекановский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.0 54.25)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703468"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q134740"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Давлеканово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.033333333 54.216666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дәүләкән районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Давлекановский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.033333 54.216667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q911811"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1924337"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Месягутово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.255 55.532222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дыуан районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дуванский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.255 55.53222222)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q911811"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1924337"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Месягутово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.255 55.532222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дыуан районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дуванский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.83333 55.66667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1029966"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q135549"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дюртюли"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.866666666 55.483333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дүртөйлө районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дюртюлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.0 55.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1029966"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q135549"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дюртюли"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.866666666 55.483333333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Дүртөйлө районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Дюртюлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.866667 55.483333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092746"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792521"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермекеево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.669444444 54.077777777)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Йәрмәкәй районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермекеевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.6694 54.0778)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092746"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792521"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермекеево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.669444444 54.077777777)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Йәрмәкәй районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермекеевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.66667 54.0)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094414"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1061871"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Исянгулово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.580277777 52.1925)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ейәнсура районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зианчуринский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.0 52.0)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094414"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1061871"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Исянгулово"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.580277777 52.1925)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ейәнсура районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зианчуринский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.5803 52.1925)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q932582"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2026647"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зилаир"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.440277777 52.232222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Йылайыр районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зилаирский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.25 52.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q932582"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2026647"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зилаир"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.440277777 52.232222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Йылайыр районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Зилаирский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.4403 52.2322)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q636221"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793336"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Иглино"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.423241666 54.838483333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Иглин районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Иглинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(57.0 55.25)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q636221"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793336"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Иглино"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.423241666 54.838483333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Иглин районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Иглинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.42333333 54.83861111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092770"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792503"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхнеяркеево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.316815 55.445837)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Илеш районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Илишевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.25 55.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092770"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792503"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхнеяркеево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.316815 55.445837)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Илеш районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Илишевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.31694444 55.44583333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092758"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q143376"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.033333333 53.45)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ишембай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.512 53.477)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092758"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q143376"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.033333333 53.45)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ишембай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.0 53.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092758"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q143376"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбай"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.033333333 53.45)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ишембай районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ишимбайский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.033333 53.45)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q394716"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2593978"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Калтасы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.803333333 55.969166666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡалтасы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Калтасинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.79916667 55.96944444)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703482"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792510"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Караидель"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.90985 55.837746)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡариҙел районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Караидельский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.90972222 55.83777778)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1104923"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792537"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.177777777 54.369444444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡырмыҫҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.17777778 54.36944444)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1104923"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792537"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.183611111 54.370833333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡырмыҫҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.17777778 54.36944444)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1104923"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792537"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.177777777 54.369444444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡырмыҫҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.0 54.33333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1104923"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792537"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.183611111 54.370833333)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡырмыҫҡалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кармаскалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.0 54.33333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094419"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1025145"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхние Киги"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.604275 55.405332)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡыйғы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кигинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.75 55.41667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094419"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1025145"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхние Киги"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.604275 55.405332)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Ҡыйғы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кигинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.60416667 55.40527778)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2281998"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793513"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Николо-Берёзовка"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.15573 56.12422)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Краснокама районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Краснокамский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.17222222 56.13055556)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2281998"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793513"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Николо-Берёзовка"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.171666666 56.128055555)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Краснокама районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Краснокамский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.17222222 56.13055556)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2281998"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793513"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Николо-Берёзовка"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.172222222 56.130555555)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Краснокама районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Краснокамский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.17222222 56.13055556)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1121709"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1067769"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мраково"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.624444444 52.716111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Күгәрсен районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кугарчинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.62694444 52.71388889)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702796"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792498"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кушнаренково"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.347912 55.104927)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Кушнаренко районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кушнаренковский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.34777778 55.105)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702796"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792498"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кушнаренково"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.347912 55.104927)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Кушнаренко районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Кушнаренковский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.25 55.0)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094426"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2571378"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермолаево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.803888888 52.702222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Көйөргәҙе районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Куюргазинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.80388889 52.70222222)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1094426"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2571378"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Ермолаево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.8 52.716666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Көйөргәҙе районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Куюргазинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.80388889 52.70222222)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1175702"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q158798"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мелеуз"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.93277 52.96467)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Мәләүез районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мелеузовский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.933333 52.95)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q730998"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792514"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Большеустьикинское"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.26794 55.945322)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Мәсетле районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мечетлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.26805556 55.94527778)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q730998"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792514"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Большеустьикинское"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.26794 55.945322)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Мәсетле районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мечетлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.25 55.91667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1073211"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1076917"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мишкино"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.963333333 55.534166666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Мишкә районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Мишкинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.96333333 55.53416667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1703288"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2045277"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Киргиз-Мияки"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.800843 53.634537)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Миәкә районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Миякинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.78333333 53.63333333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1194696"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1069377"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Красная Горка"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.667222222 55.196111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Нуриман районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Нуримановский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.66944444 55.19722222)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q288115"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1069802"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Малояз"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.165555555 55.1825)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Салауат районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Салаватский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.16667 55.25)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q288115"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1069802"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Малояз"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.165555555 55.1825)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Салауат районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Салаватский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.150041 55.221491)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1192889"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793428"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлибашево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.258611111 53.437222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Стәрлебаш районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлибашевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.2586 53.4372)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1192889"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793428"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлибашево"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.258611111 53.437222222)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Стәрлебаш районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлибашевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.25 53.41667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1072349"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q196489"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлитамак"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.961388888 53.619444444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Стәрлетамаҡ районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлитамакский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.95 53.633333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1072349"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q196489"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлитамак"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.961388888 53.619444444)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Стәрлетамаҡ районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Стерлитамакский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.75 53.66667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1192881"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2076095"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхние Татышлы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.853907 56.290275)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Тәтешле районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Татышлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.8539 56.2903)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1192881"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2076095"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Верхние Татышлы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.853907 56.290275)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Тәтешле районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Татышлинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.75 56.25)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q972685"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q196705"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Туймазы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.7 54.6)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Туймазы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Туймазинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.0 54.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q972685"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q196705"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Туймазы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.7 54.6)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Туймазы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Туймазинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.70000001 54.60000001)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1092754"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q911"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Уфа"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.9475 54.726111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Өфө районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Уфимский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.9667 54.7333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1194661"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q197345"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Учалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.383333333 54.316666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Учалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Учалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.3833 54.3167)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1194661"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q197345"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Учалы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.383333333 54.316666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Учалы районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Учалинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(59.25 54.25)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1001882"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792901"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Фёдоровка"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.185861111 53.178805555)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Фёдоровка районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Фёдоровский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(56.13611111 54.68861111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q611787"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792494"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Акъяр"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.210555555 51.863611111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Хәйбулла районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Хайбуллинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.25 52.0)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q611787"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792494"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Акъяр"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.210555555 51.863611111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Хәйбулла районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Хайбуллинский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(58.21055556 51.86361111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q871294"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793560"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чекмагуш"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.65 55.141111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Саҡмағош районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чекмагушевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.65 55.14111111)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q871294"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3793560"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чекмагуш"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.65 55.141111111)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Саҡмағош районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чекмагушевский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.75 55.08333)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2363239"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q943380"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чишмы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.395 54.593888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Шишмә районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чишминский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.395 54.59388889)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2363239"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q943380"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чишмы"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.395 54.593888888)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Шишмә районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Чишминский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(55.41667 54.5)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1702931"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q3792892"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Шаран"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.993055555 54.819166666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Шаран районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Шаранский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(53.99305556 54.81916667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q339367"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q198973"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Янаул"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.933333333 56.266666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Яңауыл районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Янаульский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.933333 56.266667)"
+      }
+    }, {
+      "item" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q339367"
+      },
+      "centre" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q198973"
+      },
+      "centreRu" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Янаул"
+      },
+      "centreCoord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.933333333 56.266666666)"
+      },
+      "ba" : {
+        "xml:lang" : "ba",
+        "type" : "literal",
+        "value" : "Яңауыл районы"
+      },
+      "type" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2198484"
+      },
+      "ru" : {
+        "xml:lang" : "ru",
+        "type" : "literal",
+        "value" : "Янаульский район"
+      },
+      "coord" : {
+        "datatype" : "http://www.opengis.net/ont/geosparql#wktLiteral",
+        "type" : "literal",
+        "value" : "Point(54.91667 56.25)"
+      }
+    } ]
+  }
+}

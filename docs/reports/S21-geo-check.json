@@ -1,0 +1,641 @@
+{
+ "checked_at": "2026-11-03T09:26:42.810Z",
+ "attribution": "Сверка: © участники OpenStreetMap, ODbL 1.0, https://osm.org/copyright (Nominatim). В игровые данные не переносится.",
+ "summary": {
+  "total": 63,
+  "ok": 63,
+  "review": []
+ },
+ "results": [
+  {
+   "id": "district_abzelilovskiy",
+   "name": "Абзелиловский район",
+   "osm_name": "Абзелиловский район",
+   "osm": "relation/398526",
+   "inside_osm_bbox": true,
+   "distance_km": 4.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_alsheevskiy",
+   "name": "Альшеевский район",
+   "osm_name": "Альшеевский район",
+   "osm": "relation/398542",
+   "inside_osm_bbox": true,
+   "distance_km": 5.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_arhangelskiy",
+   "name": "Архангельский район",
+   "osm_name": "Архангельский район",
+   "osm": "relation/398523",
+   "inside_osm_bbox": true,
+   "distance_km": 6.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_askinskiy",
+   "name": "Аскинский район",
+   "osm_name": "Аскинский район",
+   "osm": "relation/398501",
+   "inside_osm_bbox": true,
+   "distance_km": 8.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_aurgazinskiy",
+   "name": "Аургазинский район",
+   "osm_name": "Аургазинский район",
+   "osm": "relation/398547",
+   "inside_osm_bbox": true,
+   "distance_km": 2.5,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_baymakskiy",
+   "name": "Баймакский район",
+   "osm_name": "Баймакский район",
+   "osm": "relation/398527",
+   "inside_osm_bbox": true,
+   "distance_km": 18.9,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_bakalinskiy",
+   "name": "Бакалинский район",
+   "osm_name": "Бакалинский район",
+   "osm": "relation/398517",
+   "inside_osm_bbox": true,
+   "distance_km": 10.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_baltachevskiy",
+   "name": "Балтачевский район",
+   "osm_name": "Балтачевский район",
+   "osm": "relation/398506",
+   "inside_osm_bbox": true,
+   "distance_km": 10.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_belebeevskiy",
+   "name": "Белебеевский район",
+   "osm_name": "Белебеевский район",
+   "osm": "relation/398543",
+   "inside_osm_bbox": true,
+   "distance_km": 6.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_belokatayskiy",
+   "name": "Белокатайский район",
+   "osm_name": "Белокатайский район",
+   "osm": "relation/398504",
+   "inside_osm_bbox": true,
+   "distance_km": 13.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_beloretskiy",
+   "name": "Белорецкий район",
+   "osm_name": "Белорецкий район",
+   "osm": "relation/398524",
+   "inside_osm_bbox": true,
+   "distance_km": 32.9,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_bizhbulyakskiy",
+   "name": "Бижбулякский район",
+   "osm_name": "Бижбулякский район",
+   "osm": "relation/398539",
+   "inside_osm_bbox": true,
+   "distance_km": 7.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_birskiy",
+   "name": "Бирский район",
+   "osm_name": "Бирский район",
+   "osm": "relation/336201",
+   "inside_osm_bbox": true,
+   "distance_km": 5.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_blagovarskiy",
+   "name": "Благоварский район",
+   "osm_name": "Благоварский район",
+   "osm": "relation/398520",
+   "inside_osm_bbox": true,
+   "distance_km": 7.9,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_blagoveschenskiy",
+   "name": "Благовещенский район",
+   "osm_name": "Благовещенский район",
+   "osm": "relation/398512",
+   "inside_osm_bbox": true,
+   "distance_km": 27.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_buzdyakskiy",
+   "name": "Буздякский район",
+   "osm_name": "Буздякский район",
+   "osm": "relation/398519",
+   "inside_osm_bbox": true,
+   "distance_km": 9.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_buraevskiy",
+   "name": "Бураевский район",
+   "osm_name": "Бураевский район",
+   "osm": "relation/337765",
+   "inside_osm_bbox": true,
+   "distance_km": 5.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_burzyanskiy",
+   "name": "Бурзянский район",
+   "osm_name": "Бурзянский район",
+   "osm": "relation/398534",
+   "inside_osm_bbox": true,
+   "distance_km": 13,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_gafuriyskiy",
+   "name": "Гафурийский район",
+   "osm_name": "Гафурийский район",
+   "osm": "relation/398548",
+   "inside_osm_bbox": true,
+   "distance_km": 14.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_agidel",
+   "name": "г. Агидель",
+   "osm_name": "Агидель",
+   "osm": "way/123171280",
+   "inside_osm_bbox": true,
+   "distance_km": 0.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_kumertau",
+   "name": "г. Кумертау",
+   "osm_name": "Кумертау",
+   "osm": "way/95490756",
+   "inside_osm_bbox": true,
+   "distance_km": 1.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_neftekamsk",
+   "name": "г. Нефтекамск",
+   "osm_name": "Нефтекамск",
+   "osm": "relation/2730507",
+   "inside_osm_bbox": true,
+   "distance_km": 0.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_oktyabrskiy",
+   "name": "г. Октябрьский",
+   "osm_name": "Октябрьский",
+   "osm": "relation/10221652",
+   "inside_osm_bbox": true,
+   "distance_km": 1.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_salavat",
+   "name": "г. Салават",
+   "osm_name": "Салават",
+   "osm": "way/31001743",
+   "inside_osm_bbox": true,
+   "distance_km": 0.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_sibay",
+   "name": "г. Сибай",
+   "osm_name": "Сибай",
+   "osm": "relation/2552689",
+   "inside_osm_bbox": true,
+   "distance_km": 2.5,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_sterlitamak",
+   "name": "г. Стерлитамак",
+   "osm_name": "Стерлитамак",
+   "osm": "relation/3337241",
+   "inside_osm_bbox": true,
+   "distance_km": 0,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_ufa",
+   "name": "г. Уфа",
+   "osm_name": "Уфа",
+   "osm": "relation/1549169",
+   "inside_osm_bbox": true,
+   "distance_km": 0,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "city_mezhgore",
+   "name": "г. Межгорье",
+   "osm_name": "ЗАТО Межгорье",
+   "osm": "relation/1850007",
+   "inside_osm_bbox": true,
+   "distance_km": 23.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_davlekanovskiy",
+   "name": "Давлекановский район",
+   "osm_name": "Давлекановский район",
+   "osm": "relation/398544",
+   "inside_osm_bbox": true,
+   "distance_km": 3.5,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_duvanskiy",
+   "name": "Дуванский район",
+   "osm_name": "Дуванский район",
+   "osm": "relation/398508",
+   "inside_osm_bbox": true,
+   "distance_km": 34,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_dyurtyulinskiy",
+   "name": "Дюртюлинский район",
+   "osm_name": "Дюртюлинский район",
+   "osm": "relation/336200",
+   "inside_osm_bbox": true,
+   "distance_km": 2.3,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_ermekeevskiy",
+   "name": "Ермекеевский район",
+   "osm_name": "Ермекеевский район",
+   "osm": "relation/398545",
+   "inside_osm_bbox": true,
+   "distance_km": 7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_zianchurinskiy",
+   "name": "Зианчуринский район",
+   "osm_name": "Зианчуринский район",
+   "osm": "relation/398529",
+   "inside_osm_bbox": true,
+   "distance_km": 30.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_zilairskiy",
+   "name": "Зилаирский район",
+   "osm_name": "Зилаирский район",
+   "osm": "relation/398530",
+   "inside_osm_bbox": true,
+   "distance_km": 31.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_iglinskiy",
+   "name": "Иглинский район",
+   "osm_name": "Иглинский район",
+   "osm": "relation/398514",
+   "inside_osm_bbox": true,
+   "distance_km": 23.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_ilishevskiy",
+   "name": "Илишевский район",
+   "osm_name": "Илишевский район",
+   "osm": "relation/364048",
+   "inside_osm_bbox": true,
+   "distance_km": 9.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_ishimbayskiy",
+   "name": "Ишимбайский район",
+   "osm_name": "Ишимбайский район",
+   "osm": "relation/398538",
+   "inside_osm_bbox": true,
+   "distance_km": 36.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_kaltasinskiy",
+   "name": "Калтасинский район",
+   "osm_name": "Калтасинский район",
+   "osm": "relation/398549",
+   "inside_osm_bbox": true,
+   "distance_km": 3.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_karaidelskiy",
+   "name": "Караидельский район",
+   "osm_name": "Караидельский район",
+   "osm": "relation/398507",
+   "inside_osm_bbox": true,
+   "distance_km": 7.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_karmaskalinskiy",
+   "name": "Кармаскалинский район",
+   "osm_name": "Кармаскалинский район",
+   "osm": "relation/398522",
+   "inside_osm_bbox": true,
+   "distance_km": 6.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_kiginskiy",
+   "name": "Кигинский район",
+   "osm_name": "Кигинский район",
+   "osm": "relation/398509",
+   "inside_osm_bbox": true,
+   "distance_km": 14.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_krasnokamskiy",
+   "name": "Краснокамский район",
+   "osm_name": "Краснокамский район",
+   "osm": "relation/10813489",
+   "inside_osm_bbox": true,
+   "distance_km": 19.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_kugarchinskiy",
+   "name": "Кугарчинский район",
+   "osm_name": "Кугарчинский район",
+   "osm": "relation/398531",
+   "inside_osm_bbox": true,
+   "distance_km": 12.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_kushnarenkovskiy",
+   "name": "Кушнаренковский район",
+   "osm_name": "Кушнаренковский район",
+   "osm": "relation/336331",
+   "inside_osm_bbox": true,
+   "distance_km": 7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_kuyurgazinskiy",
+   "name": "Куюргазинский район",
+   "osm_name": "Куюргазинский район",
+   "osm": "relation/398532",
+   "inside_osm_bbox": true,
+   "distance_km": 5.3,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_meleuzovskiy",
+   "name": "Мелеузовский район",
+   "osm_name": "Мелеузовский район",
+   "osm": "relation/398535",
+   "inside_osm_bbox": true,
+   "distance_km": 26.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_mechetlinskiy",
+   "name": "Мечетлинский район",
+   "osm_name": "Мечетлинский район",
+   "osm": "relation/398503",
+   "inside_osm_bbox": true,
+   "distance_km": 5.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_mishkinskiy",
+   "name": "Мишкинский район",
+   "osm_name": "Мишкинский район",
+   "osm": "relation/337745",
+   "inside_osm_bbox": true,
+   "distance_km": 4.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_miyakinskiy",
+   "name": "Миякинский район",
+   "osm_name": "Миякинский район",
+   "osm": "relation/398541",
+   "inside_osm_bbox": true,
+   "distance_km": 3.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_nurimanovskiy",
+   "name": "Нуримановский район",
+   "osm_name": "Нуримановский район",
+   "osm": "relation/398511",
+   "inside_osm_bbox": true,
+   "distance_km": 14.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_salavatskiy",
+   "name": "Салаватский район",
+   "osm_name": "Салаватский район",
+   "osm": "relation/398510",
+   "inside_osm_bbox": true,
+   "distance_km": 11.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_sterlibashevskiy",
+   "name": "Стерлибашевский район",
+   "osm_name": "Стерлибашевский район",
+   "osm": "relation/398536",
+   "inside_osm_bbox": true,
+   "distance_km": 6.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_sterlitamakskiy",
+   "name": "Стерлитамакский район",
+   "osm_name": "Стерлитамакский район",
+   "osm": "relation/398537",
+   "inside_osm_bbox": true,
+   "distance_km": 24.4,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_tatyshlinskiy",
+   "name": "Татышлинский район",
+   "osm_name": "Татышлинский район",
+   "osm": "relation/398500",
+   "inside_osm_bbox": true,
+   "distance_km": 5.6,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_tuymazinskiy",
+   "name": "Туймазинский район",
+   "osm_name": "Туймазинский район",
+   "osm": "relation/398546",
+   "inside_osm_bbox": true,
+   "distance_km": 16.8,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_ufimskiy",
+   "name": "Уфимский район",
+   "osm_name": "Уфимский район",
+   "osm": "relation/398515",
+   "inside_osm_bbox": true,
+   "distance_km": 16.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_uchalinskiy",
+   "name": "Учалинский район",
+   "osm_name": "Учалинский район",
+   "osm": "relation/398525",
+   "inside_osm_bbox": true,
+   "distance_km": 7.2,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_fedorovskiy",
+   "name": "Фёдоровский район",
+   "osm_name": "Фёдоровский район",
+   "osm": "relation/398533",
+   "inside_osm_bbox": true,
+   "distance_km": 14.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_haybullinskiy",
+   "name": "Хайбуллинский район",
+   "osm_name": "Хайбуллинский район",
+   "osm": "relation/398528",
+   "inside_osm_bbox": true,
+   "distance_km": 18,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_chekmagushevskiy",
+   "name": "Чекмагушевский район",
+   "osm_name": "Чекмагушевский район",
+   "osm": "relation/398516",
+   "inside_osm_bbox": true,
+   "distance_km": 1.7,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_chishminskiy",
+   "name": "Чишминский район",
+   "osm_name": "Чишминский район",
+   "osm": "relation/398521",
+   "inside_osm_bbox": true,
+   "distance_km": 5.1,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_sharanskiy",
+   "name": "Шаранский район",
+   "osm_name": "Шаранский район",
+   "osm": "relation/398518",
+   "inside_osm_bbox": true,
+   "distance_km": 4.5,
+   "name_match": true,
+   "status": "ok"
+  },
+  {
+   "id": "district_yanaulskiy",
+   "name": "Янаульский район",
+   "osm_name": "Янаульский район",
+   "osm": "relation/357263",
+   "inside_osm_bbox": true,
+   "distance_km": 5,
+   "name_match": true,
+   "status": "ok"
+  }
+ ]
+}

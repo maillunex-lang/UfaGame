@@ -392,3 +392,20 @@ test('content publish (S15): immutable versions, pointer races, failure atomicit
   await pool.query('DROP TRIGGER IF EXISTS content_release_fail ON content_releases');await pool.query('DROP FUNCTION IF EXISTS content_release_fail()');await api.close();
  }
 });
+
+test('geography (S21): server accepts the Wikidata set with a point and rejects broken hierarchy',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const geo=JSON.parse(readFileSync(new URL('../../content/geo/bashkortostan.locations.json',import.meta.url)));
+ const api=await app();try{
+  const session=await login(api),headers={origin,cookie:session.cookie,'x-ufa-csrf':session.csrf};
+  const point={id:'point_shulgan_tash',kind:'location',name:'Шульган-Таш',data:{level:'point',parent_id:'district_burzyanskiy',lat_e6:52920630,lon_e6:57560930,source:{kind:'manual'}}};
+  const content=entities=>({schema_version:1,content_version:'draft_geo',required_capabilities:['content.core.v1','world.locations.v1'],entities});
+  const save=c=>api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id:randomUUID(),name:'Карта',content:c,...meta()},headers});
+  assert.equal((await save(content([...geo.entities,point]))).statusCode,200);
+  assert.equal((await save(content([...geo.entities,{...point,data:{...point.data,parent_id:'district_gone'}}]))).statusCode,400,'lost parent');
+  assert.equal((await save(content([...geo.entities,{...point,data:{...point.data,parent_id:'city_neftekamsk'}}]))).statusCode,400,'too far from its district');
+  const noCap=content([...geo.entities]);noCap.required_capabilities=['content.core.v1'];assert.equal((await save(noCap)).statusCode,400);
+  const huge=content([...geo.entities]);huge.entities[0]={...huge.entities[0],data:{...huge.entities[0].data,description:'x'.repeat(500)}};
+  const big=await api.inject({method:'POST',url:'/admin/v1/drafts',payload:{id:randomUUID(),name:'Огромный',content:{...huge,entities:huge.entities},padding:'x'.repeat(2*1024*1024)},headers});assert.equal(big.statusCode,413,'bodies over 2 MiB are still refused');
+ }finally{await api.close();}
+});

@@ -1,0 +1,12 @@
+# Municipal districts (Q2198484) and urban okrugs (Q13626398) located in the
+# Republic of Bashkortostan (Q5710), with Russian/Bashkir names, coordinates
+# (P625) and administrative centre (P36). Endpoint: https://query.wikidata.org/sparql
+SELECT ?item ?ru ?ba ?type ?coord ?centre ?centreRu ?centreCoord WHERE {
+  VALUES ?type { wd:Q2198484 wd:Q13626398 }
+  ?item wdt:P131 wd:Q5710; wdt:P31 ?type.
+  ?item rdfs:label ?ru FILTER(LANG(?ru)="ru")
+  OPTIONAL { ?item rdfs:label ?ba FILTER(LANG(?ba)="ba") }
+  OPTIONAL { ?item wdt:P625 ?coord }
+  OPTIONAL { ?item wdt:P36 ?centre. ?centre rdfs:label ?centreRu FILTER(LANG(?centreRu)="ru") OPTIONAL { ?centre wdt:P625 ?centreCoord } }
+}
+ORDER BY ?ru

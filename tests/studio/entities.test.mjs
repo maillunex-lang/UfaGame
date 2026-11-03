@@ -90,3 +90,21 @@ test('stages: 1–5 existing heroes, fixed 90 s, protected from deleting their e
  assert.throws(()=>deleteEntity(text,'hero_one'),/ссылку/);
  assert.equal(listEntities(text).some(e=>e.kind==='stage'),true);
 });
+import {importGeography,listLocations} from '../../apps/studio-web/src/entities.mjs';
+import {readFileSync} from 'node:fs';
+const geo=JSON.parse(readFileSync(new URL('../../content/geo/bashkortostan.locations.json',import.meta.url)));
+test('geography: import once, add a point, protect linked places, stage needs a point',()=>{
+ let {text,added}=importGeography(blank(),geo);assert.equal(added,64);assert.ok(JSON.parse(text).required_capabilities.includes('world.locations.v1'));
+ assert.equal(importGeography(text,geo).added,0,'repeat import adds nothing');assert.equal(validate('content',JSON.parse(text)).ok,true);
+ const pt={id:'point_shulgan_tash',kind:'location',name:'Шульган-Таш',data:{level:'point',parent_id:'district_burzyanskiy',lat_e6:53045000,lon_e6:57052000,source:{kind:'manual'}}};
+ text=upsertEntity(text,pt);assert.equal(listLocations(text).length,65);assert.equal(listEntities(text).length,0,'locations stay out of the object list');
+ assert.throws(()=>upsertEntity(text,{...pt,id:'point_far',data:{...pt.data,parent_id:'city_neftekamsk'}}),/150 км/);
+ assert.throws(()=>upsertEntity(text,{...pt,id:'point_lost',data:{...pt.data,parent_id:'district_nowhere'}}),/внутри района/);
+ assert.throws(()=>upsertEntity(text,{...pt,id:'point_out',data:{...pt.data,lat_e6:58000000}}),/вне Башкортостана/);
+ text=upsertEntity(text,ability);text=upsertEntity(text,faction);text=upsertEntity(text,hero);
+ assert.throws(()=>upsertEntity(text,{id:'stage_x',kind:'stage',name:'X',data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000,location_id:'district_burzyanskiy'}}),/точке/);
+ text=upsertEntity(text,{id:'stage_cave',kind:'stage',name:'Пещера',data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000,location_id:'point_shulgan_tash'}});
+ assert.equal(validate('content',JSON.parse(text)).ok,true);
+ assert.throws(()=>deleteEntity(text,'point_shulgan_tash'),/ссылку/,'linked point cannot vanish');
+ assert.throws(()=>deleteEntity(text,'district_burzyanskiy'),/ссылку/,'district with points cannot vanish');
+});

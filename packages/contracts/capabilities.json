@@ -9,6 +9,7 @@
     "auth.password.v1",
     "battle.combat.v1",
     "content.resources.v1",
-    "battle.abilities.v2"
+    "battle.abilities.v2",
+    "world.locations.v1"
   ]
 }

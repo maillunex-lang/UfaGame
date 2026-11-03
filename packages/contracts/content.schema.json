@@ -28,7 +28,8 @@
           "auth.password.v1",
           "battle.combat.v1",
           "content.resources.v1",
-          "battle.abilities.v2"
+          "battle.abilities.v2",
+          "world.locations.v1"
         ]
       },
       "uniqueItems": true,
@@ -363,6 +364,10 @@
                   },
                   "time_limit_ms": {
                     "const": 90000
+                  },
+                  "location_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
                   }
                 }
               }
@@ -445,6 +450,176 @@
                     "type": "integer",
                     "minimum": 60,
                     "maximum": 86400
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "location"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "level",
+                  "lat_e6",
+                  "lon_e6",
+                  "source"
+                ],
+                "properties": {
+                  "level": {
+                    "enum": [
+                      "republic",
+                      "district",
+                      "city",
+                      "point"
+                    ]
+                  },
+                  "parent_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                  },
+                  "lat_e6": {
+                    "type": "integer",
+                    "minimum": -90000000,
+                    "maximum": 90000000
+                  },
+                  "lon_e6": {
+                    "type": "integer",
+                    "minimum": -180000000,
+                    "maximum": 180000000
+                  },
+                  "name_ba": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "centre_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "source": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind",
+                          "id",
+                          "retrieved"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "wikidata"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^Q[1-9][0-9]{0,11}$"
+                          },
+                          "retrieved": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "candidates": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "corrected": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "from_lat_e6",
+                              "from_lon_e6",
+                              "reason"
+                            ],
+                            "properties": {
+                              "from_lat_e6": {
+                                "type": "integer",
+                                "minimum": -90000000,
+                                "maximum": 90000000
+                              },
+                              "from_lon_e6": {
+                                "type": "integer",
+                                "minimum": -180000000,
+                                "maximum": 180000000
+                              },
+                              "reason": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 200
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "const": "manual"
+                          },
+                          "note": {
+                            "type": "string",
+                            "maxLength": 300
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "art": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "resource_id",
+                      "x",
+                      "y"
+                    ],
+                    "properties": {
+                      "resource_id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                      },
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4096
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4096
+                      }
+                    }
                   }
                 }
               }

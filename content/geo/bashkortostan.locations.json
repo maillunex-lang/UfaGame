@@ -1,0 +1,1227 @@
+{
+ "format": "ufagame-geo/1",
+ "license": "CC0-1.0 (Wikidata)",
+ "attribution": "Данные: Wikidata (CC0). Проверка: © участники OpenStreetMap, ODbL (только отчет docs/reports/S21-geo-check.json).",
+ "retrieved": "2026-11-03",
+ "query": "content/geo/wikidata-query.sparql",
+ "entities": [
+  {
+   "id": "republic_bashkortostan",
+   "kind": "location",
+   "name": "Республика Башкортостан",
+   "data": {
+    "level": "republic",
+    "name_ba": "Башҡортостан Республикаһы",
+    "lat_e6": 54466667,
+    "lon_e6": 56266667,
+    "source": {
+     "kind": "wikidata",
+     "id": "Q5710",
+     "retrieved": "2026-11-03"
+    }
+   }
+  },
+  {
+   "id": "district_abzelilovskiy",
+   "kind": "location",
+   "name": "Абзелиловский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Әбйәлил районы",
+    "lat_e6": 53416670,
+    "lon_e6": 58500000,
+    "centre_name": "Аскарово",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q481602",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_alsheevskiy",
+   "kind": "location",
+   "name": "Альшеевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Әлшәй районы",
+    "lat_e6": 54016667,
+    "lon_e6": 54956111,
+    "centre_name": "Раевский",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1378418",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_arhangelskiy",
+   "kind": "location",
+   "name": "Архангельский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Архангел районы",
+    "lat_e6": 54533333,
+    "lon_e6": 56966667,
+    "centre_name": "Архангельское",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q777030",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_askinskiy",
+   "kind": "location",
+   "name": "Аскинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Асҡын районы",
+    "lat_e6": 56083330,
+    "lon_e6": 56583330,
+    "centre_name": "Аскино",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q390284",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_aurgazinskiy",
+   "kind": "location",
+   "name": "Аургазинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ауырғазы районы",
+    "lat_e6": 54005833,
+    "lon_e6": 55894167,
+    "centre_name": "Толбазы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q781569",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_baymakskiy",
+   "kind": "location",
+   "name": "Баймакский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Баймаҡ районы",
+    "lat_e6": 52600000,
+    "lon_e6": 58316667,
+    "centre_name": "Баймак",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q788737",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_bakalinskiy",
+   "kind": "location",
+   "name": "Бакалинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Баҡалы районы",
+    "lat_e6": 55176389,
+    "lon_e6": 53802778,
+    "centre_name": "Бакалы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q788939",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_baltachevskiy",
+   "kind": "location",
+   "name": "Балтачевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Балтас районы",
+    "lat_e6": 56016667,
+    "lon_e6": 55933056,
+    "centre_name": "Старобалтачево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q523472",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_belebeevskiy",
+   "kind": "location",
+   "name": "Белебеевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Бәләбәй районы",
+    "lat_e6": 54100000,
+    "lon_e6": 54133333,
+    "centre_name": "городское поселение Белебей",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1702952",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_belokatayskiy",
+   "kind": "location",
+   "name": "Белокатайский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Балаҡатай районы",
+    "lat_e6": 55706667,
+    "lon_e6": 58958056,
+    "centre_name": "Новобелокатай",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q258760",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_beloretskiy",
+   "kind": "location",
+   "name": "Белорецкий район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Белорет районы",
+    "lat_e6": 53833333,
+    "lon_e6": 58600000,
+    "centre_name": "Белорецк",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q792513",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_bizhbulyakskiy",
+   "kind": "location",
+   "name": "Бижбулякский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Бишбүләк районы",
+    "lat_e6": 53691111,
+    "lon_e6": 54272222,
+    "centre_name": "Бижбуляк",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1702957",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_birskiy",
+   "kind": "location",
+   "name": "Бирский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Бөрө районы",
+    "lat_e6": 55416667,
+    "lon_e6": 55533333,
+    "centre_name": "Бирск",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1703477",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_blagovarskiy",
+   "kind": "location",
+   "name": "Благоварский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Благовар районы",
+    "lat_e6": 54691667,
+    "lon_e6": 55016111,
+    "centre_name": "Языково",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q804279",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_blagoveschenskiy",
+   "kind": "location",
+   "name": "Благовещенский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Благовещен районы",
+    "lat_e6": 55033333,
+    "lon_e6": 55983333,
+    "centre_name": "Благовещенск",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q804290",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_buzdyakskiy",
+   "kind": "location",
+   "name": "Буздякский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Бүздәк районы",
+    "lat_e6": 54571111,
+    "lon_e6": 54530833,
+    "centre_name": "Буздяк",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1703465",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_buraevskiy",
+   "kind": "location",
+   "name": "Бураевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Борай районы",
+    "lat_e6": 55842500,
+    "lon_e6": 55405556,
+    "centre_name": "Бураево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q852022",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_burzyanskiy",
+   "kind": "location",
+   "name": "Бурзянский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Бөрйән районы",
+    "lat_e6": 53100000,
+    "lon_e6": 57433333,
+    "centre_name": "Старосубхангулово",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q852243",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_gafuriyskiy",
+   "kind": "location",
+   "name": "Гафурийский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ғафури районы",
+    "lat_e6": 53894722,
+    "lon_e6": 56468611,
+    "centre_name": "Красноусольский",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q678695",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "city_agidel",
+   "kind": "location",
+   "name": "г. Агидель",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ағиҙел",
+    "lat_e6": 55900000,
+    "lon_e6": 53933333,
+    "centre_name": "Агидель",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638619",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_kumertau",
+   "kind": "location",
+   "name": "г. Кумертау",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Күмертау",
+    "lat_e6": 52766667,
+    "lon_e6": 55783333,
+    "centre_name": "Кумертау",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638651",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "city_neftekamsk",
+   "kind": "location",
+   "name": "г. Нефтекамск",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Нефтекама",
+    "lat_e6": 56083333,
+    "lon_e6": 54250000,
+    "centre_name": "Нефтекамск",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638665",
+     "retrieved": "2026-11-03",
+     "candidates": 1
+    }
+   }
+  },
+  {
+   "id": "city_oktyabrskiy",
+   "kind": "location",
+   "name": "г. Октябрьский",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Октябрьский",
+    "lat_e6": 54483333,
+    "lon_e6": 53483333,
+    "centre_name": "Октябрьский",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638669",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_salavat",
+   "kind": "location",
+   "name": "г. Салават",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Салауат",
+    "lat_e6": 53366667,
+    "lon_e6": 55933333,
+    "centre_name": "Салават",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638671",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_sibay",
+   "kind": "location",
+   "name": "г. Сибай",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Сибай",
+    "lat_e6": 52700000,
+    "lon_e6": 58650000,
+    "centre_name": "Сибай",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638676",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_sterlitamak",
+   "kind": "location",
+   "name": "г. Стерлитамак",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Стәрлетамаҡ",
+    "lat_e6": 53619444,
+    "lon_e6": 55961389,
+    "centre_name": "Стерлитамак",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q16638678",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_ufa",
+   "kind": "location",
+   "name": "г. Уфа",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Өфө",
+    "lat_e6": 54726111,
+    "lon_e6": 55947500,
+    "centre_name": "Уфа",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q15190285",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "city_mezhgore",
+   "kind": "location",
+   "name": "г. Межгорье",
+   "data": {
+    "level": "city",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Межгорье",
+    "lat_e6": 54050000,
+    "lon_e6": 57816667,
+    "centre_name": "Межгорье",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q15190396",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_davlekanovskiy",
+   "kind": "location",
+   "name": "Давлекановский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Дәүләкән районы",
+    "lat_e6": 54216667,
+    "lon_e6": 55033333,
+    "centre_name": "Давлеканово",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1703468",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_duvanskiy",
+   "kind": "location",
+   "name": "Дуванский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Дыуан районы",
+    "lat_e6": 55532222,
+    "lon_e6": 58255000,
+    "centre_name": "Месягутово",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q911811",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_dyurtyulinskiy",
+   "kind": "location",
+   "name": "Дюртюлинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Дүртөйлө районы",
+    "lat_e6": 55483333,
+    "lon_e6": 54866667,
+    "centre_name": "Дюртюли",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1029966",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_ermekeevskiy",
+   "kind": "location",
+   "name": "Ермекеевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Йәрмәкәй районы",
+    "lat_e6": 54077800,
+    "lon_e6": 53669400,
+    "centre_name": "Ермекеево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1092746",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_zianchurinskiy",
+   "kind": "location",
+   "name": "Зианчуринский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ейәнсура районы",
+    "lat_e6": 52192500,
+    "lon_e6": 56580300,
+    "centre_name": "Исянгулово",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1094414",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_zilairskiy",
+   "kind": "location",
+   "name": "Зилаирский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Йылайыр районы",
+    "lat_e6": 52232200,
+    "lon_e6": 57440300,
+    "centre_name": "Зилаир",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q932582",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_iglinskiy",
+   "kind": "location",
+   "name": "Иглинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Иглин районы",
+    "lat_e6": 54838611,
+    "lon_e6": 56423333,
+    "centre_name": "Иглино",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q636221",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_ilishevskiy",
+   "kind": "location",
+   "name": "Илишевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Илеш районы",
+    "lat_e6": 55445833,
+    "lon_e6": 54316944,
+    "centre_name": "Верхнеяркеево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1092770",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_ishimbayskiy",
+   "kind": "location",
+   "name": "Ишимбайский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ишембай районы",
+    "lat_e6": 53450000,
+    "lon_e6": 56033333,
+    "centre_name": "Ишимбай",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1092758",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_kaltasinskiy",
+   "kind": "location",
+   "name": "Калтасинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ҡалтасы районы",
+    "lat_e6": 55969444,
+    "lon_e6": 54799167,
+    "centre_name": "Калтасы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q394716",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_karaidelskiy",
+   "kind": "location",
+   "name": "Караидельский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ҡариҙел районы",
+    "lat_e6": 55837778,
+    "lon_e6": 56909722,
+    "centre_name": "Караидель",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1703482",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_karmaskalinskiy",
+   "kind": "location",
+   "name": "Кармаскалинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ҡырмыҫҡалы районы",
+    "lat_e6": 54369444,
+    "lon_e6": 56177778,
+    "centre_name": "Кармаскалы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1104923",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_kiginskiy",
+   "kind": "location",
+   "name": "Кигинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Ҡыйғы районы",
+    "lat_e6": 55405278,
+    "lon_e6": 58604167,
+    "centre_name": "Верхние Киги",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1094419",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_krasnokamskiy",
+   "kind": "location",
+   "name": "Краснокамский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Краснокама районы",
+    "lat_e6": 56130556,
+    "lon_e6": 54172222,
+    "centre_name": "Николо-Берёзовка",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q2281998",
+     "retrieved": "2026-11-03",
+     "candidates": 4
+    }
+   }
+  },
+  {
+   "id": "district_kugarchinskiy",
+   "kind": "location",
+   "name": "Кугарчинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Күгәрсен районы",
+    "lat_e6": 52713889,
+    "lon_e6": 56626944,
+    "centre_name": "Мраково",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1121709",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_kushnarenkovskiy",
+   "kind": "location",
+   "name": "Кушнаренковский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Кушнаренко районы",
+    "lat_e6": 55105000,
+    "lon_e6": 55347778,
+    "centre_name": "Кушнаренково",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1702796",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_kuyurgazinskiy",
+   "kind": "location",
+   "name": "Куюргазинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Көйөргәҙе районы",
+    "lat_e6": 52702222,
+    "lon_e6": 55803889,
+    "centre_name": "Ермолаево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1094426",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_meleuzovskiy",
+   "kind": "location",
+   "name": "Мелеузовский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Мәләүез районы",
+    "lat_e6": 52950000,
+    "lon_e6": 55933333,
+    "centre_name": "Мелеуз",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1175702",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_mechetlinskiy",
+   "kind": "location",
+   "name": "Мечетлинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Мәсетле районы",
+    "lat_e6": 55945278,
+    "lon_e6": 58268056,
+    "centre_name": "Большеустьикинское",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q730998",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_mishkinskiy",
+   "kind": "location",
+   "name": "Мишкинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Мишкә районы",
+    "lat_e6": 55534167,
+    "lon_e6": 55963333,
+    "centre_name": "Мишкино",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1073211",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_miyakinskiy",
+   "kind": "location",
+   "name": "Миякинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Миәкә районы",
+    "lat_e6": 53633333,
+    "lon_e6": 54783333,
+    "centre_name": "Киргиз-Мияки",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1703288",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_nurimanovskiy",
+   "kind": "location",
+   "name": "Нуримановский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Нуриман районы",
+    "lat_e6": 55197222,
+    "lon_e6": 56669444,
+    "centre_name": "Красная Горка",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1194696",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_salavatskiy",
+   "kind": "location",
+   "name": "Салаватский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Салауат районы",
+    "lat_e6": 55221491,
+    "lon_e6": 58150041,
+    "centre_name": "Малояз",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q288115",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_sterlibashevskiy",
+   "kind": "location",
+   "name": "Стерлибашевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Стәрлебаш районы",
+    "lat_e6": 53437200,
+    "lon_e6": 55258600,
+    "centre_name": "Стерлибашево",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1192889",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_sterlitamakskiy",
+   "kind": "location",
+   "name": "Стерлитамакский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Стәрлетамаҡ районы",
+    "lat_e6": 53633333,
+    "lon_e6": 55950000,
+    "centre_name": "Стерлитамак",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1072349",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_tatyshlinskiy",
+   "kind": "location",
+   "name": "Татышлинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Тәтешле районы",
+    "lat_e6": 56290300,
+    "lon_e6": 55853900,
+    "centre_name": "Верхние Татышлы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1192881",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_tuymazinskiy",
+   "kind": "location",
+   "name": "Туймазинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Туймазы районы",
+    "lat_e6": 54600000,
+    "lon_e6": 53700000,
+    "centre_name": "Туймазы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q972685",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_ufimskiy",
+   "kind": "location",
+   "name": "Уфимский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Өфө районы",
+    "lat_e6": 54733300,
+    "lon_e6": 55966700,
+    "centre_name": "Уфа",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1092754",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_uchalinskiy",
+   "kind": "location",
+   "name": "Учалинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Учалы районы",
+    "lat_e6": 54316700,
+    "lon_e6": 59383300,
+    "centre_name": "Учалы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1194661",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_fedorovskiy",
+   "kind": "location",
+   "name": "Фёдоровский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Фёдоровка районы",
+    "lat_e6": 53178806,
+    "lon_e6": 55185861,
+    "centre_name": "Фёдоровка",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1001882",
+     "retrieved": "2026-11-03",
+     "candidates": 2,
+     "corrected": {
+      "from_lat_e6": 54688611,
+      "from_lon_e6": 56136111,
+      "reason": "district point > 80 km from its centre; centre coordinate used"
+     }
+    }
+   }
+  },
+  {
+   "id": "district_haybullinskiy",
+   "kind": "location",
+   "name": "Хайбуллинский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Хәйбулла районы",
+    "lat_e6": 51863611,
+    "lon_e6": 58210556,
+    "centre_name": "Акъяр",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q611787",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_chekmagushevskiy",
+   "kind": "location",
+   "name": "Чекмагушевский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Саҡмағош районы",
+    "lat_e6": 55141111,
+    "lon_e6": 54650000,
+    "centre_name": "Чекмагуш",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q871294",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_chishminskiy",
+   "kind": "location",
+   "name": "Чишминский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Шишмә районы",
+    "lat_e6": 54593889,
+    "lon_e6": 55395000,
+    "centre_name": "Чишмы",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q2363239",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  },
+  {
+   "id": "district_sharanskiy",
+   "kind": "location",
+   "name": "Шаранский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Шаран районы",
+    "lat_e6": 54819167,
+    "lon_e6": 53993056,
+    "centre_name": "Шаран",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q1702931",
+     "retrieved": "2026-11-03",
+     "candidates": 2
+    }
+   }
+  },
+  {
+   "id": "district_yanaulskiy",
+   "kind": "location",
+   "name": "Янаульский район",
+   "data": {
+    "level": "district",
+    "parent_id": "republic_bashkortostan",
+    "name_ba": "Яңауыл районы",
+    "lat_e6": 56266667,
+    "lon_e6": 54933333,
+    "centre_name": "Янаул",
+    "source": {
+     "kind": "wikidata",
+     "id": "Q339367",
+     "retrieved": "2026-11-03",
+     "candidates": 3
+    }
+   }
+  }
+ ]
+}
