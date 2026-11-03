@@ -27,3 +27,21 @@ export const economyContent=(o={})=>{
   {id:'afk_main',kind:'afk',name:'AFK',data:{per_hour:[{currency:'gold',amount:3600},{currency:'hero_exp',amount:360}],stage_bonus_bp:5000,...o.afk}});
  return c;
 };
+/** Economy fixture + battle speeds (S26) and quests (S30). */
+export const speedQuestContent=(o={})=>{
+ const c=economyContent();
+ c.content_version='speed_quest_fixture';
+ c.required_capabilities.push('battle.speed.v1','quests.v1');
+ const vip=c.entities.find(e=>e.kind==='vip');Object.assign(vip.data,{speed_x2_stages:1,speed_x4_level:2,instant_level:3},o.vip);
+ // A tougher stage for speed timing: the hero needs many steps.
+ c.entities.push({id:'enemy_wall',kind:'hero',name:'Стена',data:{faction_id:'faction_one',ability_ids:['ability_one'],combat:{hp:1000000,attack:0,defense:1000000,speed:0,range:0,attack_interval_ms:1000,energy_start:0,energy_per_second:0,energy_per_attack:0}}},
+  {id:'stage_long',kind:'stage',name:'Долгий бой',data:{enemy_hero_ids:['enemy_wall'],time_limit_ms:90000}});
+ const q=(id,name,data)=>({id,kind:'quest',name,data:{proposed:true,...data}});
+ c.entities.push(
+  q('quest_daily_wins','Две победы за день',{period:'daily',event:'battle_win',target:2,rewards:[{currency:'gold',amount:100}],order:1}),
+  q('quest_clear_one','Пройди Опушку',{period:'once',event:'campaign_clear',stage_id:'stage_one',target:1,rewards:[{currency:'gems',amount:50}],reward_heroes:['hero_f'],order:2}),
+  q('quest_level_after','Подними уровень',{period:'once',event:'hero_level_up',target:1,rewards:[{currency:'hero_exp',amount:10}],requires_quest_id:'quest_clear_one',order:3}),
+  q('quest_summon_ten','Десять призывов',{period:'once',event:'summon_pull',target:10,rewards:[{currency:'rank_material',amount:5}],order:4}),
+  ...(o.quests??[]));
+ return c;
+};

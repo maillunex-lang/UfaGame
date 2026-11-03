@@ -5,6 +5,7 @@ extends VBoxContainer
 ## open or cleared stage emits stage_chosen; locked stages cannot be tapped.
 
 signal stage_chosen(stage: Dictionary)
+signal stage_instant(stage: Dictionary)
 
 const STATUS_TEXT := {"cleared": "пройден", "open": "открыт", "locked": "закрыт"}
 const COLORS := {"cleared": Color("2f8f5b"), "open": Color("e3a72f"), "locked": Color("8a948f")}
@@ -13,6 +14,8 @@ const CURRENCY := {"gold": "золото", "gems": "самоцветы"}
 var campaign: Dictionary = {}
 var paths: Array = []  # ChapterPath controls (tests read them)
 var buttons: Dictionary = {}  # stage id -> Button
+var instant := false  # S26: VIP may calculate repeats of cleared stages instantly
+var instant_buttons: Dictionary = {}
 
 class ChapterPath:
 	extends Control
@@ -45,6 +48,7 @@ func show_campaign(data: Dictionary, bundle: Dictionary, balances: Array) -> voi
 	campaign = data
 	paths.clear()
 	buttons.clear()
+	instant_buttons.clear()
 	add_theme_constant_override("separation", 10)
 	var money := []
 	for b in balances:
@@ -96,6 +100,13 @@ func show_campaign(data: Dictionary, bundle: Dictionary, balances: Array) -> voi
 			row.disabled = stage.status == "locked"
 			row.pressed.connect(func(): stage_chosen.emit(stage))
 			add_child(row)
+			if instant and stage.status == "cleared":
+				var fast := Button.new()
+				fast.text = "Быстрый расчёт: %s" % stage.name
+				fast.custom_minimum_size.y = 48
+				fast.pressed.connect(func(): stage_instant.emit(stage))
+				add_child(fast)
+				instant_buttons[stage.id] = fast
 
 static func reward_list(stage: Dictionary) -> String:
 	var parts := []

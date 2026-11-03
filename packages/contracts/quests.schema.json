@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/quests",
+  "title": "GET /v1/quests: progress and status decided by the server",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "quests",
+    "claimed"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "quests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "period",
+          "event",
+          "stage_name",
+          "target",
+          "progress",
+          "status",
+          "rewards",
+          "reward_heroes",
+          "expires_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "period": {
+            "enum": [
+              "daily",
+              "once"
+            ]
+          },
+          "event": {
+            "type": "string"
+          },
+          "stage_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "target": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "progress": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "enum": [
+              "locked",
+              "active",
+              "ready",
+              "claimed"
+            ]
+          },
+          "rewards": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "currency",
+                "amount"
+              ],
+              "properties": {
+                "currency": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "reward_heroes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "claimed": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

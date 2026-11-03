@@ -14,6 +14,9 @@ var status_label: Label
 var auto_button: Button
 var portraits: HBoxContainer
 var result_panel: Control
+var allowed_speeds: Array = [1]  # from GET /v1/vip battle.speeds (S26)
+var speed := 1
+var speed_buttons: Dictionary = {}
 var result_label: Label
 var actors: Dictionary = {}      # id -> latest actor state (hp, x, y, energy, max_hp, team, slot)
 var shown: Dictionary = {}       # id -> {from: Vector2, to: Vector2, t0: float}
@@ -67,6 +70,19 @@ func _ready() -> void:
 	auto_button.custom_minimum_size = Vector2(150, 52)
 	auto_button.pressed.connect(_toggle_auto)
 	top.add_child(auto_button)
+	# JSON numbers arrive as floats (4.0): compare as integers.
+	allowed_speeds = allowed_speeds.map(func(x): return int(x))
+	if allowed_speeds.size() > 1:
+		for value in [1, 2, 4]:
+			var b := Button.new()
+			b.text = "×%d" % value
+			b.custom_minimum_size = Vector2(56, 52)
+			b.toggle_mode = true
+			b.button_pressed = value == 1
+			b.disabled = not (value in allowed_speeds)
+			b.pressed.connect(func(): _set_speed(value))
+			top.add_child(b)
+			speed_buttons[value] = b
 	var leave := Button.new()
 	leave.text = "Выйти"
 	leave.custom_minimum_size = Vector2(110, 52)
@@ -157,6 +173,9 @@ func _on_frame(frame: Dictionary, status: String) -> void:
 	step = int(frame.seq)
 	if status == "applied":
 		auto = bool(frame.auto)
+		speed = int(frame.get("speed", 1))
+		for value in speed_buttons:
+			speed_buttons[value].button_pressed = value == speed
 		for change in frame.actors:
 			if actors.has(change.id):
 				var before := _current(change.id)
@@ -177,11 +196,17 @@ func _on_frame(frame: Dictionary, status: String) -> void:
 
 func _on_answer(_seq: int, ok: bool, code: String) -> void:
 	if not ok:
-		status_label.text = "Команда не принята: " + code
+		status_label.text = "Эта скорость пока недоступна." if code == "SPEED_NOT_ALLOWED" else "Команда не принята: " + code
 
 func _on_finished(result: String, verified: bool) -> void:
 	result_panel.visible = true
 	result_label.text = ("Победа!" if result == "attacker_win" else "Поражение") + ("\nИтог сверен с сервером ✓" if verified else "\nИтог не совпал с сервером — пришли скриншот разработчику")
+
+func _set_speed(value: int) -> void:
+	if value == speed:
+		return
+	if live.set_speed(value) > 0:
+		status_label.text = "Скорость ×%d…" % value
 
 func _toggle_auto() -> void:
 	if live.set_auto(not auto) > 0:
@@ -202,7 +227,7 @@ func _current(id: String) -> Vector2:
 	var s: Dictionary = shown.get(id, {})
 	if s.is_empty():
 		return _pos(actors[id])
-	var t: float = clamp((Time.get_ticks_msec() / 1000.0 - float(s.t0)) / STEP, 0.0, 1.0)
+	var t: float = clamp((Time.get_ticks_msec() / 1000.0 - float(s.t0)) / (STEP / max(1, speed)), 0.0, 1.0)
 	return (s.from as Vector2).lerp(s.to, t)
 
 func _process(_delta: float) -> void:

@@ -6,6 +6,10 @@ import {DomainError} from './errors.ts';
 import {authorize,bearer,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {teamFor} from './live-battles.ts';
+import {battleRights} from './economy-routes.ts';
+import {stageStatusFor} from './campaign.ts';
+import {recordQuestEvent} from './quests.ts';
+import {transaction} from './db.ts';
 
 const WORKER=new URL('./battle-worker.mjs',import.meta.url);
 const TIMEOUT_MS=5000;
@@ -51,6 +55,12 @@ export async function registerBattles(app:FastifyInstance,pool:Pool){
   if(!version)throw new DomainError('NOT_FOUND',404,'NO_CONTENT');
   const stage=version.content.entities.find((e:any)=>e.id===b.stage_id&&e.kind==='stage');
   if(!stage)throw new DomainError('INVALID_REQUEST',422,`UNKNOWN_STAGE:${b.stage_id}`);
+  // S26: with instant_level configured, only VIP players and only repeats of cleared campaign stages.
+  const vip=version.content.entities.find((e:any)=>e.kind==='vip')?.data;
+  if(vip?.instant_level!==undefined){
+   if(!(await battleRights(pool,session.player_id,version.content)).instant)throw new DomainError('CONFLICT',409,'INSTANT_NOT_ALLOWED');
+   if((await stageStatusFor(pool,session.player_id,version.content,b.stage_id))!=='cleared')throw new DomainError('CONFLICT',409,'FIRST_CLEAR_REQUIRES_BATTLE');
+  }
   const team=await teamFor(pool,session.player_id,version.content,b);
   const seed=randomInt(0,4294967296);
   const result=await computeBattle(version.content,{attacker_hero_ids:team.hero_ids,...(team.attacker_mods?{attacker_mods:team.attacker_mods}:{}),stage_id:b.stage_id,seed});
@@ -62,6 +72,8 @@ export async function registerBattles(app:FastifyInstance,pool:Pool){
    if(!sameRequest(winner,b))throw new DomainError('CONFLICT',409);
    return replay(winner);
   }
+  // An instant win counts for quests like any win (S30); the event key is the battle id.
+  if(result.result==='attacker_win')await transaction(pool,c=>recordQuestEvent(c,session.player_id,'battle_win',row.id,{stageId:row.stage_id}));
   return record(row,result);
  });
  app.get('/v1/battles/:id',async request=>{

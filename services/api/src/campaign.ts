@@ -2,6 +2,7 @@ import type {Pool,PoolClient} from 'pg';
 import type {FastifyInstance} from 'fastify';
 import {campaignStages} from '@ufagame/contracts';
 import {DomainError} from './errors.ts';
+import {recordQuestEvent} from './quests.ts';
 import {authorize,bearer} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {applyDeltaTx} from './economy.ts';
@@ -23,6 +24,9 @@ export function stageStatus(content:any,done:Map<string,string>,stageId:string):
  return index===0||done.has(order[index-1].stage_id)?'open':'locked';
 }
 
+/** Status of one stage for a player (S26 instant calculation needs `cleared`). */
+export async function stageStatusFor(db:Querier,playerId:string,content:any,stageId:string){return stageStatus(content,await cleared(db,playerId),stageId);}
+
 /** Refuses to start a locked campaign stage (called before a live battle is created). */
 export async function assertStageOpen(db:Querier,playerId:string,content:any,stageId:string){
  if(stageStatus(content,await cleared(db,playerId),stageId)==='locked')throw new DomainError('CONFLICT',409,'STAGE_LOCKED');
@@ -40,6 +44,7 @@ export async function recordWin(c:PoolClient,row:{id:string;player_id:string;sta
  if(!(await c.query('SELECT 1 FROM campaign_progress WHERE player_id=$1 AND stage_id=$2',[row.player_id,row.stage_id])).rowCount)await settleAfkBeforeProgress(c,row.player_id);
  const inserted=(await c.query('INSERT INTO campaign_progress(player_id,stage_id,content_version,battle_id) VALUES($1,$2,$3,$4) ON CONFLICT (player_id,stage_id) DO NOTHING RETURNING stage_id',[row.player_id,row.stage_id,row.content_version,row.id])).rowCount;
  if(!inserted)return;
+ await recordQuestEvent(c,row.player_id,'campaign_clear',row.stage_id,{stageId:row.stage_id});
  const stage=content.entities.find((e:any)=>e.id===row.stage_id&&e.kind==='stage');
  for(const reward of stage?.data?.rewards_first??[])
   await applyDeltaTx(c,{playerId:row.player_id,currency:reward.currency,delta:reward.amount,reason:'campaign_first_clear',sourceId:row.stage_id,key:`campaign:first:${row.stage_id}:${reward.currency}`});

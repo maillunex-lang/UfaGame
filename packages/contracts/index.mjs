@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes','summon_request','summon_assemble_request','afk_claim_request','vip_claim_request','vip','summon','afk'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes','summon_request','summon_assemble_request','afk_claim_request','vip_claim_request','vip','summon','afk','quest_claim_request','quests'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -35,6 +35,9 @@ export function validate(name, value) {
     for (const [kind,cap] of [['vip','vip.v1'],['summon_pool','summon.v1'],['afk','afk.v1']])
       if (value.entities.some(e => e.kind===kind) && !value.required_capabilities.includes(cap)) return {ok:false,code:'INVALID_REQUEST'};
     if (economyProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
+    if (value.entities.some(e => e.kind==='vip' && (e.data.speed_x2_stages!==undefined || e.data.speed_x4_level!==undefined || e.data.instant_level!==undefined)) && !value.required_capabilities.includes('battle.speed.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    if (value.entities.some(e => e.kind==='quest') && !value.required_capabilities.includes('quests.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    if (questProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
     const world = value.entities.some(e => e.kind==='location' || (e.kind==='stage' && e.data.location_id!==undefined));
     if (world && !value.required_capabilities.includes('world.locations.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (locationProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
@@ -152,6 +155,33 @@ export function economyProblems(content) {
     if (new Set(p.data.entries.map(x => x.hero_id+':'+(x.shards??0))).size !== ids.length) out.push({code:'SUMMON_ENTRY_DUPLICATE',entity_id:p.id});
     if (p.data.entries.some(x => x.shards!==undefined) && p.data.shards_per_hero===undefined) out.push({code:'SUMMON_SHARDS_RECIPE_MISSING',entity_id:p.id});
     if (p.data.guarantee && p.data.guarantee.hero_ids.some(id => !p.data.entries.some(x => x.hero_id===id && x.shards===undefined))) out.push({code:'SUMMON_GUARANTEE_NOT_IN_POOL',entity_id:p.id});
+  }
+  return out;
+}
+/**
+ * Quest rules (S30): stage conditions only for battle/campaign events and naming a
+ * stage (campaign_clear: a chapter stage), reward heroes are combat heroes, a series
+ * names an existing quest and has no cycle.
+ */
+export function questProblems(content) {
+  const byId = new Map(content.entities.map(e => [e.id,e]));
+  const out = [], quests = content.entities.filter(e => e.kind==='quest');
+  const inChapter = new Set(content.entities.filter(e => e.kind==='chapter').flatMap(c => c.data.stage_ids));
+  for (const q of quests) {
+    const d = q.data;
+    if (d.stage_id!==undefined) {
+      if (!['battle_win','campaign_clear'].includes(d.event)) out.push({code:'QUEST_STAGE_NOT_APPLICABLE',entity_id:q.id});
+      else if (byId.get(d.stage_id)?.kind!=='stage' || (d.event==='campaign_clear' && !inChapter.has(d.stage_id))) out.push({code:'QUEST_STAGE_INVALID',entity_id:q.id});
+    }
+    // A first clear happens once per stage: the target must be reachable.
+    if (d.event==='campaign_clear' && d.target > (d.stage_id!==undefined ? 1 : inChapter.size)) out.push({code:'QUEST_TARGET_UNREACHABLE',entity_id:q.id});
+    if ((d.reward_heroes??[]).some(id => byId.get(id)?.kind!=='hero' || !byId.get(id).data.combat)) out.push({code:'QUEST_REWARD_HERO_INVALID',entity_id:q.id});
+    if (new Set((d.rewards??[]).map(r => r.currency)).size !== (d.rewards??[]).length) out.push({code:'REWARD_DUPLICATE_CURRENCY',entity_id:q.id});
+    if (!d.rewards?.length && !d.reward_heroes?.length) out.push({code:'QUEST_NO_REWARD',entity_id:q.id});
+    if (d.requires_quest_id!==undefined) {
+      if (byId.get(d.requires_quest_id)?.kind!=='quest' || d.requires_quest_id===q.id) out.push({code:'QUEST_REQUIRES_INVALID',entity_id:q.id});
+      else { const seen = new Set([q.id]); let cur = byId.get(d.requires_quest_id); while (cur?.kind==='quest') { if (seen.has(cur.id)) { out.push({code:'QUEST_SERIES_CYCLE',entity_id:q.id}); break; } seen.add(cur.id); cur = byId.get(cur.data.requires_quest_id); } }
+    }
   }
   return out;
 }

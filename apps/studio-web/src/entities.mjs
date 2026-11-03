@@ -1,6 +1,6 @@
 const idPattern=/^[a-z][a-z0-9_]{2,79}$/;
-const supported=new Set(['hero','ability','faction','stage','location','chapter','item','progression','vip','summon_pool','afk']);
-const listed=new Set(['hero','ability','faction','stage','chapter','item','progression','vip','summon_pool','afk']);
+const supported=new Set(['hero','ability','faction','stage','location','chapter','item','progression','vip','summon_pool','afk','quest']);
+const listed=new Set(['hero','ability','faction','stage','chapter','item','progression','vip','summon_pool','afk','quest']);
 const fail=message=>{throw new Error(message);};
 const PROGRESSION_CAPABILITY='heroes.progression.v1',CAMPAIGN_CAPABILITY='campaign.chapters.v1',TRIGGERS_CAPABILITY='battle.triggers.v1',WORLD_CAPABILITY='world.locations.v1',COMBAT_CAPABILITY='battle.combat.v1',RESOURCE_CAPABILITY='content.resources.v1',ABILITIES_CAPABILITY='battle.abilities.v2';
 export const itemSlots=['weapon','armor','helmet','boots','jewelry','artifact'],itemRarities=['common','rare','epic','legendary'],rewardCurrencies=['gold','gems','hero_exp','rank_material'];
@@ -19,6 +19,8 @@ function syncCapability(content){
  toggle(content,'vip.v1',content.entities.some(e=>e?.kind==='vip'));
  toggle(content,'summon.v1',content.entities.some(e=>e?.kind==='summon_pool'));
  toggle(content,'afk.v1',content.entities.some(e=>e?.kind==='afk'));
+ toggle(content,'quests.v1',content.entities.some(e=>e?.kind==='quest'));
+ toggle(content,'battle.speed.v1',content.entities.some(e=>e?.kind==='vip'&&(e.data?.speed_x2_stages!==undefined||e.data?.speed_x4_level!==undefined||e.data?.instant_level!==undefined)));
  toggle(content,PROGRESSION_CAPABILITY,content.entities.some(e=>e?.kind==='progression'||(e?.kind==='item'&&(e.data?.stats!==undefined||e.data?.upgrade_max!==undefined||e.data?.faction_ids!==undefined))||(e?.kind==='stage'&&(e.data?.enemy_level!==undefined||e.data?.rewards_first_heroes!==undefined||e.data?.rewards_first_items!==undefined||(e.data?.rewards_first??[]).some(x=>x.currency==='hero_exp'||x.currency==='rank_material')))));
  toggle(content,TRIGGERS_CAPABILITY,content.entities.some(e=>e?.kind==='ability'&&(e.data?.trigger!==undefined||e.data?.extra_effects!==undefined)));
  toggle(content,WORLD_CAPABILITY,content.entities.some(e=>e?.kind==='location'||(e?.kind==='stage'&&e.data?.location_id!==undefined)));
@@ -70,6 +72,8 @@ function checkEntity(entity,all,originalId){
   const gear=id=>all.some(e=>e.id===id&&e.kind==='item'&&e.data.slot!=='none'&&e.data.stats);
   if(entity.data.rewards_first_heroes!==undefined&&(!Array.isArray(entity.data.rewards_first_heroes)||entity.data.rewards_first_heroes.length<1||entity.data.rewards_first_heroes.length>3||!entity.data.rewards_first_heroes.every(combatHero)))fail('Герои в награду: 1–3 героя с боевыми параметрами.');
   if(entity.data.rewards_first_items!==undefined&&(!Array.isArray(entity.data.rewards_first_items)||entity.data.rewards_first_items.length<1||entity.data.rewards_first_items.length>3||!entity.data.rewards_first_items.every(gear)))fail('Предметы в награду: 1–3 предмета экипировки.');
+ }else if(entity.kind==='quest'){
+  checkQuest(entity,all,originalId);
  }else if(entity.kind==='vip'||entity.kind==='summon_pool'||entity.kind==='afk'){
   checkEconomy(entity,all,originalId);
  }else if(entity.kind==='item'){
@@ -106,7 +110,7 @@ export function deleteEntity(text,id){
  for(const other of content.entities){
   if(other.id===id)continue;
   const data=other.data??{};
-  const lists=[(data.entries??[]).map(x=>x.hero_id),data.guarantee?.hero_ids,data.stage_ids,data.starter_hero_ids,data.starter_item_ids,data.rewards_first_heroes,data.rewards_first_items,data.faction_ids];
+  const lists=[[data.stage_id,data.requires_quest_id],data.reward_heroes,(data.entries??[]).map(x=>x.hero_id),data.guarantee?.hero_ids,data.stage_ids,data.starter_hero_ids,data.starter_item_ids,data.rewards_first_heroes,data.rewards_first_items,data.faction_ids];
   if(lists.some(l=>Array.isArray(l)&&l.includes(id))||data.parent_id===id||data.location_id===id||data.faction_id===id||(Array.isArray(data.ability_ids)&&data.ability_ids.includes(id))||(Array.isArray(data.advantage_ids)&&data.advantage_ids.includes(id))||(Array.isArray(data.enemy_hero_ids)&&data.enemy_hero_ids.includes(id)))fail(`Сначала убери ссылку из «${other.name}».`);
  }
  content.entities=content.entities.filter(e=>e.id!==id);syncCapability(content);return JSON.stringify(content,null,2);
@@ -229,6 +233,8 @@ function checkEconomy(entity,all,originalId){
   if(d.win_points!==undefined&&!inRange(d.win_points,0,100000))fail('Очки за победу — от 0 до 100 000.');
   if(d.win_points_daily_cap!==undefined&&!inRange(d.win_points_daily_cap,0,1000000))fail('Предел очков за победы в день — до 1 000 000.');
   if(!d.daily_points&&!(d.win_points>0&&d.win_points_daily_cap>0))fail('Нужен бесплатный источник очков: ежедневные очки или очки за победы.');
+  if(d.speed_x2_stages!==undefined&&!inRange(d.speed_x2_stages,0,1000))fail('Скорость ×2 — после 0…1000 пройденных этапов.');
+  for(const k of ['speed_x4_level','instant_level'])if(d[k]!==undefined&&!inRange(d[k],1,20))fail('Уровень VIP для ×4 и быстрого расчёта — от 1 до 20.');
  }else if(entity.kind==='afk'){
   const r=d.per_hour;
   if(!Array.isArray(r)||r.length<1||r.length>3||new Set(r.map(x=>x.currency)).size!==r.length||r.some(x=>!['gold','hero_exp','rank_material'].includes(x?.currency)||!inRange(x.amount,1,1000000)))fail('Доход в час: золото, опыт, материалы — от 1 до 1 000 000, хотя бы одно.');
@@ -244,6 +250,30 @@ function checkEconomy(entity,all,originalId){
  }
 }
 /** Proposed starting tables (owner may change every number). */
-export function defaultVip(){return {levels:[[100,'Значок VIP',0],[300,'+1 ч AFK',1],[700,'+1 ч AFK',1],[1500,'+2 ч AFK',2],[3000,'+2 ч AFK',2],[6000,'+3 ч AFK',3],[10000,'+3 ч AFK, быстрый расчёт (S26)',3],[16000,'+4 ч AFK',4],[25000,'+4 ч AFK',4],[40000,'+5 ч AFK',5]].map(([points,perks_text,afk_hours])=>({points,perks_text,afk_hours})),tutorial_points:100,daily_points:20,win_points:2,win_points_daily_cap:20,proposed:true};}
+export const questEvents={battle_win:'Победы в боях',campaign_clear:'Прохождение этапа кампании',hero_level_up:'Повышение уровня героя',hero_rank_up:'Повышение ранга героя',summon_pull:'Попытки призыва',afk_claim:'Получение AFK-наград',item_upgrade:'Улучшение предметов'};
+export function defaultVip(){return {levels:[[100,'Значок VIP',0],[300,'+1 ч AFK',1],[700,'+1 ч AFK',1],[1500,'+2 ч AFK',2],[3000,'+2 ч AFK',2],[6000,'+3 ч AFK',3],[10000,'+3 ч AFK, быстрый расчёт (S26)',3],[16000,'+4 ч AFK',4],[25000,'+4 ч AFK',4],[40000,'+5 ч AFK',5]].map(([points,perks_text,afk_hours])=>({points,perks_text,afk_hours})),tutorial_points:100,daily_points:20,win_points:2,win_points_daily_cap:20,speed_x2_stages:3,speed_x4_level:4,instant_level:7,proposed:true};}
 export function defaultAfk(){return {per_hour:[{currency:'gold',amount:600},{currency:'hero_exp',amount:300},{currency:'rank_material',amount:5}],stage_bonus_bp:500,proposed:true};}
 export function oddsPreview(entries){const t=entries.reduce((s,x)=>s+(Number(x.weight)>0?Number(x.weight):0),0);return entries.map(x=>t?((Number(x.weight)*10000/t)/100).toFixed(2):'0.00');}
+
+function checkQuest(entity,all,originalId){
+ const d=entity.data??{};
+ if(!['daily','once'].includes(d.period))fail('Выбери: ежедневное задание или достижение.');
+ if(!Object.keys(questEvents).includes(d.event))fail('Выбери событие задания.');
+ if(!inRange(d.target,1,10000))fail('Цель — от 1 до 10 000 раз.');
+ if(d.stage_id!==undefined){
+  if(!['battle_win','campaign_clear'].includes(d.event))fail('Этап можно указать только для побед и прохождений.');
+  const st=all.find(e=>e.id===d.stage_id&&e.kind==='stage');if(!st)fail('Этап задания не найден.');
+  if(d.event==='campaign_clear'&&!all.some(e=>e.kind==='chapter'&&e.data.stage_ids.includes(d.stage_id)))fail('Для прохождения выбери этап из главы кампании.');
+ }
+ if(d.event==='campaign_clear'){const stagesInChapters=new Set(all.filter(e=>e.kind==='chapter').flatMap(e=>e.data.stage_ids)).size;if(d.target>(d.stage_id!==undefined?1:stagesInChapters))fail(d.stage_id!==undefined?'Этап проходится впервые один раз — цель должна быть 1.':`В кампании только ${stagesInChapters} этапов — цель не больше.`);}
+ const rw=d.rewards??[];
+ if(!Array.isArray(rw)||rw.length>4||rw.some(x=>!['gold','gems','hero_exp','rank_material','vip_points'].includes(x?.currency)||!inRange(x.amount,1,1000000))||new Set(rw.map(x=>x.currency)).size!==rw.length)fail('Награды: каждая валюта один раз, от 1 до 1 000 000.');
+ const heroes=d.reward_heroes;
+ if(heroes!==undefined&&(!Array.isArray(heroes)||heroes.length<1||heroes.length>3||heroes.some(id=>!all.some(e=>e.id===id&&e.kind==='hero'&&e.data.combat))))fail('Герои в награду: 1–3 героя с боевыми параметрами.');
+ if(!rw.length&&!heroes?.length)fail('Добавь награду.');
+ if(d.requires_quest_id!==undefined){
+  if(d.requires_quest_id===entity.id||!all.some(e=>e.id===d.requires_quest_id&&e.kind==='quest'))fail('Предыдущее задание серии не найдено.');
+  const seen=new Set([entity.id]);let cur=all.find(e=>e.id===d.requires_quest_id);
+  while(cur?.kind==='quest'){if(seen.has(cur.id))fail('Серия заданий замкнулась в круг.');seen.add(cur.id);cur=all.find(e=>e.id===cur.data.requires_quest_id&&e.kind==='quest');}
+ }
+}

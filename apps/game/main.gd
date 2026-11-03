@@ -187,6 +187,8 @@ var stage_ids: Array = []
 var campaign_view
 var heroes_view
 var economy_view
+var quests_view
+var battle_rights: Dictionary = {}
 var team_box: VBoxContainer
 var progression := false
 var last_reward := ""
@@ -195,6 +197,7 @@ func _battle_section(bundle: Dictionary) -> void:
 	heroes_view = null
 	campaign_view = null
 	economy_view = null
+	quests_view = null
 	label("Бой", 24, hub)
 	var in_chapters := {}
 	for e in bundle.content.entities:
@@ -230,6 +233,7 @@ func _battle_section(bundle: Dictionary) -> void:
 	if not in_chapters.is_empty():
 		campaign_view = preload("res://campaign_view.gd").new()
 		campaign_view.stage_chosen.connect(func(stage): _start_battle(str(stage.id)))
+		campaign_view.stage_instant.connect(func(stage): _instant_battle(str(stage.id)))
 		hub.add_child(campaign_view)
 	if progression:
 		heroes_view = preload("res://heroes_view.gd").new()
@@ -241,6 +245,11 @@ func _battle_section(bundle: Dictionary) -> void:
 		economy_view.auth = auth
 		economy_view.message.connect(func(text): status.text = text)
 		economy_view.changed.connect(func(): if heroes_view != null and is_instance_valid(heroes_view): heroes_view.load_roster())
+	if bundle.content.entities.any(func(e): return e.get("kind") == "quest"):
+		quests_view = preload("res://quests_view.gd").new()
+		quests_view.auth = auth
+		quests_view.message.connect(func(text): status.text = text)
+		quests_view.changed.connect(func(): if heroes_view != null and is_instance_valid(heroes_view): heroes_view.load_roster())
 	_load_online(bundle, not in_chapters.is_empty())
 	if stage_ids.is_empty():
 		_add_views()
@@ -259,6 +268,8 @@ func _battle_section(bundle: Dictionary) -> void:
 	_add_views()
 
 func _add_views() -> void:
+	if quests_view != null:
+		hub.add_child(quests_view)
 	if economy_view != null:
 		hub.add_child(economy_view)
 	if heroes_view != null:
@@ -266,6 +277,13 @@ func _add_views() -> void:
 
 ## One request at a time (one HTTP client): roster first, then the campaign.
 func _load_online(bundle: Dictionary, with_campaign: bool) -> void:
+	battle_rights = {}
+	if bundle.content.entities.any(func(e): return e.get("kind") == "vip"):
+		var v: Dictionary = await auth.authorized_get("/v1/vip")
+		if v.ok:
+			battle_rights = v.data.get("battle", {})
+	if campaign_view != null and is_instance_valid(campaign_view):
+		campaign_view.instant = bool(battle_rights.get("instant", false))
 	if progression and heroes_view != null:
 		var view = heroes_view
 		var roster: Dictionary = await view.load_roster()
@@ -279,6 +297,8 @@ func _load_online(bundle: Dictionary, with_campaign: bool) -> void:
 		await _load_campaign(bundle)
 	if economy_view != null and is_instance_valid(economy_view):
 		await economy_view.load_all()
+	if quests_view != null and is_instance_valid(quests_view):
+		await quests_view.load_quests()
 
 ## Battle team = checked heroes of the main five (instance ids, server-owned).
 func _fill_team(data: Dictionary) -> void:
@@ -333,6 +353,7 @@ func _start_battle(stage_id: String) -> void:
 	live.auth = auth
 	add_child(live)
 	var view = preload("res://battle_view.gd").new()
+	view.allowed_speeds = battle_rights.get("speeds", [1])
 	add_child(view)
 	view.setup(live, content)
 	live.finished.connect(func(result, _verified): _after_battle(live, view, result, first_clear))
@@ -436,3 +457,28 @@ func _probe_storage() -> void:
 		status.text = "AndroidKeyStore недоступен: нужна Android-сборка с native bridge."
 		return
 	status.text = "Защищенное хранилище: " + str(auth.native.storage_probe()) + "\nПроверка использует отдельный файл и не меняет учетные данные."
+
+## S26: VIP repeat of a cleared stage, calculated by the server with the same core
+## in auto mode. Nothing is paid for a repeat; quests count the win.
+func _instant_battle(stage_id: String) -> void:
+	if busy:
+		return
+	var team: Array = hero_checks.keys().filter(func(id): return hero_checks[id].button_pressed)
+	if team.is_empty():
+		status.text = "Отметь героев для боя."
+		return
+	busy = true
+	status.text = "Быстрый расчёт…"
+	var bytes := Crypto.new().generate_random_bytes(16)
+	bytes[6] = (bytes[6] & 15) | 64
+	bytes[8] = (bytes[8] & 63) | 128
+	var h := bytes.hex_encode()
+	var payload := {"request_id": "%s-%s-%s-%s-%s" % [h.substr(0, 8), h.substr(8, 4), h.substr(12, 4), h.substr(16, 4), h.substr(20, 12)], "stage_id": stage_id}
+	payload["instance_ids" if progression else "hero_ids"] = team
+	var r: Dictionary = await auth.authorized_post("/v1/battles", payload)
+	busy = false
+	if r.ok:
+		status.text = "Быстрый расчёт: %s за %.1f игровых с." % ["победа" if r.data.result == "attacker_win" else "поражение", float(r.data.duration_ms) / 1000.0]
+		_show_hub()
+	else:
+		status.text = {"INSTANT_NOT_ALLOWED": "Быстрый расчёт доступен с более высокого VIP.", "FIRST_CLEAR_REQUIRES_BATTLE": "Сначала пройди этап обычным боем."}.get(str(r.get("detail", "")), "Не получилось: " + str(r.get("detail", r.get("code", ""))))

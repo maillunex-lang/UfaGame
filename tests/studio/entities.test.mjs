@@ -162,3 +162,15 @@ test('economy tables: proposed VIP/AFK valid, one table each, thresholds, free s
  assert.throws(()=>deleteEntity(text,'hero_one'),/Сначала убери ссылку/);
  assert.deepEqual(oddsPreview([{weight:1},{weight:3}]),['25.00','75.00']);
 });
+test('quests: valid daily/once with series and stage, invalid stage/event/cycle refused, used quest protected',async()=>{
+ const {defaultCombat}=await import('../../apps/studio-web/src/entities.mjs');
+ let text=blank();for(const e of [ability,faction,{...hero,data:{...hero.data,combat:defaultCombat()}},{id:'stage_one',kind:'stage',name:'Э',data:{enemy_hero_ids:['hero_one'],time_limit_ms:90000}}])text=upsertEntity(text,e);
+ const a={id:'quest_a',kind:'quest',name:'A',data:{period:'daily',event:'battle_win',stage_id:'stage_one',target:3,rewards:[{currency:'gold',amount:10}]}};
+ text=upsertEntity(text,a);text=upsertEntity(text,{id:'quest_b',kind:'quest',name:'B',data:{period:'once',event:'summon_pull',target:10,rewards:[],reward_heroes:['hero_one'],requires_quest_id:'quest_a'}});
+ assert.equal(validate('content',JSON.parse(text)).ok,true);assert.ok(JSON.parse(text).required_capabilities.includes('quests.v1'));
+ assert.throws(()=>upsertEntity(text,{...a,data:{...a.data,event:'campaign_clear'}},'quest_a'),/главы кампании/);
+ assert.throws(()=>upsertEntity(text,{...a,data:{...a.data,event:'afk_claim'}},'quest_a'),/только для побед/);
+ assert.throws(()=>upsertEntity(text,{...a,data:{...a.data,requires_quest_id:'quest_b'}},'quest_a'),/круг/);
+ assert.throws(()=>upsertEntity(text,{...a,data:{...a.data,rewards:[]}},'quest_a'),/награду/);
+ assert.throws(()=>deleteEntity(text,'quest_a'),/Сначала убери ссылку/);assert.throws(()=>deleteEntity(text,'stage_one'),/Сначала убери ссылку/);
+});

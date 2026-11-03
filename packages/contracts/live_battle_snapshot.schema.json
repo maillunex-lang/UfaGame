@@ -1,17 +1,132 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://ufagame.invalid/contracts/v1/live_battle_snapshot",
-  "type":"object","additionalProperties":false,
-  "required":["api_version","battle_id","content_version","heroes","step","auto","last_command_seq","event_seq","result","actors"],
-  "properties":{
-    "api_version":{"const":1},"battle_id":{"type":"string","format":"uuid"},
-    "content_version":{"type":"string","pattern":"^[a-z][a-z0-9_]{2,79}$"},
-    "heroes":{"type":"object","maxProperties":10,"additionalProperties":{"type":"string","pattern":"^[a-z][a-z0-9_]{2,79}$"}},
-    "step":{"type":"integer","minimum":0,"maximum":900},"auto":{"type":"boolean"},
-    "last_command_seq":{"type":"integer","minimum":0,"maximum":2147483647},"event_seq":{"type":"integer","minimum":0,"maximum":900},
-    "result":{"enum":[null,"attacker_win","attacker_loss"]},
-    "actors":{"type":"array","minItems":2,"maxItems":10,"items":{"type":"object","additionalProperties":false,"required":["id","team","slot","hp","max_hp","x","y","energy"],"properties":{
-      "id":{"type":"string","pattern":"^[a-z][a-z0-9_]{2,79}$"},"team":{"enum":["attacker","defender"]},"slot":{"type":"integer","minimum":0,"maximum":4},"hp":{"type":"integer","minimum":0,"maximum":1000000},"max_hp":{"type":"integer","minimum":1,"maximum":1000000},"x":{"type":"integer","minimum":0,"maximum":10000},"y":{"type":"integer","minimum":0,"maximum":10000},"energy":{"type":"integer","minimum":0,"maximum":1000}
-    }}}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/live_battle_snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "battle_id",
+    "content_version",
+    "heroes",
+    "step",
+    "auto",
+    "last_command_seq",
+    "event_seq",
+    "result",
+    "actors"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "battle_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "content_version": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "heroes": {
+      "type": "object",
+      "maxProperties": 10,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{2,79}$"
+      }
+    },
+    "step": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 900
+    },
+    "auto": {
+      "type": "boolean"
+    },
+    "last_command_seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "event_seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 900
+    },
+    "result": {
+      "enum": [
+        null,
+        "attacker_win",
+        "attacker_loss"
+      ]
+    },
+    "actors": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "team",
+          "slot",
+          "hp",
+          "max_hp",
+          "x",
+          "y",
+          "energy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "team": {
+            "enum": [
+              "attacker",
+              "defender"
+            ]
+          },
+          "slot": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "hp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "max_hp": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          },
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "energy": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          }
+        }
+      }
+    },
+    "speed": {
+      "enum": [
+        1,
+        2,
+        4
+      ]
+    }
   }
 }

@@ -7,12 +7,12 @@ export function createLiveBattle({battleId,contentVersion,setup,heroes,auto=fals
  if(typeof battleId!=='string'||!uuid.test(battleId)||typeof contentVersion!=='string'||!/^[-a-z0-9_]{3,80}$/.test(contentVersion)||typeof auto!=='boolean'||!heroes||typeof heroes!=='object'||Array.isArray(heroes))throw new Error('INVALID_SESSION');
  const state=createAutoBattle(setup);
  if(Object.keys(heroes).length!==state.actors.length||state.actors.some(actor=>typeof heroes[actor.id]!=='string'))throw new Error('INVALID_HERO_MAP');
- return {version:1,battle_id:battleId,content_version:contentVersion,heroes:structuredClone(heroes),auto,state,last_command_seq:0,event_seq:0,pending:[],acks:[]};
+ return {version:1,battle_id:battleId,content_version:contentVersion,heroes:structuredClone(heroes),auto,speed:1,state,last_command_seq:0,event_seq:0,pending:[],acks:[]};
 }
 /** Queues at most five steps ahead. Accepted means queued, not already applied. */
-export function queueLiveCommand(session,command,{earliestStep=0}={}) {
+export function queueLiveCommand(session,command,{earliestStep=0,lateSteps=LATE_STEPS}={}) {
  if(!validate('live_battle_command',command).ok)throw new Error('INVALID_COMMAND');
- const fingerprint=JSON.stringify(command.type==='ability'?[command.type,command.seq,command.for_step,command.actor_id]:[command.type,command.seq,command.for_step,command.enabled]);
+ const fingerprint=JSON.stringify(command.type==='ability'?[command.type,command.seq,command.for_step,command.actor_id]:command.type==='speed'?[command.type,command.seq,command.for_step,command.value]:[command.type,command.seq,command.for_step,command.enabled]);
  const old=session.acks.find(entry=>entry.seq===command.seq);
  if(old){if(old.fingerprint!==fingerprint)throw new Error('SEQUENCE_CONFLICT');return {session:structuredClone(session),ack:{...old.ack,replayed:true}};}
  if(command.seq!==session.last_command_seq+1)throw new Error('OUT_OF_ORDER');
@@ -20,11 +20,11 @@ export function queueLiveCommand(session,command,{earliestStep=0}={}) {
  if(session.acks.length>=2048)throw new Error('COMMAND_LIMIT');
  // Mobile lag: the client sees frames up to ~0.3 s late. A command for a step that
  // has just passed (at most LATE_STEPS ago) moves to the next step; older ones are stale.
- if(command.for_step>Math.min(900,session.state.step+5)||command.for_step<=session.state.step-LATE_STEPS)throw new Error('STALE_COMMAND');
+ if(command.for_step>Math.min(900,session.state.step+5)||command.for_step<=session.state.step-lateSteps)throw new Error('STALE_COMMAND');
  const forStep=Math.max(command.for_step,session.state.step+1,earliestStep);
  if(forStep>900)throw new Error('STALE_COMMAND');
  if(session.pending.length>=32)throw new Error('QUEUE_FULL');
- if(command.type==='auto'&&session.pending.some(c=>c.type==='auto'&&c.for_step===forStep))throw new Error('DUPLICATE_MODE_COMMAND');
+ if((command.type==='auto'||command.type==='speed')&&session.pending.some(c=>c.type===command.type&&c.for_step===forStep))throw new Error('DUPLICATE_MODE_COMMAND');
  if(command.type==='ability'){
   const actor=session.state.actors.find(a=>a.id===command.actor_id&&a.team==='attacker'&&a.hp>0);
   if(!actor)throw new Error('INVALID_ACTOR');
@@ -48,6 +48,9 @@ export function advanceLiveBattle(session,{forceAuto=false}={}) {
   if(forceAuto&&!command.enabled)results.push({seq:command.seq,status:'rejected',reason:'OFFLINE_AUTO'});
   else{auto=command.enabled;results.push({seq:command.seq,status:'applied'});}
  }
+ // Speed changes only real time between steps (the transport's tick), never the simulation.
+ let speed=session.speed??1;
+ for(const command of due)if(command.type==='speed'){speed=command.value;results.push({seq:command.seq,status:'applied'});}
  for(const command of due){
   if(command.type!=='ability')continue;
   const actor=session.state.actors.find(a=>a.id===command.actor_id&&a.team==='attacker'&&a.hp>0);
@@ -61,9 +64,9 @@ export function advanceLiveBattle(session,{forceAuto=false}={}) {
   else results.push({seq:command.seq,status:'rejected',reason:'ABILITY_NOT_READY'});
  }
  const advanced=stepAutoBattle(session.state,{autoAttacker:auto,manualActorIds:manual});
- const next=structuredClone(session);next.auto=auto;next.state=advanced.state;next.pending=[...next.pending.filter(c=>c.for_step>step),...carried];next.event_seq++;
+ const next=structuredClone(session);next.auto=auto;next.speed=speed;next.state=advanced.state;next.pending=[...next.pending.filter(c=>c.for_step>step),...carried];next.event_seq++;
  results.sort((a,b)=>a.seq-b.seq);
- return {session:next,frame:{seq:next.event_seq,at_ms:advanced.at_ms,auto,events:advanced.events,command_results:results,actors:advanced.state.actors.map(a=>({id:a.id,hp:a.hp,x:a.x,y:a.y,energy:a.energy})),result:advanced.state.result}};
+ return {session:next,frame:{seq:next.event_seq,at_ms:advanced.at_ms,auto,speed,events:advanced.events,command_results:results,actors:advanced.state.actors.map(a=>({id:a.id,hp:a.hp,x:a.x,y:a.y,energy:a.energy})),result:advanced.state.result}};
 }
 /** Owner offline or worker restart: future steps continue in automatic mode. */
 export function disconnectLiveBattle(session){const next=structuredClone(session);next.auto=true;return next;}

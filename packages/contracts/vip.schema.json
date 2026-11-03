@@ -14,7 +14,8 @@
     "daily",
     "wins",
     "tutorial",
-    "proposed"
+    "proposed",
+    "battle"
   ],
   "properties": {
     "api_version": {
@@ -159,6 +160,50 @@
     },
     "proposed": {
       "type": "boolean"
+    },
+    "battle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "speeds",
+        "instant",
+        "x2_stages_left",
+        "x4_level",
+        "instant_level"
+      ],
+      "properties": {
+        "speeds": {
+          "type": "array",
+          "items": {
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          }
+        },
+        "instant": {
+          "type": "boolean"
+        },
+        "x2_stages_left": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "x4_level": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "instant_level": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
     }
   }
 }

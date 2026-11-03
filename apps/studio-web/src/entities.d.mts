@@ -1,4 +1,4 @@
-export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage'|'location'|'chapter'|'item'|'progression'|'vip'|'summon_pool'|'afk';name:string;data:Record<string,any>};
+export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage'|'location'|'chapter'|'item'|'progression'|'vip'|'summon_pool'|'afk'|'quest';name:string;data:Record<string,any>};
 export function listEntities(text:string):EditableEntity[];
 export function upsertEntity(text:string,entity:EditableEntity,originalId?:string|null):string;
 export function deleteEntity(text:string,id:string):string;
@@ -18,3 +18,4 @@ export function importGeography(text:string,dataset:{entities:unknown[]}):{text:
 export const itemSlots:string[];export const itemRarities:string[];export const rewardCurrencies:string[];
 export function defaultProgression():Record<string,any>;
 export function defaultVip():Record<string,any>;export function defaultAfk():Record<string,any>;export function oddsPreview(entries:{weight:number|string}[]):string[];
+export const questEvents:Record<string,string>;

@@ -45,14 +45,16 @@ export async function registerLiveRoutes(app:FastifyInstance,pool:Pool){
   const poll=async()=>{
    if(closed||polling||socket.readyState!==1)return;polling=true;
    try{
-    await ready;const snapshot=await renewLive(pool,token,id,connectionId),frames=await readFrames(pool,token,id,cursor);
+    await ready;const snapshot=await renewLive(pool,token,id,connectionId),frames=await readFrames(pool,token,id,cursor);speed=snapshot.speed??1;
     for(const frame of frames){if(frame.seq!==cursor+1)throw new Error('FRAME_GAP');send({type:'frame',frame,replayed:frame.seq<=snapshotSeq});cursor=frame.seq;}
     // Give the client time to read the final frames before the close frame arrives.
     if(snapshot.result!==null&&cursor>=snapshot.event_seq&&!finishing){finishing=true;setTimeout(()=>{if(socket.readyState===1)socket.close(1000,'BATTLE_FINISHED');},1000).unref();}
    }catch(error){if(socket.readyState===1)socket.close(error instanceof DomainError&&error.code==='UNAUTHORIZED'?1008:1011,'SESSION_CLOSED');}
    finally{polling=false;}
   };
-  const timer=setInterval(()=>{void poll();},250);timer.unref();void ready.then(()=>poll()).catch(()=>{});
+  // 250 ms at ×1; faster at ×2/×4 so the phone gets frames at the same real-time rhythm.
+  let speed=1,lastPoll=0;
+  const timer=setInterval(()=>{if(Date.now()-lastPoll>=250/speed){lastPoll=Date.now();void poll();}},60);timer.unref();void ready.then(()=>poll()).catch(()=>{});
   socket.on('close',()=>{closed=true;clearInterval(timer);void ready.then(()=>detachLive(pool,id,connectionId)).catch(()=>{});});
   socket.on('error',()=>{if(socket.readyState===1)socket.close(1011,'SOCKET_ERROR');});
  });

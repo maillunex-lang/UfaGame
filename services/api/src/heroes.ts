@@ -6,6 +6,7 @@ import {authorize,bearer,lockAuthorized,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {applyDeltaTx} from './economy.ts';
 import {DomainError} from './errors.ts';
+import {recordQuestEvent} from './quests.ts';
 import {progressionOf,levelCost,rankCap,upgradeCost,itemStats,heroStats,effectiveLevels} from '../../../packages/battle-core/progression.mjs';
 
 /**
@@ -117,6 +118,7 @@ export async function registerHeroes(app:FastifyInstance,pool:Pool){
   const cost=levelCost(p,h.level);
   for(const [currency,amount] of Object.entries(cost))if(amount>0)await applyDeltaTx(c,{playerId,currency,delta:-amount,reason:'hero_level_up',sourceId:h.id,key:`hero:${h.id}:level:${h.level}:${currency}`});
   await c.query('UPDATE player_heroes SET level=level+1 WHERE id=$1',[h.id]);
+  await recordQuestEvent(c,playerId,'hero_level_up',`${h.id}:${h.level}`);
  });
 
  act('/v1/heroes/rank','hero_rank_request',async(c,playerId,b,{p})=>{
@@ -134,6 +136,7 @@ export async function registerHeroes(app:FastifyInstance,pool:Pool){
   if(material>0)await applyDeltaTx(c,{playerId,currency:'rank_material',delta:-material,reason:'hero_rank_up',sourceId:h.id,key:`hero:${h.id}:rank:${h.rank}:rank_material`});
   if(b.copy_instance_ids.length)await c.query('UPDATE player_heroes SET consumed_at=now() WHERE id=ANY($1::uuid[])',[b.copy_instance_ids]);
   await c.query('UPDATE player_heroes SET rank=rank+1 WHERE id=$1',[h.id]);
+  await recordQuestEvent(c,playerId,'hero_rank_up',`${h.id}:${h.rank}`);
  });
 
  act('/v1/heroes/team','hero_team_request',async(c,playerId,b,{p})=>{
@@ -172,5 +175,6 @@ export async function registerHeroes(app:FastifyInstance,pool:Pool){
   const gold=upgradeCost(def,item.upgrade);
   if(gold>0)await applyDeltaTx(c,{playerId,currency:'gold',delta:-gold,reason:'item_upgrade',sourceId:item.id,key:`item:${item.id}:upgrade:${item.upgrade}:gold`});
   await c.query('UPDATE player_items SET upgrade=upgrade+1 WHERE id=$1',[item.id]);
+  await recordQuestEvent(c,playerId,'item_upgrade',`${item.id}:${item.upgrade}`);
  });
 }

@@ -32,3 +32,18 @@ test('economy formulas: VIP by points, odds, guarantee, AFK units and cap',()=>{
  const s1=accrue(s0,30*3600000,12*3600000);assert.equal(s1.accrued_ms,12*3600000);assert.deepEqual(payable(s1.units),{gold:1440});
  const s2=accrue({...s0,segment_at:0},1000,12*3600000);assert.deepEqual(payable(s2.units),{gold:0},'remainder kept as units');assert.equal(s2.units.gold,120000);
 });
+test('S26/S30 contract: speed fields need battle.speed.v1; quest conditions, rewards and series checked',async()=>{
+ const {speedQuestContent}=await import('../fixtures/progression.mjs');const {questProblems}=await import('@ufagame/contracts');
+ assert.equal(validate('content',speedQuestContent()).ok,true);
+ const noCap=speedQuestContent();noCap.required_capabilities=noCap.required_capabilities.filter(x=>x!=='battle.speed.v1');assert.equal(validate('content',noCap).ok,false);
+ const q=(data)=>speedQuestContent({quests:[{id:'quest_x',kind:'quest',name:'X',data:{period:'once',event:'battle_win',target:1,rewards:[{currency:'gold',amount:1}],...data}}]});
+ assert.deepEqual(questProblems(q({event:'summon_pull',stage_id:'stage_one'})).map(x=>x.code),['QUEST_STAGE_NOT_APPLICABLE']);
+ assert.deepEqual(questProblems(q({event:'campaign_clear',stage_id:'stage_long'})).map(x=>x.code),['QUEST_STAGE_INVALID'],'campaign_clear needs a chapter stage');
+ assert.deepEqual(questProblems(q({reward_heroes:['item_bow']})).map(x=>x.code),['QUEST_REWARD_HERO_INVALID']);
+ assert.deepEqual(questProblems(q({event:'campaign_clear',stage_id:'stage_one',target:3})).map(x=>x.code),['QUEST_TARGET_UNREACHABLE'],'a stage is cleared once');
+ assert.deepEqual(questProblems(q({event:'campaign_clear',target:3})).map(x=>x.code),['QUEST_TARGET_UNREACHABLE'],'only 2 chapter stages');
+ assert.deepEqual(questProblems(q({rewards:[]})).map(x=>x.code),['QUEST_NO_REWARD']);
+ assert.deepEqual(questProblems(q({requires_quest_id:'quest_x'})).map(x=>x.code),['QUEST_REQUIRES_INVALID']);
+ assert.equal(validate('content',q({target:0})).ok,false,'target 1..10000');
+ assert.equal(validate('content',q({event:'login'})).ok,false,'unknown event');
+});

@@ -7,6 +7,7 @@ import {currentPointer} from './content.ts';
 import {applyDeltaTx} from './economy.ts';
 import {grantHero} from './heroes.ts';
 import {DomainError} from './errors.ts';
+import {recordQuestEvent} from './quests.ts';
 import {tableOf,vipLevel,freeDays,summonOdds,pull,afkRate,accrue,payable,AFK_BASE_HOURS,HOUR_MS} from '../../../packages/battle-core/economy.mjs';
 
 /**
@@ -45,6 +46,7 @@ async function vipView(db:Db,playerId:string,content:any){
   daily:{points:vip.daily_points,available:vip.daily_points>0&&!await keyed(db,playerId,`vip:daily:${today}`)},
   wins:{points:vip.win_points??0,today:await winPointsToday(db,playerId),cap:vip.win_points_daily_cap??0},
   tutorial:{points:vip.tutorial_points,claimed:await keyed(db,playerId,'tutorial:vip:once'),steps:await tutorialSteps(db,playerId,content)},
+  battle:await battleRights(db,playerId,content),
   proposed:vip.proposed??false};
 }
 /** Called in the winning battle step: renewable VIP points, capped per Ufa day. */
@@ -53,6 +55,17 @@ export async function grantWinVip(c:PoolClient,row:{id:string;player_id:string;c
  const vip=tableOf(content,'vip');if(!vip?.win_points||!vip.win_points_daily_cap)return;
  const room=vip.win_points_daily_cap-await winPointsToday(c,row.player_id),amount=Math.min(vip.win_points,room);
  if(amount>0)await applyDeltaTx(c,{playerId:row.player_id,currency:'vip_points',delta:amount,reason:'vip_win',sourceId:row.id,key:`vip:win:${row.id}`});
+}
+
+// ---------- Speeds and instant calculation (S26) ----------
+/** What the server allows this player: ×1 always, ×2 by progress, ×4 and instant by VIP. */
+export async function battleRights(db:Db,playerId:string,content:any){
+ const vip=tableOf(content,'vip'),configured=vip&&(vip.speed_x2_stages!==undefined||vip.speed_x4_level!==undefined||vip.instant_level!==undefined);
+ if(!configured)return {speeds:[1],instant:false,x2_stages_left:null,x4_level:null,instant_level:null};
+ const level=vipLevel(vip,await balance(db,playerId,'vip_points')).level,count=await cleared(db,playerId);
+ const x2At=vip.speed_x2_stages??null,x4=vip.speed_x4_level??4,inst=vip.instant_level??7;
+ const x2=x2At!==null&&count>=x2At;
+ return {speeds:[1,...(x2||level>=x4?[2]:[]),...(level>=x4?[4]:[])],instant:level>=inst,x2_stages_left:x2At===null?null:Math.max(0,x2At-count),x4_level:x4,instant_level:inst};
 }
 
 // ---------- AFK (S29) ----------
@@ -150,6 +163,7 @@ export async function registerEconomy(app:FastifyInstance,pool:Pool){
   await saveAfk(c,playerId,{...state,units,accrued_ms:0,window_started_at:now,segment_at:now});
   const response=(await afkView(c,playerId,v,Object.fromEntries(Object.entries(pay).filter(([,n])=>n>0)))).view;
   await c.query('INSERT INTO afk_claims(player_id,request_id,response) VALUES($1,$2,$3)',[playerId,b.request_id,response]);
+  await recordQuestEvent(c,playerId,'afk_claim',b.request_id);
   return response;
  });});
 
@@ -171,6 +185,7 @@ export async function registerEconomy(app:FastifyInstance,pool:Pool){
    results.push({hero_id:r.entry.hero_id,name:byId.get(r.entry.hero_id)?.name??r.entry.hero_id,shards:r.entry.shards??null,guaranteed:r.guaranteed,new_instance_id:instance});
   }
   await c.query('UPDATE summon_state SET since_guarantee=$3,total_pulls=total_pulls+$4 WHERE player_id=$1 AND pool_id=$2',[playerId,p.id,since,b.count]);
+  await recordQuestEvent(c,playerId,'summon_pull',b.request_id,{amount:b.count});
   await c.query('INSERT INTO summon_pulls(id,player_id,request_id,pool_id,content_version,pull_count,results) VALUES($1,$2,$3,$4,$5,$6,$7)',[randomUUID(),playerId,b.request_id,p.id,v.content_version,b.count,JSON.stringify(results)]);
   return summonView(c,playerId,v,results);
  });});

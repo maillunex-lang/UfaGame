@@ -169,6 +169,10 @@ func send_ability(actor_id: String) -> int:
 func set_auto(enabled: bool) -> int:
 	return _send({"type": "auto", "enabled": enabled})
 
+## ×1/×2/×4 (S26): the server checks the right and changes only real time per step.
+func set_speed(value: int) -> int:
+	return _send({"type": "speed", "value": value})
+
 func _send(command: Dictionary) -> int:
 	if ws == null or ws.get_ready_state() != WebSocketPeer.STATE_OPEN or done:
 		return 0

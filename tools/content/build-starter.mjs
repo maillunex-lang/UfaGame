@@ -7,7 +7,7 @@
  */
 import {writeFileSync,readFileSync,existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {validate,progressionProblems,campaignProblems,locationProblems} from '@ufagame/contracts';
+import {validate,progressionProblems,campaignProblems,locationProblems,economyProblems,questProblems} from '@ufagame/contracts';
 import {exportContent} from '../../packages/content-validator/export.mjs';
 import {inspectArchive} from '../../packages/content-validator/archive.mjs';
 import {planImport} from '../../packages/content-validator/plan-import.mjs';
@@ -16,7 +16,7 @@ import {starterWorld} from './starter-world.mjs';
 
 const dir=new URL('../../content/starter/',import.meta.url);
 const content=starterWorld();
-const problems=[...progressionProblems(content),...campaignProblems(content),...locationProblems(content)];
+const problems=[...progressionProblems(content),...campaignProblems(content),...locationProblems(content),...economyProblems(content),...questProblems(content)];
 if(!validate('content',content).ok||problems.length)throw new Error('Starter world is invalid: '+JSON.stringify(problems));
 
 const zip=await exportContent(content,{packageId:'ufagame_starter_world'});
@@ -31,7 +31,7 @@ const wins=(stage,level)=>{let w=0;for(let seed=1;seed<=3;seed++){const {setup,h
 const balance=content.entities.filter(e=>e.kind==='stage').map(st=>{let level=1;while(level<=40&&!wins(st.id,level))level++;return {stage_id:st.id,name:st.name,boss:!!st.data.boss,enemy_level:st.data.enemy_level??1,needs_team_level:level>40?null:level};});
 
 const files={'starter-world.json':Buffer.from(JSON.stringify(content,null,2)+'\n'),'ufagame-starter.zip':zip,'balance.json':Buffer.from(JSON.stringify(balance,null,2)+'\n')};
-const counts=Object.fromEntries(['faction','ability','hero','item','location','stage','chapter','progression','vip','summon_pool','afk'].map(k=>[k,content.entities.filter(e=>e.kind===k).length]));
+const counts=Object.fromEntries(['faction','ability','hero','item','location','stage','chapter','progression','vip','summon_pool','afk','quest'].map(k=>[k,content.entities.filter(e=>e.kind===k).length]));
 if(process.argv.includes('--check')){
  for(const [name,bytes] of Object.entries(files)){const path=new URL(name,dir);if(!existsSync(path)||!readFileSync(path).equals(bytes))throw new Error(`${name} is out of date: run node tools/content/build-starter.mjs`);}
  console.log('Starter world files are up to date');

@@ -123,12 +123,22 @@ export function starterWorld() {
     {id: 'chapter_3_mountains', kind: 'chapter', name: 'Вершины Урала', data: {order: 3, stage_ids: ['stage_c3_1', 'stage_c3_2', 'stage_c3_3', 'stage_c3_boss'], location_id: 'district_beloretskiy', proposed: true, description: 'Горы просыпаются, и Владыка Ямантау зовёт на бой.'}},
 
     // Economy (S25/S27/S29), proposed numbers.
-    {id: 'vip_main', kind: 'vip', name: 'VIP', data: {levels: [[100, 'Значок VIP', 0], [300, '+1 ч AFK', 1], [700, '+1 ч AFK', 1], [1500, '+2 ч AFK', 2], [3000, '+2 ч AFK', 2], [6000, '+3 ч AFK', 3], [10000, '+3 ч AFK, быстрый расчёт (S26)', 3], [16000, '+4 ч AFK', 4], [25000, '+4 ч AFK', 4], [40000, '+5 ч AFK', 5]].map(([points, perks_text, afk_hours]) => ({points, perks_text, afk_hours})), tutorial_points: 100, daily_points: 20, win_points: 2, win_points_daily_cap: 20, proposed: true}},
+    {id: 'vip_main', kind: 'vip', name: 'VIP', data: {levels: [[100, 'Значок VIP', 0], [300, '+1 ч AFK', 1], [700, '+1 ч AFK', 1], [1500, '+2 ч AFK', 2], [3000, '+2 ч AFK', 2], [6000, '+3 ч AFK', 3], [10000, '+3 ч AFK, быстрый расчёт (S26)', 3], [16000, '+4 ч AFK', 4], [25000, '+4 ч AFK', 4], [40000, '+5 ч AFK', 5]].map(([points, perks_text, afk_hours]) => ({points, perks_text, afk_hours})), tutorial_points: 100, daily_points: 20, win_points: 2, win_points_daily_cap: 20, speed_x2_stages: 3, speed_x4_level: 4, instant_level: 7, proposed: true}},
     {id: 'pool_heroes', kind: 'summon_pool', name: 'Зов героев', data: {cost: {currency: 'gems', amount: 50}, description: 'Герои Башкортостана отвечают на зов курая.',
       entries: [['hero_azamat', 10], ['hero_aigul', 10], ['hero_karagai', 10], ['hero_zulfia', 10], ['hero_timer', 10], ['hero_laysan', 4], ['hero_buranbay', 4], ['hero_nuria', 4], ['hero_ilgiz', 2], ['hero_server', 2]].map(([hero_id, weight]) => ({hero_id, weight}))
         .concat([{hero_id: 'hero_ilgiz', weight: 12, shards: 5}, {hero_id: 'hero_server', weight: 12, shards: 5}]),
       guarantee: {every: 10, hero_ids: ['hero_ilgiz', 'hero_server']}, shards_per_hero: 30, proposed: true}},
     {id: 'afk_main', kind: 'afk', name: 'AFK-награды', data: {per_hour: [{currency: 'gold', amount: 300}, {currency: 'hero_exp', amount: 400}, {currency: 'rank_material', amount: 5}], stage_bonus_bp: 800, proposed: true}},
+
+    // Quests (S30): three dailies and an achievement series along the campaign.
+    ...[
+      ['quest_daily_wins', 'Три победы за день', {period: 'daily', event: 'battle_win', target: 3, rewards: [{currency: 'gold', amount: 300}]}],
+      ['quest_daily_summon', 'Призыв дня', {period: 'daily', event: 'summon_pull', target: 1, rewards: [{currency: 'gems', amount: 20}]}],
+      ['quest_daily_afk', 'Собери AFK-награды', {period: 'daily', event: 'afk_claim', target: 1, rewards: [{currency: 'hero_exp', amount: 300}]}],
+      ['quest_river_master', 'Победи Хозяина Белой реки', {period: 'once', event: 'campaign_clear', stage_id: 'stage_c1_boss', target: 1, rewards: [{currency: 'gems', amount: 100}]}],
+      ['quest_train_heroes', 'Десять повышений уровня', {period: 'once', event: 'hero_level_up', target: 10, rewards: [{currency: 'rank_material', amount: 100}], requires_quest_id: 'quest_river_master'}],
+      ['quest_cave_serpent', 'Победи Змея Шульган-Таша', {period: 'once', event: 'campaign_clear', stage_id: 'stage_c2_boss', target: 1, rewards: [{currency: 'gems', amount: 200}, {currency: 'vip_points', amount: 100}], requires_quest_id: 'quest_train_heroes'}],
+    ].map(([id, name, data], order) => ({id, kind: 'quest', name, data: {...data, order, proposed: true}})),
 
     {id: 'progression_main', kind: 'progression', name: 'Развитие героев', data: {
       level_gold_base: 30, level_gold_step: 15, level_exp_base: 40, level_exp_step: 20, growth_bp: 800,
@@ -141,7 +151,7 @@ export function starterWorld() {
     schema_version: 1,
     // Same as a new Studio draft, so importing into a fresh draft has no base conflict.
     content_version: 'draft_001',
-    required_capabilities: ['content.core.v1', 'battle.combat.v1', 'battle.abilities.v2', 'battle.triggers.v1', 'world.locations.v1', 'campaign.chapters.v1', 'heroes.progression.v1', 'vip.v1', 'summon.v1', 'afk.v1'],
+    required_capabilities: ['content.core.v1', 'battle.combat.v1', 'battle.abilities.v2', 'battle.triggers.v1', 'world.locations.v1', 'campaign.chapters.v1', 'heroes.progression.v1', 'vip.v1', 'summon.v1', 'afk.v1', 'battle.speed.v1', 'quests.v1'],
     entities,
   };
 }

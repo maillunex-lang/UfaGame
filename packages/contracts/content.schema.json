@@ -35,7 +35,9 @@
           "heroes.progression.v1",
           "vip.v1",
           "summon.v1",
-          "afk.v1"
+          "afk.v1",
+          "battle.speed.v1",
+          "quests.v1"
         ]
       },
       "uniqueItems": true,
@@ -1074,6 +1076,21 @@
                   },
                   "proposed": {
                     "type": "boolean"
+                  },
+                  "speed_x2_stages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "speed_x4_level": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  },
+                  "instant_level": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
                   }
                 }
               }
@@ -1260,6 +1277,121 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 10000
+                  },
+                  "proposed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "quest"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "period",
+                  "event",
+                  "target",
+                  "rewards"
+                ],
+                "properties": {
+                  "period": {
+                    "enum": [
+                      "daily",
+                      "once"
+                    ]
+                  },
+                  "event": {
+                    "enum": [
+                      "battle_win",
+                      "campaign_clear",
+                      "hero_level_up",
+                      "hero_rank_up",
+                      "summon_pull",
+                      "afk_claim",
+                      "item_upgrade"
+                    ]
+                  },
+                  "stage_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                  },
+                  "target": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000
+                  },
+                  "rewards": {
+                    "type": "array",
+                    "maxItems": 4,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "enum": [
+                            "gold",
+                            "gems",
+                            "hero_exp",
+                            "rank_material",
+                            "vip_points"
+                          ]
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        }
+                      }
+                    }
+                  },
+                  "reward_heroes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                    }
+                  },
+                  "requires_quest_id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "order": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9999
                   },
                   "proposed": {
                     "type": "boolean"

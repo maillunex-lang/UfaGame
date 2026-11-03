@@ -20,8 +20,8 @@ export function EconomyEditor({text,onChange,onPendingChange}:{text:string;onCha
 
  // VIP form
  const [vipOpen,setVipOpen]=useState(false),[levels,setLevels]=useState<{points:string;text:string;afk:string}[]>([]),[v,setV]=useState<Record<string,string>>({});
- function openVip(d:any){setLevels(d.levels.map((l:any)=>({points:String(l.points),text:l.perks_text??'',afk:String(l.afk_hours??0)})));setV({tutorial:String(d.tutorial_points),daily:String(d.daily_points),win:String(d.win_points??0),cap:String(d.win_points_daily_cap??0)});setVipOpen(true);}
- function saveVip(){run(()=>{const data={levels:levels.map(l=>({points:n(l.points),...(l.text.trim()?{perks_text:l.text.trim()}:{}),...(n(l.afk)>0?{afk_hours:n(l.afk)}:{})})),tutorial_points:n(v.tutorial),daily_points:n(v.daily),win_points:n(v.win),win_points_daily_cap:n(v.cap),proposed:true};
+ function openVip(d:any){setLevels(d.levels.map((l:any)=>({points:String(l.points),text:l.perks_text??'',afk:String(l.afk_hours??0)})));setV({tutorial:String(d.tutorial_points),daily:String(d.daily_points),win:String(d.win_points??0),cap:String(d.win_points_daily_cap??0),x2:d.speed_x2_stages===undefined?'':String(d.speed_x2_stages),x4:d.speed_x4_level===undefined?'':String(d.speed_x4_level),inst:d.instant_level===undefined?'':String(d.instant_level)});setVipOpen(true);}
+ function saveVip(){run(()=>{const data={levels:levels.map(l=>({points:n(l.points),...(l.text.trim()?{perks_text:l.text.trim()}:{}),...(n(l.afk)>0?{afk_hours:n(l.afk)}:{})})),tutorial_points:n(v.tutorial),daily_points:n(v.daily),win_points:n(v.win),win_points_daily_cap:n(v.cap),...((v.x2??'').trim()?{speed_x2_stages:n(v.x2)}:{}),...((v.x4??'').trim()?{speed_x4_level:n(v.x4)}:{}),...((v.inst??'').trim()?{instant_level:n(v.inst)}:{}),proposed:true};
   onChange(upsertEntity(text,{id:vip!.id,kind:'vip',name:vip!.name,data},vip!.id));setVipOpen(false);});}
  const perDay=vip?vip.data.daily_points+(vip.data.win_points?vip.data.win_points_daily_cap??0:0):0;
  const days=(points:number)=>perDay?Math.max(0,Math.ceil((points-(vip?.data.tutorial_points??0))/perDay)):null;
@@ -51,6 +51,7 @@ export function EconomyEditor({text,onChange,onPendingChange}:{text:string;onCha
   <h3>VIP и обучение</h3>
   {!vip?<button type="button" onClick={()=>run(()=>onChange(upsertEntity(text,{id:'vip_main',kind:'vip',name:'VIP',data:defaultVip()})),'Таблица VIP создана с предлагаемыми значениями.')}>Создать таблицу VIP</button>:<div className="growth-summary">
    <p>За обучение: {vip.data.tutorial_points} очков (хватает на VIP 1). Бесплатно в день: {vip.data.daily_points} очков + до {vip.data.win_points_daily_cap??0} за победы ({vip.data.win_points??0} за бой).</p>
+   <p>Скорость боя: ×1 сразу{vip.data.speed_x2_stages!==undefined?`, ×2 после ${vip.data.speed_x2_stages} этапов`:''}{vip.data.speed_x4_level!==undefined?`, ×4 с VIP ${vip.data.speed_x4_level}`:''}{vip.data.instant_level!==undefined?`, быстрый расчёт повторов с VIP ${vip.data.instant_level}`:''}.</p>
    <p>Уровни: {vip.data.levels.map((l:any,i:number)=>`VIP ${i+1} — ${l.points} оч. (~${days(l.points)} дн. бесплатно)`).join('; ')}.</p>
    {!vipOpen&&<button type="button" onClick={()=>openVip(vip.data)}>Изменить VIP</button>}</div>}
   {vip&&vipOpen&&<div className="growth-form" onChange={dirty}>
@@ -60,7 +61,7 @@ export function EconomyEditor({text,onChange,onPendingChange}:{text:string;onCha
     <label style={{gridColumn:'1/-1'}}>Привилегии (текст для игрока)<input maxLength={200} aria-label={`Привилегии VIP ${i+1}`} value={l.text} onChange={e=>setLevels(x=>x.map((y,j)=>j===i?{...y,text:e.target.value}:y))}/></label>
     {i>0&&<button type="button" className="secondary" onClick={()=>setLevels(x=>x.filter((_,j)=>j!==i))}>Убрать VIP {i+1}</button>}</div>)}
    {levels.length<20&&<button type="button" className="secondary" onClick={()=>setLevels(x=>[...x,{points:String(n(x[x.length-1]?.points??'0')*2||100),text:'',afk:'0'}])}>Добавить уровень VIP</button>}
-   {[['tutorial','Очков за обучение (один раз)'],['daily','Бесплатных очков в день'],['win','Очков за победу в бою'],['cap','Предел очков за победы в день']].map(([k,label])=><label key={k}>{label}<input type="number" min="0" value={v[k]??''} onChange={e=>setV(x=>({...x,[k]:e.target.value}))}/></label>)}
+   {[['tutorial','Очков за обучение (один раз)'],['daily','Бесплатных очков в день'],['win','Очков за победу в бою'],['cap','Предел очков за победы в день'],['x2','Скорость боя ×2 после стольких пройденных этапов (пусто = только ×1)'],['x4','Скорость ×4 с уровня VIP'],['inst','Быстрый расчёт повторов с уровня VIP']].map(([k,label])=><label key={k}>{label}<input type="number" min="0" value={v[k]??''} onChange={e=>setV(x=>({...x,[k]:e.target.value}))}/></label>)}
    <p className="hint">Обучение: первая победа в кампании, повышение уровня героя, предмет на герое. Уровень VIP считает сервер по сумме очков; игра не может назначить VIP сама.</p>
    <button type="button" onClick={saveVip}>Применить VIP</button><button type="button" className="secondary" onClick={()=>setVipOpen(false)}>Отмена</button></div>}
 

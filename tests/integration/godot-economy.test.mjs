@@ -10,7 +10,8 @@ import net from 'node:net';
 import {createHash,randomUUID} from 'node:crypto';
 import {createPool} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
-const pool=createPool();after(()=>pool.end());
+// Battles left running would tick inside later test files: finish them.
+const pool=createPool();after(async()=>{await pool.query('UPDATE live_battles SET completed_at=clock_timestamp() WHERE completed_at IS NULL');await pool.end();});
 import {economyContent as content} from '../fixtures/progression.mjs';
 import {applyDelta} from '../../services/api/src/economy.ts';
 async function publish(){

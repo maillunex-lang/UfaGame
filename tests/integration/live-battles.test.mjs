@@ -114,6 +114,8 @@ test('after extended outage the stored battle advances offline to timeout withou
   const guest=await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:randomBytes(32).toString('base64url')}}),user=guest.json();
   await publish();const headers={authorization:`Bearer ${user.access_token}`};
   const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}});assert.equal(created.statusCode,200,created.body);const id=created.json().battle_id;
+  // advanceDue takes any due battle: finish battles left by other test files first.
+  await pool.query('UPDATE live_battles SET completed_at=clock_timestamp() WHERE completed_at IS NULL AND id<>$1',[id]);
   await api.close();await pool.query("UPDATE live_battles SET next_tick_at=clock_timestamp()-interval '1000 seconds',connection_id=NULL,connected_until=NULL WHERE id=$1",[id]);
   for(let i=0;i<900;i++)assert.equal(await advanceDue(pool),true);
   const row=(await pool.query('SELECT session_state,completed_at FROM live_battles WHERE id=$1',[id])).rows[0];

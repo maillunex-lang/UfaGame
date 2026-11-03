@@ -10,7 +10,8 @@ import net from 'node:net';
 import {createHash,randomUUID} from 'node:crypto';
 import {createPool} from '../../services/api/src/db.ts';
 import {buildApp} from '../../services/api/src/app.ts';
-const pool=createPool();after(()=>pool.end());
+// Battles left running would tick inside later test files: finish them.
+const pool=createPool();after(async()=>{await pool.query('UPDATE live_battles SET completed_at=clock_timestamp() WHERE completed_at IS NULL');await pool.end();});
 const combat=(o={})=>({hp:400,attack:40,defense:0,speed:1000,range:1500,attack_interval_ms:500,energy_start:1000,energy_per_second:100,energy_per_attack:100,...o});
 const content=()=>({schema_version:1,content_version:'campaign_fixture',required_capabilities:['content.core.v1','battle.combat.v1','campaign.chapters.v1'],entities:[
  {id:'faction_one',kind:'faction',name:'Ф',data:{advantage_ids:[]}},
