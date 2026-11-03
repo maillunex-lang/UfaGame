@@ -1136,3 +1136,9 @@ S20 blocked: граф способностей, preview, игра и публи�
 повторным SHA-256. Миграции 007/008 и UI на VPS не применены; S11 in_progress,
 аудио/другие форматы/OS sandbox/игровая привязка не готовы. Следующий шаг — CI,
 затем S11–S14 и зависимости S15–S20. Подробности docs/reports/S11.md.
+
+### S11 — итоги CI для редактора кадров
+На commit 9ed2a09 GitHub Actions 41568725839 и 41568725779 завершились success:
+source, Godot, integration с PostgreSQL/браузером и isolated stack. Это не
+развертывание на VPS и не проверка Android. S11 in_progress; S10–S20 не завершены.
+Создан docs/HANDOFF.md и обновлен PROMPT_CONTINUE.md для передачи другому ИИ.

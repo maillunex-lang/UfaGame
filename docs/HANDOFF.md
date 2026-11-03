@@ -46,9 +46,9 @@ https://github.com/maillunex-lang/UfaGame, ветка `codex/s10-studio-android`
   и боевого preview. См. таблицу и поздние записи roadmap, не ранний журнал.
 - Последний кодовый commit на момент передачи: `9ed2a09` (кадры/preview PNG).
   Проверяй более новые commits и CI. На нем локально `npm run check` и мобильный
-  Chromium с mock API прошли; GitHub Actions 41568725779 (isolated stack) —
-  success. Actions 41568725839: source и Godot success, integration еще работал
-  на момент написания. Обязательно проверь итог и исправь ошибки до объявления успеха.
+  Chromium с mock API прошли; GitHub Actions 41568725779 (isolated stack) и
+  41568725839 (source, Godot, integration с реальной PostgreSQL) — success.
+  Device приемка новых возможностей и развертывание на VPS не выполнялись.
 
 ## VPS и защита существующего портала
 
