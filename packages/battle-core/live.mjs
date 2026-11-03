@@ -49,7 +49,8 @@ export function advanceLiveBattle(session,{forceAuto=false}={}) {
  }
  const advanced=stepAutoBattle(session.state,{autoAttacker:auto,manualActorIds:manual});
  const next=structuredClone(session);next.auto=auto;next.state=advanced.state;next.pending=next.pending.filter(c=>c.for_step>step);next.event_seq++;
- return {session:next,frame:{seq:next.event_seq,at_ms:advanced.at_ms,events:advanced.events,command_results:results,actors:advanced.state.actors.map(a=>({id:a.id,hp:a.hp,x:a.x,y:a.y,energy:a.energy})),result:advanced.state.result}};
+ results.sort((a,b)=>a.seq-b.seq);
+ return {session:next,frame:{seq:next.event_seq,at_ms:advanced.at_ms,auto,events:advanced.events,command_results:results,actors:advanced.state.actors.map(a=>({id:a.id,hp:a.hp,x:a.x,y:a.y,energy:a.energy})),result:advanced.state.result}};
 }
 /** Owner offline or worker restart: future steps continue in automatic mode. */
 export function disconnectLiveBattle(session){const next=structuredClone(session);next.auto=true;return next;}

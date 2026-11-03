@@ -40,8 +40,11 @@ test('live battle: authenticated stream, manual step, retries, reconnect, offlin
   const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:body});assert.equal(created.statusCode,200,created.body);
   const initial=created.json();assert.equal(validate('live_battle_snapshot',initial).ok,true);assert.equal(initial.content_version,version);
   assert.equal((await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:body})).json().battle_id,initial.battle_id);
+  assert.equal((await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{...body,hero_ids:['enemy_one']}})).statusCode,409);
   assert.equal((await api.inject({url:'/v1/live-battles/'+initial.battle_id,headers:{authorization:`Bearer ${other.access_token}`}})).statusCode,404);
   await api.listen({host:'127.0.0.1',port:0});const port=api.server.address().port,url=`ws://127.0.0.1:${port}/v1/live-battles/${initial.battle_id}/stream`;
+  const anonymous=new WebSocket(url);sockets.push(anonymous);
+  const anonymousStatus=await new Promise((resolve,reject)=>{anonymous.once('unexpected-response',(_req,res)=>{res.resume();resolve(res.statusCode);});anonymous.once('open',()=>reject(new Error('Anonymous connection allowed')));anonymous.once('error',reject);});assert.equal(anonymousStatus,401);
   const first=await connect(url,me.access_token);sockets.push(first.ws);const snapshot=await first.receive(m=>m.type==='snapshot');assert.equal(snapshot.snapshot.step,0);
   const forbidden=new WebSocket(url,{headers:{authorization:`Bearer ${other.access_token}`}});sockets.push(forbidden);
   const denied=await new Promise((resolve,reject)=>{forbidden.once('unexpected-response',(_req,res)=>{res.resume();resolve(res.statusCode);});forbidden.once('open',()=>reject(new Error('Another player connected')));forbidden.once('error',reject);});assert.equal(denied,404);
@@ -49,17 +52,25 @@ test('live battle: authenticated stream, manual step, retries, reconnect, offlin
   const event=await first.receive(m=>m.type==='frame'&&m.frame.seq===1);assert.equal(validate('live_battle_frame',event.frame).ok,true);
   assert.deepEqual(event.frame.command_results,[{seq:1,status:'applied'}]);assert.ok(event.frame.events.some(e=>e.source_id==='atk_0'&&e.ability_id==='ability_one'));
   first.ws.send(JSON.stringify({type:'ability',seq:1,for_step:1,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='ack'&&m.ack.seq===1)).ack.replayed,true);
+  first.ws.send(JSON.stringify({type:'ability',seq:1,for_step:1,actor_id:'atk_1'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===1)).code,'SEQUENCE_CONFLICT');
+  first.ws.send(JSON.stringify({type:'reward',seq:2,for_step:2}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===2)).code,'INVALID_REQUEST');
   first.ws.send(JSON.stringify({type:'ability',seq:2,for_step:1,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===2)).code,'STALE_COMMAND');
+  first.ws.send(JSON.stringify({type:'ability',seq:3,for_step:900,actor_id:'atk_0'}));assert.equal((await first.receive(m=>m.type==='error'&&m.seq===3)).code,'OUT_OF_ORDER');
   await publish();assert.equal((await api.inject({url:'/v1/live-battles/'+initial.battle_id,headers})).json().content_version,version);
+  const retryAfterPublish=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:body});assert.equal(retryAfterPublish.json().battle_id,initial.battle_id);assert.equal(retryAfterPublish.json().content_version,version);
   first.ws.close();await new Promise(resolve=>first.ws.once('close',resolve));await new Promise(resolve=>setTimeout(resolve,700));
   const offline=(await api.inject({url:'/v1/live-battles/'+initial.battle_id,headers})).json();assert.equal(offline.auto,true);assert.ok(offline.step>1);
   const second=await connect(url+'?after=0',me.access_token);sockets.push(second.ws);const resumed=await second.receive(m=>m.type==='snapshot');assert.equal(resumed.snapshot.content_version,version);
   const replay=await second.receive(m=>m.type==='frame'&&m.frame.seq===1);assert.equal(replay.replayed,true);
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM ledger WHERE player_id=$1',[me.player_id])).rows[0].n,0);
   second.ws.terminate();await new Promise(resolve=>second.ws.once('close',resolve));await api.close();
+  await pool.query("UPDATE live_battles SET connection_id=$2,connected_until=clock_timestamp()-interval '3 seconds' WHERE id=$1",[initial.battle_id,randomUUID()]);
   const beforeRestart=(await pool.query('SELECT session_state FROM live_battles WHERE id=$1',[initial.battle_id])).rows[0].session_state.state.step;
   api=await buildApp(pool);await api.listen({host:'127.0.0.1',port:0});await new Promise(resolve=>setTimeout(resolve,800));
   const afterRestart=(await api.inject({url:'/v1/live-battles/'+initial.battle_id,headers})).json();assert.ok(afterRestart.step>beforeRestart);assert.equal(afterRestart.content_version,version);assert.equal(afterRestart.auto,true);
+  const restartedUrl=`ws://127.0.0.1:${api.server.address().port}/v1/live-battles/${initial.battle_id}/stream`;
+  const third=await connect(restartedUrl,me.access_token);sockets.push(third.ws);await third.receive(m=>m.type==='snapshot');
+  third.ws.send(JSON.stringify({type:'ability',seq:1,for_step:1,actor_id:'atk_0'}));assert.equal((await third.receive(m=>m.type==='ack'&&m.ack.seq===1)).ack.replayed,true);
  }finally{for(const socket of sockets)socket.terminate();await api.close();}
 });
 
@@ -71,6 +82,7 @@ test('DB lease replacement, concurrent duplicate commands and server-clock deadl
   const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:body});assert.equal(created.statusCode,200,created.body);const id=created.json().battle_id;
   await pool.query("UPDATE live_battles SET next_tick_at=clock_timestamp()+interval '5 seconds' WHERE id=$1",[id]);
   const first=randomUUID(),second=randomUUID();await attachLive(pool,user.access_token,id,first);await attachLive(pool,user.access_token,id,second);
+  await api.close(); // Exercise the transactional service without a concurrent timer.
   const command={type:'ability',seq:1,for_step:1,actor_id:'atk_0'};
   await assert.rejects(submitLive(pool,user.access_token,id,first,command),error=>error.status===409&&error.detail==='CONNECTION_REPLACED');
   const result=await Promise.all([submitLive(pool,user.access_token,id,second,command),submitLive(pool,user.access_token,id,second,command)]);
@@ -79,4 +91,46 @@ test('DB lease replacement, concurrent duplicate commands and server-clock deadl
   await assert.rejects(submitLive(pool,user.access_token,id,second,{type:'auto',seq:2,for_step:2,enabled:true}),error=>error.status===409&&error.detail==='STALE_COMMAND');
   const state=(await pool.query('SELECT session_state FROM live_battles WHERE id=$1',[id])).rows[0].session_state;assert.equal(state.last_command_seq,1);assert.equal(state.pending.length,1);
  }finally{await api.close();}
+});
+
+test('live stream stops after session revocation',{timeout:30000},async()=>{
+ const api=await buildApp(pool);let socket;try{
+  const guest=await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:randomBytes(32).toString('base64url')}}),user=guest.json();
+  await publish();const headers={authorization:`Bearer ${user.access_token}`};
+  const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}});assert.equal(created.statusCode,200,created.body);
+  await api.listen({host:'127.0.0.1',port:0});const url=`ws://127.0.0.1:${api.server.address().port}/v1/live-battles/${created.json().battle_id}/stream`;
+  const peer=await connect(url,user.access_token);socket=peer.ws;await peer.receive(m=>m.type==='snapshot');
+  const closed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('revoked socket stayed open')),8000);socket.once('close',code=>{clearTimeout(timer);resolve(code);});});
+  await pool.query('UPDATE sessions SET revoked_at=clock_timestamp() WHERE player_id=$1',[user.player_id]);assert.equal(await closed,1008);
+  assert.equal((await api.inject({url:'/v1/live-battles/'+created.json().battle_id,headers})).statusCode,401);
+ }finally{if(socket)socket.terminate();await api.close();}
+});
+
+test('after extended outage the stored battle advances offline to timeout without rewards',{timeout:60000},async()=>{
+ const {advanceDue}=await import('../../services/api/src/live-battles.ts');
+ const api=await buildApp(pool);try{
+  const guest=await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:randomBytes(32).toString('base64url')}}),user=guest.json();
+  await publish();const headers={authorization:`Bearer ${user.access_token}`};
+  const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}});assert.equal(created.statusCode,200,created.body);const id=created.json().battle_id;
+  await api.close();await pool.query("UPDATE live_battles SET next_tick_at=clock_timestamp()-interval '1000 seconds',connection_id=NULL,connected_until=NULL WHERE id=$1",[id]);
+  for(let i=0;i<900;i++)assert.equal(await advanceDue(pool),true);
+  const row=(await pool.query('SELECT session_state,completed_at FROM live_battles WHERE id=$1',[id])).rows[0];
+  assert.equal(row.session_state.state.step,900);assert.equal(row.session_state.state.result,'attacker_loss');assert.equal(row.session_state.auto,true);assert.ok(row.completed_at);
+  const frames=(await pool.query('SELECT count(*)::int AS n,min(seq)::int AS first,max(seq)::int AS last FROM live_battle_frames WHERE battle_id=$1',[id])).rows[0];assert.deepEqual(frames,{n:900,first:1,last:900});
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM ledger WHERE player_id=$1',[user.player_id])).rows[0].n,0);
+ }finally{await api.close();}
+});
+
+test('live socket rejects oversized input and never accepts a token in the URL',{timeout:30000},async()=>{
+ const api=await buildApp(pool);let socket;try{
+  const guest=await api.inject({method:'POST',url:'/v1/guests',payload:{installation_secret:randomBytes(32).toString('base64url')}}),user=guest.json();
+  await publish();const headers={authorization:`Bearer ${user.access_token}`};
+  const created=await api.inject({method:'POST',url:'/v1/live-battles',headers,payload:{request_id:randomUUID(),stage_id:'stage_one',hero_ids:['hero_one']}});assert.equal(created.statusCode,200,created.body);
+  await api.listen({host:'127.0.0.1',port:0});const url=`ws://127.0.0.1:${api.server.address().port}/v1/live-battles/${created.json().battle_id}/stream`;
+  const invalid=new WebSocket(url+'?token=forbidden',{headers});
+  const status=await new Promise((resolve,reject)=>{invalid.once('unexpected-response',(_req,res)=>{res.resume();resolve(res.statusCode);});invalid.once('open',()=>reject(new Error('Token in URL accepted')));invalid.once('error',reject);});assert.equal(status,400);
+  const peer=await connect(url,user.access_token);socket=peer.ws;await peer.receive(m=>m.type==='snapshot');
+  const closed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Oversized socket stayed open')),8000);socket.once('close',code=>{clearTimeout(timer);resolve(code);});});
+  socket.send('x'.repeat(4096));assert.equal(await closed,1009);
+ }finally{if(socket)socket.terminate();await api.close();}
 });

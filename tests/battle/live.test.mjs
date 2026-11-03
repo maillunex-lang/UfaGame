@@ -39,3 +39,7 @@ test('queued command is rejected at execution if the actor cannot act',()=>{
  const out=advanceLiveBattle(s);assert.deepEqual(out.frame.command_results,[{seq:1,status:'rejected',reason:'ABILITY_NOT_READY'}]);
  assert.equal(out.session.state.actors.find(a=>a.id==='def_0').hp,100);
 });
+test('frame reports automatic mode and command results in sequence order',()=>{
+ let s=make();s=queueLiveCommand(s,command()).session;s=queueLiveCommand(s,{type:'auto',seq:2,for_step:1,enabled:true}).session;
+ const out=advanceLiveBattle(s);assert.equal(out.frame.auto,true);assert.deepEqual(out.frame.command_results.map(item=>item.seq),[1,2]);assert.equal(validate('live_battle_frame',out.frame).ok,true);
+});

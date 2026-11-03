@@ -19,7 +19,7 @@ export async function registerLiveRoutes(app:FastifyInstance,pool:Pool){
   let chain=Promise.resolve();
   const send=(value:any)=>{if(socket.readyState!==1)return;if(socket.bufferedAmount>1024*1024){socket.close(1013,'BACKPRESSURE');return;}socket.send(JSON.stringify(value));};
   const ready=attachLive(pool,token,id,connectionId).then(snapshot=>{
-   if(closed){void detachLive(pool,id,connectionId);throw new Error('SOCKET_CLOSED');}
+   if(closed){void detachLive(pool,id,connectionId).catch(()=>{});throw new Error('SOCKET_CLOSED');}
    snapshotSeq=snapshot.event_seq;cursor=after===undefined?snapshotSeq:Number(after);
    if(cursor>snapshotSeq){socket.close(1008,'INVALID_CURSOR');throw new Error('INVALID_CURSOR');}
    send({type:'snapshot',snapshot});return snapshot;

@@ -1379,3 +1379,12 @@ check`, 36 battle unit tests, контракты, мобильный Chromium с
 написаны, но еще не прошли в этой среде; S18 in_progress, не done. Код не
 развернут на VPS, nginx WebSocket upgrade и Android не проверены. Следующий шаг —
 выполнить CI/integration, исправить найденное, затем S19. См. docs/reports/S18.md.
+
+### S18 — локальные PostgreSQL/WebSocket проверки
+На отдельной локальной PostgreSQL 17 миграции применены дважды; полный integration
+на предыдущем срезе — 33 passed с Godot и браузером. Последние 5 интеграционных
+S18 тестов прошли: права, команды/retry/порядок/дедлайн, отзыв токена, reconnect,
+restart, offline 900 шагов, версия контента, размер сообщений и отсутствие наград.
+`check:battle`: 37 passed; `npm run check`, Chromium и настоящий Godot прошли.
+S18 пока in_progress до CI финального commit; на VPS не развернут, WSS через nginx,
+Android и нагрузка не проверены. Детали docs/reports/S18.md и ADR 0017.

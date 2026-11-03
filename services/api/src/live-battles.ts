@@ -15,7 +15,9 @@ function compile(content:any,request:any):Promise<any>{
  if(workers>=2)return Promise.reject(new DomainError('SERVICE_UNAVAILABLE',503,'BATTLE_BUSY'));
  workers++;
  return new Promise((resolve,reject)=>{
-  const worker=new Worker(workerUrl,{workerData:{content,request},resourceLimits:{maxOldGenerationSizeMb:96,maxYoungGenerationSizeMb:32}});
+  let worker:Worker;
+  try{worker=new Worker(workerUrl,{workerData:{content,request},resourceLimits:{maxOldGenerationSizeMb:96,maxYoungGenerationSizeMb:32}});}
+  catch{workers--;reject(new Error('Battle worker failed to start'));return;}
   let done=false;const finish=(error?:Error,value?:any)=>{if(done)return;done=true;clearTimeout(timer);workers--;void worker.terminate();if(error)reject(error);else resolve(value);};
   const timer=setTimeout(()=>finish(new DomainError('SERVICE_UNAVAILABLE',503,'BATTLE_TIMEOUT')),5000);
   worker.once('message',(message:any)=>{if(message.ok)finish(undefined,message.compiled);else if(message.code==='BATTLE_FAILED')finish(new Error('Battle setup failed'));else finish(new DomainError('INVALID_REQUEST',422,message.entity_id?`${message.code}:${message.entity_id}`:message.code));});
