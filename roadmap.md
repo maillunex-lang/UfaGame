@@ -1612,4 +1612,14 @@ integration/speed-quests.test.mjs, Godot.
 Общее: `npm run check` exit0, интеграция 50/50 (после правки уборки боёв в тестах),
 Chromium mobile, Godot, check:game. Стартовый мир дополнен. Не проверено: VPS и телефон.
 Следующий шаг: Game v15, обновление VPS, приемка владельцем.
+CI на c4991dd: Repository checks 41639236460 — success. Game v15 (capabilities
+battle.speed.v1, quests.v1; versionCode 15; сертификат e8959e0f…e575) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s26-s30-game-test-v15/Game-arm64-v15.apk
+— повторное скачивание, SHA-256 71d70286…cf1d совпал; на телефоне не проверена.
+VPS ещё на de5acc8: для S26/S30 нужен update.sh на commit с этой записью.
+
+### Передача другому исполнителю (2026-11-04)
+docs/HANDOFF.md обновлён: состояние этапов, способ работы пакетами, команды проверок,
+сборка/публикация APK, обновление VPS. Следующий шаг: обновление VPS и проверка S26/S30
+владельцем, затем S31/S33 по зависимостям.
 

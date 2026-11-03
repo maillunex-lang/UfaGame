@@ -1,62 +1,55 @@
 # Передача UfaGame другому исполнителю
 
-Обновлено 2026-11-03. Репозиторий https://github.com/maillunex-lang/UfaGame.
-Основная ветка — `main` (ветки `codex/s10-studio-android` и
-`claude/ufagame-s10-s20-continue-nu48zr` указывают на тот же commit). Владелец
-разрешил работать со всеми ветками; новые изменения пушить в `main` (fast-forward),
-при необходимости синхронно в две другие. Актуальный commit выясняй через git.
+Обновлено 2026-11-04. Репозиторий https://github.com/maillunex-lang/UfaGame.
+Основная ветка — `main`; ветки `claude/ufagame-s10-s20-continue-nu48zr` и
+`codex/s10-studio-android` держатся на том же commit. Владелец разрешил работать со всеми
+ветками: пушить fast-forward в `main` (и синхронно в две другие). Актуальный commit — через git.
 
-## Состояние
-- done: S01–S18 (доказательства — roadmap.md и docs/reports/Sxx.md).
-  S10 и S16 приняты владельцем на iQOO 15R / Android 16.
-- in_progress: S19 (обработка кадров в Game, см. docs/reports/S19.md), S51 (обследование VPS). blocked: S20 (по S19), S52 (по поздним этапам).
-- Продолжить S19: поток, экран боя и его обязательные проверки, затем S20 и далее по зависимостям roadmap.
-- S18: packages/battle-core/live.mjs, services/api/src/live-battles.ts и live-routes.ts,
-  миграция 011, ADR 0017. Поток и команды проверены локально с PostgreSQL и WebSocket.
-  На VPS S18 не развернут, существующий nginx не настроен для WebSocket upgrade;
-  Android и внешний WSS не проверены. Не заявляй S19 готовым без его проверок.
+## Состояние этапов
+- done (приняты владельцем на телефоне iQOO 15R / Android 16 или закрыты доказательствами):
+  S01–S25, S27–S29 (см. таблицу и журнал roadmap.md, отчёты docs/reports/).
+- in_progress — код и автопроверки готовы, ждут обновления VPS и проверки владельцем:
+  S26 (скорости/быстрый расчёт) и S30 (задания) — Game v15, отчёт docs/reports/S26-S30.md.
+- Следующие доступные по зависимостям: S31 (UI из данных), S33 (чат), затем S32, S34–S36 и
+  далее по roadmap. Перед выбором проверь зависимости в таблице roadmap.md.
 
-## Что работает у владельца
-- VPS 144.31.254.99, домен tts-ufa.ru, рядом работает чужой портал (корень `/`
-  перенаправляет на /admin/login — это норма). Тестовый стек `ufagame_s09_test` в
-  /srv/ufagame-test/source: API на 127.0.0.1:8055 (`/game/server/`), статика Studio
-  /srv/ufagame-test/studio (`/game/studio/`), секрет БД в /srv/ufagame-test/private.env
-  (не выводить). Развернут commit 11e466b (миграции до 010). nginx: в `/game/server/`
-  `client_max_body_size 16m` (backup /srv/ufagame-test/nginx-backup-9bTW35/original.conf).
-- Обновление (владелец выполняет сам, команды присылать в чат): backup БД `pg_dump`
-  → `git fetch origin main && git checkout --detach <sha>` → `docker compose -p
-  ufagame_s09_test --env-file /srv/ufagame-test/private.env -f infra/studio-test/compose.yml
-  up -d --build api` → health/ready → сборка статики в контейнере node:24.19.0 и копия в
-  /srv/ufagame-test/studio. Полный образец — последние записи roadmap (S17 deployment).
-- APK: Studio v14 и Game v9 — последние (ссылки в roadmap). Game v9 не знает capability
-  `battle.abilities.v2`: версия мира с новыми эффектами будет для нее несовместима до
-  Game v10.
+## Как работали (сохранить)
+- Пакеты из 2–3 связанных этапов: один APK, одно обновление сервера, один чек-лист.
+- Контракт сначала: packages/contracts/*.schema.json + index.mjs (правила), capabilities.json,
+  ADR в docs/adr (последний 0023). Новая механика = новая capability → новая Game APK.
+- Сервер подтверждает всё: награды/траты только через ledger (`applyDeltaTx`, ключ ≥16 символов),
+  ожидаемое состояние (`from_level` и т.п.), `request_id` для повторов, блокировка игрока.
+- Studio: без ручного ввода ID/JSON, выбор из списков, предлагаемые значения с флагом `proposed`.
+- Стартовый мир для проверок: tools/content/starter-world.mjs → `npm run build:starter`
+  (content/starter/ufagame-starter.zip, balance.json); при новой механике дополняй его.
+- После каждого пакета: roadmap.md (журнал + таблица статусов), docs/reports/…, commit/push,
+  CI зелёный, Game APK в Releases, команда обновления VPS владельцу, чек-лист «нажми → что увидишь».
 
-## Сборка и проверки в новой среде
-- Node 24 (`/opt/node24/bin` или nvm), `npm ci`, gitleaks по `tools/install-gitleaks.sh`.
-- PostgreSQL 16 локально: `pg_ctlcluster 16 main start`, роль/БД для текущего
-  пользователя, `PGHOST=/var/run/postgresql PGUSER=<роль> PGDATABASE=<бд> npm run db:migrate`,
-  `node tools/sync-contracts.mjs`, `node --test --test-concurrency=1 tests/integration/*.test.mjs`
-  (29 тестов). Контейнер может перезапускаться — PostgreSQL тогда надо запустить снова.
-- Браузер: `UFA_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run check:studio:browser`.
-- Godot 4.6.3 (+ export templates 4.6.3) с GitHub releases godotengine; Android SDK
-  cmdline-tools → `sdkmanager "build-tools;36.0.0" "platforms;android-36" "platform-tools"`,
-  путь SDK в editor_settings Godot; JDK 21 подходит.
-- Подпись APK: ключи НЕ в репозитории. Владелец дает архив `signing-backup.tar`
-  (game.keystore, studio.keystore, password.txt) прямо в сессию; распаковать вне
-  репозитория в каталог 700 и указать `UFAGAME_SIGNING_DIR`. Сверять сертификаты:
-  Studio badb1f78…ccf7, Game e8959e0f…e575. Новые ключи не создавать.
-- Сборка: `UFAGAME_GAME_ONLY=1 bash tools/android/build.sh <code>` (Game),
-  `bash tools/android/build-studio-test.sh <code>` (Studio). Публикация в Releases:
-  временная orphan-ветка `artifact-staging/apk-*` с файлами и release-manifest.json и
-  workflow tools/android/release-staging.yml (создает Release и удаляет ветку).
-  Пушить ее только после зеленого CI исходного commit и без `*.signature.txt`
-  (gitleaks ложно срабатывает на digest публичного ключа). После публикации скачать и
-  сверить SHA-256. Не заменять опубликованные файлы.
+## Окружение и проверки
+- Node 24 (`/opt/node24/bin`), PostgreSQL 16 (`pg_ctlcluster 16 main start` — после
+  перезапуска контейнера он остановлен), Godot 4.6.3, Chromium Playwright.
+- `export PATH=/opt/node24/bin:$HOME/.local/bin:$PATH PGHOST=/var/run/postgresql PGUSER=root PGDATABASE=ufagame_it UFA_CHROMIUM_PATH=/opt/pw-browsers/chromium`
+- Чистая БД перед интеграцией: `su - postgres -c "psql -q -c 'drop database if exists ufagame_it' -c 'create database ufagame_it owner root'"`,
+  `npm run db:migrate`, `node tools/sync-contracts.mjs`,
+  `node --test --test-concurrency=1 tests/integration/*.test.mjs` (сейчас 50 тестов).
+- `npm run check` (lint, gitleaks, контракты, Studio, ядро, стартовый мир, typecheck, сборка);
+  `npm run check:studio:browser`; `bash tools/s01/check.sh` (Godot).
+- Тесты, запускающие живые бои, должны завершать их в `after()` — иначе мешают следующим файлам.
+- Тест Godot = node-тест + driver .gd (tests/integration/godot-*.test.mjs).
 
-## Как общаться с владельцем
-По-русски, на «ты», коротко и без жаргона. Владелец работает с Android-телефона,
-команды VPS выполняет сам — присылать готовые блоки команд и что прислать в ответ.
-Для проверок давать короткий чек-лист «нажми → что должно появиться». Интерфейс
-Studio делать понятным без ID и JSON (владелец так попросил). Не отмечать done без
-доказательств; ручной отчет владельца записывать как ручной.
+## APK и подпись
+- Ключи НЕ в git. Владелец передаёт `signing-backup.tar`; распаковать вне репозитория
+  (раньше: /root/.ufagame-signing). Новые ключи не создавать.
+- Сборка Game: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ANDROID_HOME=/opt/android-sdk UFAGAME_SIGNING_DIR=<папка ключей> UFAGAME_GAME_ONLY=1 bash tools/android/build.sh <versionCode>`
+  → build/android/game-<код>/. Последняя: Game v15 (код 15). Сертификат Game e8959e0f…e575, Studio badb1f78…ccf7.
+- Публикация: только после зелёного CI. Сироту-ветку `artifact-staging/apk-*` с APK,
+  SHA256SUMS.txt, release-notes.md, release-manifest.json и `.github/workflows/publish.yml`
+  (копия tools/android/release-staging.yml) пушить в репозиторий; workflow создаёт Release и
+  удаляет ветку. Затем скачать APK из Release и сверить SHA-256. Пример — журнал roadmap.
+
+## VPS (только владелец выполняет команды)
+- 144.31.254.99, tts-ufa.ru; рядом чужой портал — не трогать. Тестовый стек `ufagame_s09_test`
+  в /srv/ufagame-test (API 127.0.0.1:8055 → /game/server/, Studio → /game/studio/).
+- Обновление одной командой (резервная копия, миграции при старте, проверки, автооткат):
+  `cd /srv/ufagame-test/source && git fetch origin main && git show <sha>:infra/studio-test/update.sh > /tmp/ufagame-update.sh && bash /tmp/ufagame-update.sh <sha>`
+  — в конце `== 6/6 Done: <sha>`. Развёрнут de5acc8 (до S26/S30).
