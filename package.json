@@ -16,7 +16,7 @@
   },
   "packageManager": "npm@11.9.0",
   "scripts": {
-    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts && npm run check:mod && npm run check:studio && npm run check:battle && npm run check:api && npm run build:studio-web",
+    "check": "npm run lint && npm run format:check && npm run check:planning && npm run check:secrets && npm run check:stack && npm run check:contracts && npm run check:mod && npm run check:studio && npm run check:battle && npm run check:starter && npm run check:api && npm run build:studio-web",
     "lint": "node tools/repository.mjs lint",
     "format:check": "prettier --check package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
     "format": "prettier --write package.json package-lock.json .prettierrc.json .github/workflows/check.yml tools/repository.mjs README.md docs/DEVELOPMENT.md docs/SECURITY.md",
@@ -40,7 +40,9 @@
     "owner:create": "npm run owner:create --workspace @ufagame/api",
     "build:studio-web": "npm run build --workspace @ufagame/studio-web",
     "dev:studio-web": "npm run dev --workspace @ufagame/studio-web",
-    "check:studio:browser": "node tests/studio/browser-smoke.mjs"
+    "check:studio:browser": "node tests/studio/browser-smoke.mjs",
+    "check:starter": "node tools/content/build-starter.mjs --check",
+    "build:starter": "node tools/content/build-starter.mjs"
   },
   "devDependencies": {
     "playwright": "1.57.0",

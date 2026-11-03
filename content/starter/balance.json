@@ -1,0 +1,93 @@
+[
+  {
+    "stage_id": "stage_c1_1",
+    "name": "Волки у Белой",
+    "boss": false,
+    "enemy_level": 1,
+    "needs_team_level": 1
+  },
+  {
+    "stage_id": "stage_c1_2",
+    "name": "Туман в старом парке",
+    "boss": false,
+    "enemy_level": 12,
+    "needs_team_level": 3
+  },
+  {
+    "stage_id": "stage_c1_3",
+    "name": "Разбойники у ворот",
+    "boss": false,
+    "enemy_level": 4,
+    "needs_team_level": 3
+  },
+  {
+    "stage_id": "stage_c1_boss",
+    "name": "Хозяин Белой реки",
+    "boss": true,
+    "enemy_level": 15,
+    "needs_team_level": 5
+  },
+  {
+    "stage_id": "stage_c2_1",
+    "name": "Тени в чаще",
+    "boss": false,
+    "enemy_level": 7,
+    "needs_team_level": 7
+  },
+  {
+    "stage_id": "stage_c2_2",
+    "name": "Брод через Агидель",
+    "boss": false,
+    "enemy_level": 13,
+    "needs_team_level": 9
+  },
+  {
+    "stage_id": "stage_c2_3",
+    "name": "Стражи пещеры",
+    "boss": false,
+    "enemy_level": 3,
+    "needs_team_level": 10
+  },
+  {
+    "stage_id": "stage_c2_boss",
+    "name": "Змей Шульган-Таша",
+    "boss": true,
+    "enemy_level": 12,
+    "needs_team_level": 13
+  },
+  {
+    "stage_id": "stage_c3_1",
+    "name": "Кузни Белорецка",
+    "boss": false,
+    "enemy_level": 15,
+    "needs_team_level": 16
+  },
+  {
+    "stage_id": "stage_c3_2",
+    "name": "Тролли Иремеля",
+    "boss": false,
+    "enemy_level": 11,
+    "needs_team_level": 17
+  },
+  {
+    "stage_id": "stage_c3_3",
+    "name": "Грозовой перевал",
+    "boss": false,
+    "enemy_level": 8,
+    "needs_team_level": 19
+  },
+  {
+    "stage_id": "stage_c3_boss",
+    "name": "Владыка Ямантау",
+    "boss": true,
+    "enemy_level": 9,
+    "needs_team_level": 25
+  },
+  {
+    "stage_id": "stage_training",
+    "name": "Тренировочный круг",
+    "boss": false,
+    "enemy_level": 1,
+    "needs_team_level": 1
+  }
+]

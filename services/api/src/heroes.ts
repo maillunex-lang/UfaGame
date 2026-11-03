@@ -37,10 +37,16 @@ export async function grantStarters(c:PoolClient,playerId:string,content:any){
  let added=0;
  for(const [i,heroId] of (p.starter_hero_ids??[]).entries())added+=(await c.query('INSERT INTO player_heroes(id,player_id,hero_id,source_key) VALUES($1,$2,$3,$4) ON CONFLICT (player_id,source_key) DO NOTHING',[randomUUID(),playerId,heroId,`starter:hero:${i}:${heroId}`])).rowCount??0;
  for(const [i,itemId] of (p.starter_item_ids??[]).entries())await grantItem(c,playerId,itemId,`starter:item:${i}:${itemId}`,content);
- if(added){
-  const team=(await c.query('SELECT 1 FROM player_team WHERE player_id=$1 LIMIT 1',[playerId])).rowCount;
-  if(!team){const ids=(await c.query('SELECT id FROM player_heroes WHERE player_id=$1 AND consumed_at IS NULL ORDER BY seq LIMIT 5',[playerId])).rows;
-   for(const [slot,row] of ids.entries())await c.query("INSERT INTO player_team(player_id,role,slot,instance_id) VALUES($1,'main',$2,$3)",[playerId,slot,row.id]);}
+ // Fill the five when it is empty, or when none of its heroes exists in the current
+ // world (e.g. the owner published a different world): first five usable heroes.
+ const usable=(heroId:string)=>content.entities.some((e:any)=>e.id===heroId&&e.kind==='hero'&&e.data.combat);
+ const main=(await c.query("SELECT h.hero_id FROM player_team t JOIN player_heroes h ON h.id=t.instance_id WHERE t.player_id=$1 AND t.role='main'",[playerId])).rows;
+ if(added||main.length)if(!main.some(r=>usable(r.hero_id))){
+  const ids=(await c.query('SELECT id,hero_id FROM player_heroes WHERE player_id=$1 AND consumed_at IS NULL ORDER BY seq',[playerId])).rows.filter(r=>usable(r.hero_id)).slice(0,5);
+  if(ids.length){
+   await c.query("DELETE FROM player_team WHERE player_id=$1 AND role='main'",[playerId]);
+   for(const [slot,row] of ids.entries())await c.query("INSERT INTO player_team(player_id,role,slot,instance_id) VALUES($1,'main',$2,$3)",[playerId,slot,row.id]);
+  }
  }
 }
 export async function grantHero(c:PoolClient,playerId:string,heroId:string,key:string){

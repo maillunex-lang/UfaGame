@@ -1,0 +1,1629 @@
+{
+  "schema_version": 1,
+  "content_version": "draft_001",
+  "required_capabilities": [
+    "content.core.v1",
+    "battle.combat.v1",
+    "battle.abilities.v2",
+    "battle.triggers.v1",
+    "world.locations.v1",
+    "campaign.chapters.v1",
+    "heroes.progression.v1"
+  ],
+  "entities": [
+    {
+      "id": "faction_steppe",
+      "kind": "faction",
+      "name": "Степь",
+      "data": {
+        "advantage_ids": [
+          "faction_forest"
+        ]
+      }
+    },
+    {
+      "id": "faction_forest",
+      "kind": "faction",
+      "name": "Лес",
+      "data": {
+        "advantage_ids": [
+          "faction_mountains"
+        ]
+      }
+    },
+    {
+      "id": "faction_mountains",
+      "kind": "faction",
+      "name": "Горы",
+      "data": {
+        "advantage_ids": [
+          "faction_waters"
+        ]
+      }
+    },
+    {
+      "id": "faction_waters",
+      "kind": "faction",
+      "name": "Воды",
+      "data": {
+        "advantage_ids": [
+          "faction_steppe"
+        ]
+      }
+    },
+    {
+      "id": "faction_light",
+      "kind": "faction",
+      "name": "Свет",
+      "data": {
+        "advantage_ids": [
+          "faction_shadow"
+        ]
+      }
+    },
+    {
+      "id": "faction_shadow",
+      "kind": "faction",
+      "name": "Тень",
+      "data": {
+        "advantage_ids": [
+          "faction_light"
+        ]
+      }
+    },
+    {
+      "id": "ability_saber_rush",
+      "kind": "ability",
+      "name": "Сабельный натиск",
+      "data": {
+        "effect": "damage",
+        "power": 260,
+        "cooldown_ms": 3000,
+        "energy_cost": 600
+      }
+    },
+    {
+      "id": "ability_hawk_arrow",
+      "kind": "ability",
+      "name": "Стрела беркута",
+      "data": {
+        "effect": "damage",
+        "power": 300,
+        "cooldown_ms": 3000,
+        "energy_cost": 600,
+        "target": "weakest_enemy"
+      }
+    },
+    {
+      "id": "ability_stone_wall",
+      "kind": "ability",
+      "name": "Каменный заслон",
+      "data": {
+        "effect": "knockback",
+        "power": 2500,
+        "cooldown_ms": 4000,
+        "energy_cost": 500,
+        "extra_effects": [
+          {
+            "effect": "damage",
+            "power": 120
+          }
+        ]
+      }
+    },
+    {
+      "id": "ability_spring_water",
+      "kind": "ability",
+      "name": "Живая вода",
+      "data": {
+        "effect": "heal",
+        "power": 350,
+        "cooldown_ms": 3000,
+        "energy_cost": 500,
+        "target": "ally_lowest"
+      }
+    },
+    {
+      "id": "ability_hammer_blow",
+      "kind": "ability",
+      "name": "Удар кузнеца",
+      "data": {
+        "effect": "stun",
+        "power": 1500,
+        "cooldown_ms": 5000,
+        "energy_cost": 600,
+        "extra_effects": [
+          {
+            "effect": "damage",
+            "power": 150
+          }
+        ]
+      }
+    },
+    {
+      "id": "ability_dawn_light",
+      "kind": "ability",
+      "name": "Рассветный луч",
+      "data": {
+        "effect": "damage",
+        "power": 180,
+        "cooldown_ms": 4000,
+        "energy_cost": 700,
+        "target": "all_enemies"
+      }
+    },
+    {
+      "id": "ability_wind_ride",
+      "kind": "ability",
+      "name": "Скачка ветра",
+      "data": {
+        "effect": "damage",
+        "power": 220,
+        "cooldown_ms": 2500,
+        "energy_cost": 500,
+        "extra_effects": [
+          {
+            "effect": "knockback",
+            "power": 1200
+          }
+        ]
+      }
+    },
+    {
+      "id": "ability_lake_shield",
+      "kind": "ability",
+      "name": "Озёрный щит",
+      "data": {
+        "effect": "heal",
+        "power": 300,
+        "cooldown_ms": 3000,
+        "energy_cost": 500,
+        "target": "self"
+      }
+    },
+    {
+      "id": "ability_night_blade",
+      "kind": "ability",
+      "name": "Ночной клинок",
+      "data": {
+        "effect": "damage",
+        "power": 380,
+        "cooldown_ms": 3500,
+        "energy_cost": 700,
+        "target": "weakest_enemy"
+      }
+    },
+    {
+      "id": "ability_kurai_song",
+      "kind": "ability",
+      "name": "Песнь курая",
+      "data": {
+        "effect": "stun",
+        "power": 1000,
+        "cooldown_ms": 5000,
+        "energy_cost": 700,
+        "target": "all_enemies"
+      }
+    },
+    {
+      "id": "ability_healing_rain",
+      "kind": "ability",
+      "name": "Целебный дождь",
+      "data": {
+        "effect": "heal",
+        "power": 160,
+        "cooldown_ms": 4000,
+        "target": "ally_lowest",
+        "trigger": {
+          "kind": "ally_hp_below",
+          "percent": 50
+        }
+      }
+    },
+    {
+      "id": "ability_last_stand",
+      "kind": "ability",
+      "name": "Последний рубеж",
+      "data": {
+        "effect": "heal",
+        "power": 250,
+        "cooldown_ms": 8000,
+        "target": "self",
+        "trigger": {
+          "kind": "self_hp_below",
+          "percent": 30
+        }
+      }
+    },
+    {
+      "id": "ability_war_cry",
+      "kind": "ability",
+      "name": "Боевой клич",
+      "data": {
+        "effect": "stun",
+        "power": 800,
+        "cooldown_ms": 1000,
+        "target": "all_enemies",
+        "trigger": {
+          "kind": "battle_start"
+        }
+      }
+    },
+    {
+      "id": "ability_quick_shot",
+      "kind": "ability",
+      "name": "Быстрый выстрел",
+      "data": {
+        "effect": "damage",
+        "power": 70,
+        "cooldown_ms": 2000
+      }
+    },
+    {
+      "id": "ability_bite",
+      "kind": "ability",
+      "name": "Укус",
+      "data": {
+        "effect": "damage",
+        "power": 120,
+        "cooldown_ms": 3000,
+        "energy_cost": 600
+      }
+    },
+    {
+      "id": "ability_swamp_mist",
+      "kind": "ability",
+      "name": "Болотный туман",
+      "data": {
+        "effect": "stun",
+        "power": 700,
+        "cooldown_ms": 6000,
+        "energy_cost": 800
+      }
+    },
+    {
+      "id": "ability_rock_throw",
+      "kind": "ability",
+      "name": "Бросок валуна",
+      "data": {
+        "effect": "damage",
+        "power": 200,
+        "cooldown_ms": 4000,
+        "energy_cost": 700,
+        "extra_effects": [
+          {
+            "effect": "knockback",
+            "power": 800
+          }
+        ]
+      }
+    },
+    {
+      "id": "ability_river_wave",
+      "kind": "ability",
+      "name": "Речная волна",
+      "data": {
+        "effect": "damage",
+        "power": 160,
+        "cooldown_ms": 5000,
+        "energy_cost": 700,
+        "target": "all_enemies"
+      }
+    },
+    {
+      "id": "ability_serpent_coil",
+      "kind": "ability",
+      "name": "Кольца змея",
+      "data": {
+        "effect": "stun",
+        "power": 1500,
+        "cooldown_ms": 6000,
+        "energy_cost": 700,
+        "extra_effects": [
+          {
+            "effect": "damage",
+            "power": 250
+          }
+        ]
+      }
+    },
+    {
+      "id": "ability_cave_regrowth",
+      "kind": "ability",
+      "name": "Каменная кожа",
+      "data": {
+        "effect": "heal",
+        "power": 300,
+        "cooldown_ms": 9000,
+        "target": "self",
+        "trigger": {
+          "kind": "self_hp_below",
+          "percent": 40
+        }
+      }
+    },
+    {
+      "id": "ability_mountain_wrath",
+      "kind": "ability",
+      "name": "Гнев горы",
+      "data": {
+        "effect": "damage",
+        "power": 240,
+        "cooldown_ms": 5000,
+        "energy_cost": 800,
+        "target": "all_enemies",
+        "extra_effects": [
+          {
+            "effect": "stun",
+            "power": 800,
+            "target": "all_enemies"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hero_azamat",
+      "kind": "hero",
+      "name": "Азамат, батыр степи",
+      "data": {
+        "faction_id": "faction_steppe",
+        "ability_ids": [
+          "ability_saber_rush",
+          "ability_last_stand"
+        ],
+        "combat": {
+          "hp": 1600,
+          "attack": 75,
+          "defense": 25,
+          "speed": 700,
+          "range": 1200,
+          "attack_interval_ms": 800,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_aigul",
+      "kind": "hero",
+      "name": "Айгуль, лучница",
+      "data": {
+        "faction_id": "faction_forest",
+        "ability_ids": [
+          "ability_hawk_arrow",
+          "ability_quick_shot"
+        ],
+        "combat": {
+          "hp": 1000,
+          "attack": 70,
+          "defense": 10,
+          "speed": 500,
+          "range": 6000,
+          "attack_interval_ms": 900,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_karagai",
+      "kind": "hero",
+      "name": "Карагай, страж гор",
+      "data": {
+        "faction_id": "faction_mountains",
+        "ability_ids": [
+          "ability_stone_wall"
+        ],
+        "combat": {
+          "hp": 2400,
+          "attack": 45,
+          "defense": 40,
+          "speed": 500,
+          "range": 1200,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_zulfia",
+      "kind": "hero",
+      "name": "Зульфия, целительница",
+      "data": {
+        "faction_id": "faction_waters",
+        "ability_ids": [
+          "ability_spring_water",
+          "ability_healing_rain"
+        ],
+        "combat": {
+          "hp": 1000,
+          "attack": 35,
+          "defense": 10,
+          "speed": 500,
+          "range": 5000,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_timer",
+      "kind": "hero",
+      "name": "Тимер, кузнец",
+      "data": {
+        "faction_id": "faction_mountains",
+        "ability_ids": [
+          "ability_hammer_blow"
+        ],
+        "combat": {
+          "hp": 1700,
+          "attack": 65,
+          "defense": 30,
+          "speed": 600,
+          "range": 1200,
+          "attack_interval_ms": 800,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_laysan",
+      "kind": "hero",
+      "name": "Ляйсан, дочь рассвета",
+      "data": {
+        "faction_id": "faction_light",
+        "ability_ids": [
+          "ability_dawn_light",
+          "ability_quick_shot"
+        ],
+        "combat": {
+          "hp": 950,
+          "attack": 60,
+          "defense": 10,
+          "speed": 500,
+          "range": 5500,
+          "attack_interval_ms": 900,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_buranbay",
+      "kind": "hero",
+      "name": "Буранбай, всадник",
+      "data": {
+        "faction_id": "faction_steppe",
+        "ability_ids": [
+          "ability_wind_ride"
+        ],
+        "combat": {
+          "hp": 1400,
+          "attack": 80,
+          "defense": 20,
+          "speed": 1000,
+          "range": 1200,
+          "attack_interval_ms": 700,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_nuria",
+      "kind": "hero",
+      "name": "Нурия, хранительница озёр",
+      "data": {
+        "faction_id": "faction_waters",
+        "ability_ids": [
+          "ability_lake_shield",
+          "ability_last_stand"
+        ],
+        "combat": {
+          "hp": 2000,
+          "attack": 50,
+          "defense": 35,
+          "speed": 500,
+          "range": 1200,
+          "attack_interval_ms": 900,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_ilgiz",
+      "kind": "hero",
+      "name": "Ильгиз, ночной следопыт",
+      "data": {
+        "faction_id": "faction_shadow",
+        "ability_ids": [
+          "ability_night_blade"
+        ],
+        "combat": {
+          "hp": 1100,
+          "attack": 85,
+          "defense": 15,
+          "speed": 900,
+          "range": 1200,
+          "attack_interval_ms": 700,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "hero_server",
+      "kind": "hero",
+      "name": "Сэрвэр, шаман курая",
+      "data": {
+        "faction_id": "faction_forest",
+        "ability_ids": [
+          "ability_kurai_song",
+          "ability_war_cry"
+        ],
+        "combat": {
+          "hp": 1100,
+          "attack": 45,
+          "defense": 15,
+          "speed": 500,
+          "range": 4500,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_steppe_wolf",
+      "kind": "hero",
+      "name": "Степной волк",
+      "data": {
+        "faction_id": "faction_steppe",
+        "ability_ids": [
+          "ability_bite"
+        ],
+        "combat": {
+          "hp": 2800,
+          "attack": 112,
+          "defense": 5,
+          "speed": 900,
+          "range": 1000,
+          "attack_interval_ms": 700,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_swamp_spirit",
+      "kind": "hero",
+      "name": "Болотный дух",
+      "data": {
+        "faction_id": "faction_waters",
+        "ability_ids": [
+          "ability_swamp_mist"
+        ],
+        "combat": {
+          "hp": 2600,
+          "attack": 100,
+          "defense": 5,
+          "speed": 500,
+          "range": 4000,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_bandit",
+      "kind": "hero",
+      "name": "Разбойник с тракта",
+      "data": {
+        "faction_id": "faction_shadow",
+        "ability_ids": [
+          "ability_bite"
+        ],
+        "combat": {
+          "hp": 3600,
+          "attack": 138,
+          "defense": 15,
+          "speed": 700,
+          "range": 1200,
+          "attack_interval_ms": 800,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "boss_river_master",
+      "kind": "hero",
+      "name": "Хозяин Белой реки",
+      "data": {
+        "faction_id": "faction_waters",
+        "ability_ids": [
+          "ability_river_wave",
+          "ability_cave_regrowth"
+        ],
+        "combat": {
+          "hp": 4200,
+          "attack": 70,
+          "defense": 25,
+          "speed": 500,
+          "range": 3000,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_cave_bat",
+      "kind": "hero",
+      "name": "Пещерная мышь-тень",
+      "data": {
+        "faction_id": "faction_shadow",
+        "ability_ids": [
+          "ability_bite"
+        ],
+        "combat": {
+          "hp": 2400,
+          "attack": 150,
+          "defense": 5,
+          "speed": 1200,
+          "range": 1000,
+          "attack_interval_ms": 600,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_stone_golem",
+      "kind": "hero",
+      "name": "Каменный страж",
+      "data": {
+        "faction_id": "faction_mountains",
+        "ability_ids": [
+          "ability_rock_throw"
+        ],
+        "combat": {
+          "hp": 7200,
+          "attack": 138,
+          "defense": 35,
+          "speed": 400,
+          "range": 1200,
+          "attack_interval_ms": 1100,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "boss_cave_serpent",
+      "kind": "hero",
+      "name": "Змей Шульган-Таша",
+      "data": {
+        "faction_id": "faction_shadow",
+        "ability_ids": [
+          "ability_serpent_coil",
+          "ability_cave_regrowth"
+        ],
+        "combat": {
+          "hp": 5500,
+          "attack": 85,
+          "defense": 30,
+          "speed": 600,
+          "range": 2500,
+          "attack_interval_ms": 900,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_mountain_troll",
+      "kind": "hero",
+      "name": "Горный тролль",
+      "data": {
+        "faction_id": "faction_mountains",
+        "ability_ids": [
+          "ability_rock_throw"
+        ],
+        "combat": {
+          "hp": 8800,
+          "attack": 175,
+          "defense": 40,
+          "speed": 400,
+          "range": 1200,
+          "attack_interval_ms": 1200,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "enemy_storm_eagle",
+      "kind": "hero",
+      "name": "Грозовой орёл",
+      "data": {
+        "faction_id": "faction_light",
+        "ability_ids": [
+          "ability_bite"
+        ],
+        "combat": {
+          "hp": 3600,
+          "attack": 188,
+          "defense": 10,
+          "speed": 1200,
+          "range": 3000,
+          "attack_interval_ms": 800,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "boss_yamantau_lord",
+      "kind": "hero",
+      "name": "Владыка Ямантау",
+      "data": {
+        "faction_id": "faction_mountains",
+        "ability_ids": [
+          "ability_mountain_wrath",
+          "ability_cave_regrowth"
+        ],
+        "combat": {
+          "hp": 7000,
+          "attack": 100,
+          "defense": 45,
+          "speed": 500,
+          "range": 2500,
+          "attack_interval_ms": 1000,
+          "energy_start": 200,
+          "energy_per_second": 100,
+          "energy_per_attack": 100
+        }
+      }
+    },
+    {
+      "id": "item_steppe_saber",
+      "kind": "item",
+      "name": "Степная сабля",
+      "data": {
+        "stack_limit": 1,
+        "slot": "weapon",
+        "rarity": "common",
+        "stats": {
+          "attack": 25
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_felt_armor",
+      "kind": "item",
+      "name": "Войлочный доспех",
+      "data": {
+        "stack_limit": 1,
+        "slot": "armor",
+        "rarity": "common",
+        "stats": {
+          "hp": 250,
+          "defense": 10
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_fox_hat",
+      "kind": "item",
+      "name": "Лисья шапка",
+      "data": {
+        "stack_limit": 1,
+        "slot": "helmet",
+        "rarity": "common",
+        "stats": {
+          "hp": 150,
+          "defense": 5
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_ichigi_boots",
+      "kind": "item",
+      "name": "Ичиги следопыта",
+      "data": {
+        "stack_limit": 1,
+        "slot": "boots",
+        "rarity": "common",
+        "stats": {
+          "speed": 100,
+          "defense": 5
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_amber_beads",
+      "kind": "item",
+      "name": "Янтарные бусы",
+      "data": {
+        "stack_limit": 1,
+        "slot": "jewelry",
+        "rarity": "rare",
+        "stats": {
+          "hp": 200,
+          "attack": 10
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_kurai_relic",
+      "kind": "item",
+      "name": "Древний курай",
+      "data": {
+        "stack_limit": 1,
+        "slot": "artifact",
+        "rarity": "epic",
+        "stats": {
+          "attack": 20,
+          "hp": 150
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80
+      }
+    },
+    {
+      "id": "item_ural_bow",
+      "kind": "item",
+      "name": "Лук уральских мастеров",
+      "data": {
+        "stack_limit": 1,
+        "slot": "weapon",
+        "rarity": "rare",
+        "stats": {
+          "attack": 45
+        },
+        "upgrade_max": 10,
+        "upgrade_bp": 1500,
+        "upgrade_gold": 80,
+        "faction_ids": [
+          "faction_forest",
+          "faction_light"
+        ]
+      }
+    },
+    {
+      "id": "republic_bashkortostan",
+      "kind": "location",
+      "name": "Республика Башкортостан",
+      "data": {
+        "level": "republic",
+        "name_ba": "Башҡортостан Республикаһы",
+        "lat_e6": 54466667,
+        "lon_e6": 56266667,
+        "source": {
+          "kind": "wikidata",
+          "id": "Q5710",
+          "retrieved": "2026-11-03"
+        }
+      }
+    },
+    {
+      "id": "city_ufa",
+      "kind": "location",
+      "name": "г. Уфа",
+      "data": {
+        "level": "city",
+        "parent_id": "republic_bashkortostan",
+        "name_ba": "Өфө",
+        "lat_e6": 54726111,
+        "lon_e6": 55947500,
+        "centre_name": "Уфа",
+        "source": {
+          "kind": "wikidata",
+          "id": "Q15190285",
+          "retrieved": "2026-11-03",
+          "candidates": 2
+        }
+      }
+    },
+    {
+      "id": "district_burzyanskiy",
+      "kind": "location",
+      "name": "Бурзянский район",
+      "data": {
+        "level": "district",
+        "parent_id": "republic_bashkortostan",
+        "name_ba": "Бөрйән районы",
+        "lat_e6": 53100000,
+        "lon_e6": 57433333,
+        "centre_name": "Старосубхангулово",
+        "source": {
+          "kind": "wikidata",
+          "id": "Q852243",
+          "retrieved": "2026-11-03",
+          "candidates": 3
+        }
+      }
+    },
+    {
+      "id": "district_beloretskiy",
+      "kind": "location",
+      "name": "Белорецкий район",
+      "data": {
+        "level": "district",
+        "parent_id": "republic_bashkortostan",
+        "name_ba": "Белорет районы",
+        "lat_e6": 53833333,
+        "lon_e6": 58600000,
+        "centre_name": "Белорецк",
+        "source": {
+          "kind": "wikidata",
+          "id": "Q792513",
+          "retrieved": "2026-11-03",
+          "candidates": 2
+        }
+      }
+    },
+    {
+      "id": "point_ufa_belaya_bank",
+      "kind": "location",
+      "name": "Берег Белой",
+      "data": {
+        "level": "point",
+        "parent_id": "city_ufa",
+        "lat_e6": 54716000,
+        "lon_e6": 55935000,
+        "description": "Набережная реки Белой",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_ufa_old_park",
+      "kind": "location",
+      "name": "Старый парк",
+      "data": {
+        "level": "point",
+        "parent_id": "city_ufa",
+        "lat_e6": 54740000,
+        "lon_e6": 55960000,
+        "description": "Парк на холмах города",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_ufa_river_gate",
+      "kind": "location",
+      "name": "Речные ворота",
+      "data": {
+        "level": "point",
+        "parent_id": "city_ufa",
+        "lat_e6": 54700000,
+        "lon_e6": 55990000,
+        "description": "Место у слияния рек",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_burzyan_forest",
+      "kind": "location",
+      "name": "Бурзянская чаща",
+      "data": {
+        "level": "point",
+        "parent_id": "district_burzyanskiy",
+        "lat_e6": 53120000,
+        "lon_e6": 57300000,
+        "description": "Лес у заповедника",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_burzyan_river",
+      "kind": "location",
+      "name": "Брод через Агидель",
+      "data": {
+        "level": "point",
+        "parent_id": "district_burzyanskiy",
+        "lat_e6": 53080000,
+        "lon_e6": 57430000,
+        "description": "Река у Старосубхангулово",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_shulgan_tash",
+      "kind": "location",
+      "name": "Пещера Шульган-Таш",
+      "data": {
+        "level": "point",
+        "parent_id": "district_burzyanskiy",
+        "lat_e6": 53044000,
+        "lon_e6": 57065000,
+        "description": "Капова пещера",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_beloretsk_forge",
+      "kind": "location",
+      "name": "Кузни Белорецка",
+      "data": {
+        "level": "point",
+        "parent_id": "district_beloretskiy",
+        "lat_e6": 53967000,
+        "lon_e6": 58400000,
+        "description": "Старый завод",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_iremel",
+      "kind": "location",
+      "name": "Склон Иремеля",
+      "data": {
+        "level": "point",
+        "parent_id": "district_beloretskiy",
+        "lat_e6": 54519000,
+        "lon_e6": 58843000,
+        "description": "Гора Иремель",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "point_yamantau",
+      "kind": "location",
+      "name": "Вершина Ямантау",
+      "data": {
+        "level": "point",
+        "parent_id": "district_beloretskiy",
+        "lat_e6": 54255000,
+        "lon_e6": 58103000,
+        "description": "Гора Ямантау",
+        "source": {
+          "kind": "manual",
+          "note": "Приблизительное место для сюжета стартового мира"
+        }
+      }
+    },
+    {
+      "id": "stage_c1_1",
+      "kind": "stage",
+      "name": "Волки у Белой",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_steppe_wolf",
+          "enemy_steppe_wolf"
+        ],
+        "time_limit_ms": 90000,
+        "location_id": "point_ufa_belaya_bank",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 500
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": "stage_c1_2",
+      "kind": "stage",
+      "name": "Туман в старом парке",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_swamp_spirit",
+          "enemy_steppe_wolf",
+          "enemy_swamp_spirit"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 12,
+        "location_id": "point_ufa_old_park",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 600
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 1200
+          }
+        ],
+        "rewards_first_items": [
+          "item_fox_hat"
+        ]
+      }
+    },
+    {
+      "id": "stage_c1_3",
+      "kind": "stage",
+      "name": "Разбойники у ворот",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_bandit",
+          "enemy_bandit",
+          "enemy_steppe_wolf"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 4,
+        "location_id": "point_ufa_river_gate",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 800
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 1200
+          },
+          {
+            "currency": "rank_material",
+            "amount": 100
+          }
+        ],
+        "rewards_first_heroes": [
+          "hero_laysan"
+        ]
+      }
+    },
+    {
+      "id": "stage_c1_boss",
+      "kind": "stage",
+      "name": "Хозяин Белой реки",
+      "data": {
+        "enemy_hero_ids": [
+          "boss_river_master",
+          "enemy_swamp_spirit",
+          "enemy_swamp_spirit"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 15,
+        "location_id": "point_ufa_belaya_bank",
+        "boss": true,
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 1500
+          },
+          {
+            "currency": "gems",
+            "amount": 50
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 2500
+          }
+        ],
+        "rewards_first_heroes": [
+          "hero_buranbay"
+        ],
+        "rewards_first_items": [
+          "item_amber_beads"
+        ]
+      }
+    },
+    {
+      "id": "stage_c2_1",
+      "kind": "stage",
+      "name": "Тени в чаще",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_cave_bat",
+          "enemy_cave_bat",
+          "enemy_bandit"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 7,
+        "location_id": "point_burzyan_forest",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 1500
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": "stage_c2_2",
+      "kind": "stage",
+      "name": "Брод через Агидель",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_swamp_spirit",
+          "enemy_stone_golem",
+          "enemy_swamp_spirit"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 13,
+        "location_id": "point_burzyan_river",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 1500
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 3000
+          },
+          {
+            "currency": "rank_material",
+            "amount": 150
+          }
+        ],
+        "rewards_first_heroes": [
+          "hero_nuria"
+        ]
+      }
+    },
+    {
+      "id": "stage_c2_3",
+      "kind": "stage",
+      "name": "Стражи пещеры",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_stone_golem",
+          "enemy_stone_golem",
+          "enemy_cave_bat",
+          "enemy_cave_bat"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 3,
+        "location_id": "point_shulgan_tash",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 2000
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 3500
+          }
+        ],
+        "rewards_first_items": [
+          "item_ichigi_boots"
+        ]
+      }
+    },
+    {
+      "id": "stage_c2_boss",
+      "kind": "stage",
+      "name": "Змей Шульган-Таша",
+      "data": {
+        "enemy_hero_ids": [
+          "boss_cave_serpent",
+          "enemy_cave_bat",
+          "enemy_stone_golem"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 12,
+        "location_id": "point_shulgan_tash",
+        "boss": true,
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 3000
+          },
+          {
+            "currency": "gems",
+            "amount": 80
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 5000
+          }
+        ],
+        "rewards_first_heroes": [
+          "hero_ilgiz"
+        ],
+        "rewards_first_items": [
+          "item_ural_bow"
+        ]
+      }
+    },
+    {
+      "id": "stage_c3_1",
+      "kind": "stage",
+      "name": "Кузни Белорецка",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_bandit",
+          "enemy_bandit",
+          "enemy_stone_golem"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 15,
+        "location_id": "point_beloretsk_forge",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 3000
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 5000
+          }
+        ],
+        "rewards_first_items": [
+          "item_felt_armor"
+        ]
+      }
+    },
+    {
+      "id": "stage_c3_2",
+      "kind": "stage",
+      "name": "Тролли Иремеля",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_mountain_troll",
+          "enemy_storm_eagle",
+          "enemy_mountain_troll"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 11,
+        "location_id": "point_iremel",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 3000
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 5000
+          },
+          {
+            "currency": "rank_material",
+            "amount": 200
+          }
+        ],
+        "rewards_first_heroes": [
+          "hero_server"
+        ]
+      }
+    },
+    {
+      "id": "stage_c3_3",
+      "kind": "stage",
+      "name": "Грозовой перевал",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_storm_eagle",
+          "enemy_storm_eagle",
+          "enemy_mountain_troll",
+          "enemy_stone_golem"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 8,
+        "location_id": "point_iremel",
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 3500
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 6000
+          }
+        ],
+        "rewards_first_items": [
+          "item_kurai_relic"
+        ]
+      }
+    },
+    {
+      "id": "stage_c3_boss",
+      "kind": "stage",
+      "name": "Владыка Ямантау",
+      "data": {
+        "enemy_hero_ids": [
+          "boss_yamantau_lord",
+          "enemy_mountain_troll",
+          "enemy_storm_eagle",
+          "enemy_storm_eagle"
+        ],
+        "time_limit_ms": 90000,
+        "enemy_level": 9,
+        "location_id": "point_yamantau",
+        "boss": true,
+        "rewards_first": [
+          {
+            "currency": "gold",
+            "amount": 5000
+          },
+          {
+            "currency": "gems",
+            "amount": 150
+          },
+          {
+            "currency": "rank_material",
+            "amount": 400
+          }
+        ]
+      }
+    },
+    {
+      "id": "stage_training",
+      "kind": "stage",
+      "name": "Тренировочный круг",
+      "data": {
+        "enemy_hero_ids": [
+          "enemy_steppe_wolf"
+        ],
+        "time_limit_ms": 90000,
+        "location_id": "point_ufa_old_park"
+      }
+    },
+    {
+      "id": "chapter_1_ufa",
+      "kind": "chapter",
+      "name": "Пробуждение Уфы",
+      "data": {
+        "order": 1,
+        "stage_ids": [
+          "stage_c1_1",
+          "stage_c1_2",
+          "stage_c1_3",
+          "stage_c1_boss"
+        ],
+        "location_id": "city_ufa",
+        "proposed": true,
+        "description": "Река Белая беспокойна: из тумана выходят звери и духи."
+      }
+    },
+    {
+      "id": "chapter_2_burzyan",
+      "kind": "chapter",
+      "name": "Тайна Шульган-Таша",
+      "data": {
+        "order": 2,
+        "stage_ids": [
+          "stage_c2_1",
+          "stage_c2_2",
+          "stage_c2_3",
+          "stage_c2_boss"
+        ],
+        "location_id": "district_burzyanskiy",
+        "proposed": true,
+        "description": "В бурзянских лесах тени ведут к древней пещере."
+      }
+    },
+    {
+      "id": "chapter_3_mountains",
+      "kind": "chapter",
+      "name": "Вершины Урала",
+      "data": {
+        "order": 3,
+        "stage_ids": [
+          "stage_c3_1",
+          "stage_c3_2",
+          "stage_c3_3",
+          "stage_c3_boss"
+        ],
+        "location_id": "district_beloretskiy",
+        "proposed": true,
+        "description": "Горы просыпаются, и Владыка Ямантау зовёт на бой."
+      }
+    },
+    {
+      "id": "progression_main",
+      "kind": "progression",
+      "name": "Развитие героев",
+      "data": {
+        "level_gold_base": 30,
+        "level_gold_step": 15,
+        "level_exp_base": 40,
+        "level_exp_step": 20,
+        "growth_bp": 800,
+        "ranks": [
+          {
+            "name": "Новичок",
+            "max_level": 20,
+            "copies": 0,
+            "stat_bp": 0
+          },
+          {
+            "name": "Воин",
+            "max_level": 40,
+            "copies": 1,
+            "stat_bp": 1500
+          },
+          {
+            "name": "Батыр",
+            "max_level": 60,
+            "copies": 2,
+            "stat_bp": 3500
+          },
+          {
+            "name": "Легенда",
+            "max_level": 100,
+            "copies": 3,
+            "stat_bp": 6000
+          }
+        ],
+        "material_per_copy": 100,
+        "sync_slots": 5,
+        "starter_hero_ids": [
+          "hero_azamat",
+          "hero_aigul",
+          "hero_karagai",
+          "hero_zulfia",
+          "hero_timer",
+          "hero_azamat",
+          "hero_aigul"
+        ],
+        "starter_item_ids": [
+          "item_steppe_saber"
+        ],
+        "proposed": true
+      }
+    }
+  ]
+}
