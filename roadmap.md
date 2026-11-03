@@ -1656,3 +1656,6 @@ CI исходного изменения: GitHub Actions 41646184028; резул
 серверная логика не менялась. Godot `check:game` и test_ui.gd проверяют запуск
 и переключение вкладок. Верстка на Android не проверена; отдельный отчет
 `docs/reports/game-ui-test.md`. Это не завершение S31.
+Game v16 для проверки опубликована: https://github.com/maillunex-lang/UfaGame/releases/download/game-ui-test-v16/Game-arm64-v16.apk
+CI 41648022141 прошел, подпись прежняя, скачанный APK совпал по SHA-256.
+На iQOO не проверено; после установки проверить вкладки, бой, героев и задания.

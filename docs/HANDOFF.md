@@ -43,7 +43,7 @@
 - Ключи НЕ в git. Владелец передаёт `signing-backup.tar`; распаковать вне репозитория
   (раньше: /root/.ufagame-signing). Новые ключи не создавать.
 - Сборка Game: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ANDROID_HOME=/opt/android-sdk UFAGAME_SIGNING_DIR=<папка ключей> UFAGAME_GAME_ONLY=1 bash tools/android/build.sh <versionCode>`
-  → build/android/game-<код>/. Последняя: Game v15 (код 15). Сертификат Game e8959e0f…e575, Studio badb1f78…ccf7.
+  → build/android/game-<код>/. Последняя: Game v16 (код 16), интерфейс разделён на вкладки; телефон ещё не проверен. Сертификат Game e8959e0f…e575, Studio badb1f78…ccf7.
 - Публикация: только после зелёного CI. Сироту-ветку `artifact-staging/apk-*` с APK,
   SHA256SUMS.txt, release-notes.md, release-manifest.json и `.github/workflows/publish.yml`
   (копия tools/android/release-staging.yml) пушить в репозиторий; workflow создаёт Release и
