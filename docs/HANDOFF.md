@@ -7,15 +7,14 @@
 при необходимости синхронно в две другие. Актуальный commit выясняй через git.
 
 ## Состояние
-- done: S01–S17 (подробности, команды и доказательства — поздние записи roadmap.md и
-  docs/reports/Sxx.md). S10 и S16 приняты владельцем на iQOO 15R / Android 16.
+- done: S01–S18 (доказательства — roadmap.md и docs/reports/Sxx.md).
+  S10 и S16 приняты владельцем на iQOO 15R / Android 16.
 - in_progress: S51 (обследование VPS). blocked: S20 (по S19), S52 (по поздним этапам).
-- Следующий доступный этап: S18 (поток боя и ручные команды), затем S19 (бой в Game),
-  S20 (редакторы), S21+ по таблице roadmap.
-- Задел S18: packages/battle-core/session.mjs (in-memory сессия, sequence, повтор,
-  ручная основная способность через `manualActorIds`), tests/battle/session.test.mjs.
-  Нет транспорта, авторизации, сохранения и reconnect. Серверный автобой игрока уже
-  есть: `POST /v1/battles`, `GET /v1/battles/:id` (services/api/src/battles.ts, ADR 0016).
+- Следующий этап: S19 (экран боя в Game), затем S20 и далее по зависимостям roadmap.
+- S18: packages/battle-core/live.mjs, services/api/src/live-battles.ts и live-routes.ts,
+  миграция 011, ADR 0017. Поток и команды проверены локально с PostgreSQL и WebSocket.
+  На VPS S18 не развернут, существующий nginx не настроен для WebSocket upgrade;
+  Android и внешний WSS не проверены. Не заявляй S19 готовым без его проверок.
 
 ## Что работает у владельца
 - VPS 144.31.254.99, домен tts-ufa.ru, рядом работает чужой портал (корень `/`
