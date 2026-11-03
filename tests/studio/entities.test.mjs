@@ -61,3 +61,14 @@ test('quick start creates faction, strike and a battle-ready hero in one valid s
  text=quickStartHero(text,{name:'Батыр'});assert.equal(JSON.parse(text).entities.length,4,'reuses faction and ability, new unique hero id');
  assert.equal(JSON.parse(text).entities[3].id,'hero_batyr_2');
 });
+import {missingResourceRefs,dropResourceRef} from '../../apps/studio-web/src/entities.mjs';
+test('missing picture/sound links are found and can be removed without touching the rest',()=>{
+ let text=upsertEntity(blank(),{...ability,data:{...ability.data,sound_resource_id:'sound_hit'}});text=upsertEntity(text,faction);
+ text=upsertEntity(text,{...hero,name:'Heroes',data:{...hero.data,sprite_resource_id:'hero_sprite'}});
+ const res=[{id:'sound_hit',media_type:'audio/wav'}];
+ assert.deepEqual(missingResourceRefs(text,res),[{entity_id:'hero_one',entity_name:'Heroes',resource_id:'hero_sprite',what:'картинка'}]);
+ assert.equal(missingResourceRefs(text,[{id:'hero_sprite',media_type:'audio/wav'},...res]).length,1,'wrong type is also missing');
+ text=dropResourceRef(text,'hero_one');assert.deepEqual(missingResourceRefs(text,res),[]);
+ const c=JSON.parse(text);assert.equal(c.entities.find(e=>e.id==='hero_one').data.faction_id,'faction_one');assert.equal(validate('content',c).ok,true);
+ assert.ok(c.required_capabilities.includes('content.resources.v1'),'sound link remains');
+});

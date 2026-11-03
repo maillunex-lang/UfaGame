@@ -6,3 +6,6 @@ export const combatFields:[string,number,number,number][];
 export function suggestId(name:string,prefix:string,taken?:string[]):string;
 export function defaultCombat():Record<string,number>;
 export function quickStartHero(text:string,options:{name?:string;spriteId?:string|null}):string;
+export type MissingRef={entity_id:string;entity_name:string;resource_id:string;what:string};
+export function missingResourceRefs(text:string,resources:{id:string;media_type:string}[]):MissingRef[];
+export function dropResourceRef(text:string,entityId:string):string;

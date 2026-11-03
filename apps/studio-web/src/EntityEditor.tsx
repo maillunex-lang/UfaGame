@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react';
-import {combatFields,deleteEntity,listEntities,upsertEntity,suggestId,quickStartHero,type EditableEntity} from './entities.mjs';
+import {combatFields,deleteEntity,listEntities,upsertEntity,suggestId,quickStartHero,missingResourceRefs,dropResourceRef,type EditableEntity} from './entities.mjs';
 
 type Api=(path:string,method?:string,body?:unknown,csrf?:string)=>Promise<any>;
 type Res={id:string;media_type:string;width?:number;height?:number;frames?:{x:number;y:number;width:number;height:number}[]};
@@ -23,11 +23,13 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
  const [formDirty,setFormDirty]=useState(false),[notice,setNotice]=useState('');
  const [power,setPower]=useState('60'),[cooldown,setCooldown]=useState('1000'),[faction,setFaction]=useState(''),[refs,setRefs]=useState<string[]>([]),[error,setError]=useState('');
  const [energyCost,setEnergyCost]=useState(''),[resourceRef,setResourceRef]=useState(''),[hasCombat,setHasCombat]=useState(true),[combat,setCombat]=useState<Record<string,string>>(combatDefaults);
- const [resources,setResources]=useState<Res[]>([]),[quickName,setQuickName]=useState(''),[quickSprite,setQuickSprite]=useState('');
+ const [resources,setResources]=useState<Res[]|null>(null),[quickName,setQuickName]=useState(''),[quickSprite,setQuickSprite]=useState('');
  useEffect(()=>{if(api)api('/resources').then(r=>setResources(r.resources)).catch(()=>{});},[api,resourcesVersion]);
+ const list=resources??[];
+ const missing=resources?missingResourceRefs(text,resources):[];
  let entities:EditableEntity[]=[];try{entities=listEntities(text);}catch{/* Existing text error is reported on action. */}
  const of=(k:Kind)=>entities.filter(e=>e.kind===k);
- const images=resources.filter(r=>r.media_type==='image/png'),sounds=resources.filter(r=>r.media_type==='audio/wav');
+ const images=list.filter(r=>r.media_type==='image/png'),sounds=list.filter(r=>r.media_type==='audio/wav');
  const autoId=original?id:idTouched?id:suggestId(name||labels[kind],prefixes[kind],entities.map(e=>e.id));
  const touch=()=>{setFormDirty(true);onPendingChange(true);};
  function reset(nextKind:Kind=kind){setOriginal(null);setId('');setIdTouched(false);setName('');setEffect('damage');setPower('60');setCooldown('1000');setFaction('');setRefs([]);setError('');setEnergyCost('');setResourceRef('');setHasCombat(nextKind==='hero');setCombat(combatDefaults);setFormDirty(false);onPendingChange(false);}
@@ -51,8 +53,11 @@ export function EntityEditor({text,onChange,onPendingChange,api,resourcesVersion
  function createFaction(){try{const fid=suggestId('Нейтральные','faction',entities.map(e=>e.id));onChange(upsertEntity(text,{id:fid,kind:'faction',name:'Нейтральные',data:{advantage_ids:[]}}));setFaction(fid);touch();}catch(e){setError((e as Error).message);}}
  function createAbility(){try{const aid=suggestId('Удар','ability',entities.map(e=>e.id));onChange(upsertEntity(text,{id:aid,kind:'ability',name:'Удар',data:{effect:'damage',power:60,cooldown_ms:1000}}));setRefs(r=>[...r,aid]);touch();}catch(e){setError((e as Error).message);}}
  const toggle=(value:string,on:boolean)=>setRefs(r=>on?[...r.filter(x=>x!==value),value]:r.filter(x=>x!==value));
- const resById=(rid?:string)=>resources.find(r=>r.id===rid);
+ const resById=(rid?:string)=>list.find(r=>r.id===rid);
+ function fix(entityId:string){try{onChange(dropResourceRef(text,entityId));setNotice('Ссылка убрана. Теперь нажми «Сохранить черновик» внизу.');}catch(e){setError((e as Error).message);}}
  return <section aria-label="Редактор объектов"><h2>Герои, способности, фракции</h2>
+  <ol className="steps"><li>Загрузи картинку героя выше, в «Изображения и звуки».</li><li>Создай героя здесь: «Быстрый старт» или форма ниже.</li><li>Нажми «Сохранить черновик» внизу экрана.</li><li>В «Публикация контента» нажми «Проверить», затем «Опубликовать» — герой появится в игре.</li></ol>
+  {missing.length>0&&<div className="problems" role="alert"><strong>Черновик не сохранится, пока не исправишь:</strong><ul>{missing.map(m=><li key={m.entity_id}>«{m.entity_name}»: {m.what} «{m.resource_id}» не загружена. <button type="button" className="secondary" onClick={()=>fix(m.entity_id)}>Исправить: убрать ссылку</button></li>)}</ul><p className="hint">Или загрузи файл с этим ID в «Изображения и звуки».</p></div>}
   {of('hero').length===0&&<div className="quickstart"><h3>Быстрый старт</h3><p>Создадим готового к бою героя: если нужно, сразу добавим фракцию «Нейтральные» и способность «Удар».</p>
    <label>Имя героя<input value={quickName} maxLength={100} onChange={e=>setQuickName(e.target.value)} placeholder="Например: Батыр"/></label>
    <label>Картинка героя<select value={quickSprite} onChange={e=>setQuickSprite(e.target.value)}><option value="">Без картинки</option>{images.map(r=><option key={r.id} value={r.id}>{r.id}</option>)}</select></label>

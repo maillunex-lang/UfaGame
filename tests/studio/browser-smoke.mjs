@@ -60,6 +60,7 @@ try{
     else try{const c=compileContentBattle(draft.content,v);body={api_version:1,preview:true,draft_id:draft.id,draft_revision:draft.revision,...runAutoBattle(c.setup,{heroes:c.heroes})};}
     catch(e){if(!(e instanceof BattleCompileError))throw e;status=422;body={error:{code:'INVALID_REQUEST',message:e.entity_id?`${e.code}:${e.entity_id}`:e.code}};}}
    else if(path.includes('/drafts/')&&method==='GET'){body=draft;}
+   else if(path.includes('/drafts/')&&method==='PUT'&&req.postDataJSON().content.entities.some(e=>e.data?.sprite_resource_id&&!resources.some(r=>r.id===e.data.sprite_resource_id))){status=422;body={error:{code:'INVALID_REQUEST',message:'RESOURCE_REF_INVALID:'+req.postDataJSON().content.entities.find(e=>e.data?.sprite_resource_id&&!resources.some(r=>r.id===e.data.sprite_resource_id)).data.sprite_resource_id}};}
    else if(path.includes('/drafts/')&&method==='PUT'){const v=req.postDataJSON();draft={...draft,name:v.name,content:v.content,revision:draft.revision+1};body=draft;}
    else{status=404;body={};}
    return route.fulfill({status,contentType:'application/json',body:JSON.stringify(body)});
@@ -143,6 +144,17 @@ try{
  assert.equal(published.length,1);await page.getByText('Сейчас в игре: pub_000001').waitFor();
  await page.getByRole('button',{name:'Проверить перед публикацией'}).click();await page.getByRole('status').filter({hasText:'уже опубликована'}).waitFor();
  assert.equal(await page.getByRole('button',{name:'Опубликовать'}).count(),0,'nothing to publish');
+ // Owner case: a hero links a picture that was never uploaded -> explain, fix, save.
+ const json=JSON.parse(await page.getByLabel('Содержимое JSON').inputValue({timeout:1000}).catch(async()=>{await page.locator('details.advanced').evaluate(d=>{d.open=true;});return page.getByLabel('Содержимое JSON').inputValue();}));
+ json.entities.push({id:'hero_ghost',kind:'hero',name:'Heroes',data:{faction_id:'faction_one',ability_ids:['ability_one'],sprite_resource_id:'hero_sprite'}});
+ await page.locator('details.advanced').evaluate(d=>{d.open=true;});await page.getByLabel('Содержимое JSON').fill(JSON.stringify(json,null,2));
+ await page.getByRole('alert').filter({hasText:'Черновик не сохранится, пока не исправишь'}).waitFor();
+ const revBefore=draft.revision;await page.getByRole('button',{name:'Сохранить черновик'}).click();
+ await page.getByRole('status').filter({hasText:'ссылка на файл «hero_sprite»'}).waitFor();assert.equal(draft.revision,revBefore,'rejected save changes nothing');
+ await page.getByRole('button',{name:'Исправить: убрать ссылку'}).click();await page.getByRole('status').filter({hasText:'Ссылка убрана'}).waitFor();
+ await page.getByRole('button',{name:'Сохранить черновик'}).click();await page.getByRole('status').filter({hasText:'Черновик сохранён'}).waitFor();
+ assert.equal(draft.revision,revBefore+1);assert.equal(draft.content.entities.find(e=>e.id==='hero_ghost').data.sprite_resource_id,undefined);
+ console.log('Chromium mobile: missing picture link explained, fixed in one tap, saved — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');

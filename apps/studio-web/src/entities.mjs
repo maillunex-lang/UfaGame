@@ -83,3 +83,17 @@ export function quickStartHero(text,{name,spriteId=null}){
  const heroName=String(name??'').trim()||'Новый герой';
  return upsertEntity(text,{id:suggestId(heroName,'hero',ids),kind:'hero',name:heroName,data:{faction_id:factionId,ability_ids:[abilityId],...(spriteId?{sprite_resource_id:spriteId}:{}),combat:defaultCombat()}});
 }
+/** References to resources that do not exist (or have the wrong type): they block saving. */
+export function missingResourceRefs(text,resources){
+ let content;try{content=documentFrom(text);}catch{return [];}
+ const types=new Map((resources??[]).map(r=>[r.id,r.media_type]));
+ return content.entities.flatMap(e=>e?.kind==='hero'&&e.data?.sprite_resource_id!==undefined&&types.get(e.data.sprite_resource_id)!=='image/png'?[{entity_id:e.id,entity_name:e.name,resource_id:e.data.sprite_resource_id,what:'картинка'}]
+  :e?.kind==='ability'&&e.data?.sound_resource_id!==undefined&&types.get(e.data.sound_resource_id)!=='audio/wav'?[{entity_id:e.id,entity_name:e.name,resource_id:e.data.sound_resource_id,what:'звук'}]:[]);
+}
+/** Removes the picture/sound link of one object (keeps everything else). */
+export function dropResourceRef(text,entityId){
+ const content=documentFrom(text),e=content.entities.find(x=>x.id===entityId);
+ if(!e)fail('Объект не найден.');
+ if(e.data)delete e.data.sprite_resource_id;if(e.data)delete e.data.sound_resource_id;
+ syncCapability(content);return JSON.stringify(content,null,2);
+}
