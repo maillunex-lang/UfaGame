@@ -206,5 +206,16 @@ func texture(resource_id: String) -> Texture2D:
 		if res.id == resource_id and res.media_type == "image/png" and downloaded(res):
 			var image := Image.new()
 			if image.load_png_from_buffer(FileAccess.get_file_as_bytes(blob_path(res.sha256))) == OK:
-				return ImageTexture.create_from_image(image)
+				var whole := ImageTexture.create_from_image(image)
+				var frames = res.get("frames", [])
+				if frames is Array and frames.size() > 0 and frames[0] is Dictionary:
+					# Show the first animation frame, not the whole atlas.
+					var f: Dictionary = frames[0]
+					var region := Rect2(float(f.get("x", 0)), float(f.get("y", 0)), float(f.get("width", image.get_width())), float(f.get("height", image.get_height())))
+					if region.position.x >= 0 and region.position.y >= 0 and region.end.x <= image.get_width() and region.end.y <= image.get_height() and region.size.x > 0 and region.size.y > 0:
+						var atlas := AtlasTexture.new()
+						atlas.atlas = whole
+						atlas.region = region
+						return atlas
+				return whole
 	return null

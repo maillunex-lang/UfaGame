@@ -106,8 +106,14 @@ func _start() -> void:
 	if busy:
 		return
 	busy = true
-	status.text = "Вход…"
+	var saved: Dictionary = content.active()
+	status.text = "Вход…" if saved.is_empty() else "Работает сохранённая версия %s. Проверяем обновления…" % saved.content_version
 	var connected: Dictionary = await auth.connect_guest(base_url.text.strip_edges())
+	if not connected.ok and connected.code == "NETWORK_UNAVAILABLE" and not saved.is_empty():
+		status.text = "Без сети: работает сохранённая версия %s. Обновим, когда появится сеть." % saved.content_version
+		busy = false
+		_show_hub()
+		return
 	if not connected.ok:
 		status.text = _explain(str(connected.code)) + "\nСохранённые данные не удалены."
 		busy = false

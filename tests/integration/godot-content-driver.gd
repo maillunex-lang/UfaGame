@@ -77,7 +77,8 @@ func run() -> void:
 	check(result.ok and result.version == v1.version, "first sync activates v1")
 	check(has(first.trace, "blob_download:" + v1.sprite), "sprite downloaded")
 	check(not has(first.trace, "blob_download:" + v1.sound), "sound is optional until Download all")
-	check(first.texture("sprite_hero") != null, "sprite decodes from local storage")
+	var tex = first.texture("sprite_hero")
+	check(tex != null and tex.get_width() == 64 and tex.get_height() == 64, "sprite first frame decodes from local storage")
 	# 2. Restart: nothing is downloaded again.
 	var second = loader()
 	result = await second.sync()
