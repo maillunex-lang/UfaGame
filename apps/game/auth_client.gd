@@ -48,9 +48,10 @@ func call_api(path: String, payload = null, authorized := false) -> Dictionary:
 		return {"ok": false, "code": "INVALID_RESPONSE", "status": response[1]}
 	if response[1] < 200 or response[1] >= 300:
 		var code: String = data.get("error", {}).get("code", "SERVER_ERROR")
-		if code not in ["UNAUTHORIZED", "CONFLICT", "INVALID_REQUEST", "RATE_LIMITED", "SERVICE_UNAVAILABLE"]:
+		if code not in ["UNAUTHORIZED", "CONFLICT", "INVALID_REQUEST", "RATE_LIMITED", "SERVICE_UNAVAILABLE", "INSUFFICIENT_BALANCE", "NOT_FOUND"]:
 			code = "SERVER_ERROR"
-		return {"ok": false, "code": code, "status": response[1]}
+		var detail = data.get("error", {}).get("message", "")
+		return {"ok": false, "code": code, "detail": str(detail) if detail is String and detail.length() <= 80 else "", "status": response[1]}
 	return {"ok": true, "data": data, "status": response[1]}
 
 func retain_session(session: Dictionary) -> bool:

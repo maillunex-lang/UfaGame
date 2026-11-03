@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/heroes",
+  "title": "GET /v1/heroes and hero/item actions: the player's roster with server-computed costs and stats",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "content_version",
+    "sync_slots",
+    "sync_level",
+    "proposed",
+    "main",
+    "sync",
+    "balances",
+    "heroes",
+    "items"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "content_version": {
+      "type": "string"
+    },
+    "sync_slots": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sync_level": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "proposed": {
+      "type": "boolean"
+    },
+    "main": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "sync": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "balances": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "heroes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "hero_id",
+          "name",
+          "faction_id",
+          "available",
+          "level",
+          "effective_level",
+          "rank",
+          "rank_name",
+          "max_level",
+          "protected",
+          "role",
+          "slot",
+          "equipped",
+          "stats",
+          "next_level",
+          "rank_up"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hero_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "faction_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "effective_level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rank_name": {
+            "type": "string"
+          },
+          "max_level": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "protected": {
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "main",
+              "sync",
+              null
+            ]
+          },
+          "slot": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "equipped": {
+            "type": "array",
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "stats": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next_level": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "gold",
+                  "hero_exp"
+                ],
+                "properties": {
+                  "gold": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "hero_exp": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rank_up": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "to_rank_name",
+                  "copies",
+                  "material_per_copy",
+                  "max_level_after",
+                  "candidates"
+                ],
+                "properties": {
+                  "to_rank_name": {
+                    "type": "string"
+                  },
+                  "copies": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "material_per_copy": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "max_level_after": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "candidates": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "item_id",
+          "name",
+          "slot",
+          "rarity",
+          "upgrade",
+          "upgrade_max",
+          "equipped_on",
+          "faction_ids",
+          "stats",
+          "next_upgrade_gold"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "item_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,79}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slot": {
+            "enum": [
+              "weapon",
+              "armor",
+              "helmet",
+              "boots",
+              "jewelry",
+              "artifact"
+            ]
+          },
+          "rarity": {
+            "enum": [
+              "common",
+              "rare",
+              "epic",
+              "legendary"
+            ]
+          },
+          "upgrade": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "upgrade_max": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "equipped_on": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "faction_ids": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "next_upgrade_gold": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

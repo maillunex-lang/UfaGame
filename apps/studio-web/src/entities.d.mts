@@ -1,4 +1,4 @@
-export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage'|'location'|'chapter';name:string;data:Record<string,any>};
+export type EditableEntity={id:string;kind:'hero'|'ability'|'faction'|'stage'|'location'|'chapter'|'item'|'progression';name:string;data:Record<string,any>};
 export function listEntities(text:string):EditableEntity[];
 export function upsertEntity(text:string,entity:EditableEntity,originalId?:string|null):string;
 export function deleteEntity(text:string,id:string):string;
@@ -15,3 +15,5 @@ export const BOUNDS:{min_lat_e6:number;max_lat_e6:number;min_lon_e6:number;max_l
 export function distanceKm(a:{lat_e6:number;lon_e6:number},b:{lat_e6:number;lon_e6:number}):number;
 export function listLocations(text:string):Location[];
 export function importGeography(text:string,dataset:{entities:unknown[]}):{text:string;added:number};
+export const itemSlots:string[];export const itemRarities:string[];export const rewardCurrencies:string[];
+export function defaultProgression():Record<string,any>;

@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -29,6 +29,9 @@ export function validate(name, value) {
     const campaign = value.entities.some(e => e.kind==='chapter' || (e.kind==='stage' && (e.data.boss!==undefined || e.data.rewards_first!==undefined)));
     if (campaign && !value.required_capabilities.includes('campaign.chapters.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (campaignProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
+    const progression = value.entities.some(e => e.kind==='progression' || (e.kind==='item' && (e.data.stats!==undefined || e.data.upgrade_max!==undefined || e.data.faction_ids!==undefined)) || (e.kind==='stage' && (e.data.enemy_level!==undefined || e.data.rewards_first_heroes!==undefined || e.data.rewards_first_items!==undefined || (e.data.rewards_first??[]).some(r => r.currency==='hero_exp' || r.currency==='rank_material'))));
+    if (progression && !value.required_capabilities.includes('heroes.progression.v1')) return {ok:false,code:'INVALID_REQUEST'};
+    if (progressionProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
     const world = value.entities.some(e => e.kind==='location' || (e.kind==='stage' && e.data.location_id!==undefined));
     if (world && !value.required_capabilities.includes('world.locations.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (locationProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
@@ -94,6 +97,34 @@ export function campaignProblems(content) {
   }
   for (const st of content.entities.filter(e => e.kind==='stage' && e.data.rewards_first))
     if (new Set(st.data.rewards_first.map(r => r.currency)).size !== st.data.rewards_first.length) out.push({code:'REWARD_DUPLICATE_CURRENCY',entity_id:st.id});
+  return out;
+}
+/**
+ * Hero progression rules (S23/S24/S28): at most one progression table; the first
+ * rank needs no copies; level caps do not decrease by rank; starter and reward
+ * heroes are combat heroes; starter/reward items are equippable items; an item with
+ * stats has a real slot and its faction limits name factions.
+ */
+export function progressionProblems(content) {
+  const byId = new Map(content.entities.map(e => [e.id,e]));
+  const out = [];
+  const tables = content.entities.filter(e => e.kind==='progression');
+  if (tables.length > 1) out.push({code:'PROGRESSION_DUPLICATE',entity_id:tables[1].id});
+  const combatHero = id => byId.get(id)?.kind==='hero' && byId.get(id).data.combat!==undefined;
+  const gear = id => byId.get(id)?.kind==='item' && byId.get(id).data.slot!=='none' && byId.get(id).data.stats!==undefined;
+  for (const t of tables) {
+    const r = t.data.ranks;
+    if (r[0].copies !== 0) out.push({code:'RANK_FIRST_COPIES',entity_id:t.id});
+    for (let i = 1; i < r.length; i++) if (r[i].max_level < r[i-1].max_level) out.push({code:'RANK_LEVEL_DECREASES',entity_id:t.id});
+    if ((t.data.starter_hero_ids??[]).some(id => !combatHero(id))) out.push({code:'STARTER_HERO_INVALID',entity_id:t.id});
+    if ((t.data.starter_item_ids??[]).some(id => !gear(id))) out.push({code:'STARTER_ITEM_INVALID',entity_id:t.id});
+  }
+  for (const e of content.entities) {
+    if (e.kind==='item' && e.data.stats!==undefined && e.data.slot==='none') out.push({code:'ITEM_SLOT_REQUIRED',entity_id:e.id});
+    if (e.kind==='item' && (e.data.faction_ids??[]).some(id => byId.get(id)?.kind!=='faction')) out.push({code:'ITEM_FACTION_INVALID',entity_id:e.id});
+    if (e.kind==='stage' && (e.data.rewards_first_heroes??[]).some(id => !combatHero(id))) out.push({code:'REWARD_HERO_INVALID',entity_id:e.id});
+    if (e.kind==='stage' && (e.data.rewards_first_items??[]).some(id => !gear(id))) out.push({code:'REWARD_ITEM_INVALID',entity_id:e.id});
+  }
   return out;
 }
 /** Linear campaign order: chapters by `order`, stages as listed. */

@@ -5,6 +5,8 @@ import {transaction} from './db.ts';
 import {authorize,lockAuthorized,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {assertStageOpen,recordWin} from './campaign.ts';
+import {resolveTeam} from './heroes.ts';
+import {progressionOf} from '../../../packages/battle-core/progression.mjs';
 import {DomainError} from './errors.ts';
 import {createLiveBattle,queueLiveCommand,advanceLiveBattle,disconnectLiveBattle,LATE_STEPS} from '../../../packages/battle-core/live.mjs';
 
@@ -26,14 +28,22 @@ function compile(content:any,request:any):Promise<any>{
  });
 }
 function view(s:any){return {api_version:1,battle_id:s.battle_id,content_version:s.content_version,heroes:s.heroes,step:s.state.step,auto:s.auto,last_command_seq:s.last_command_seq,event_seq:s.event_seq,result:s.state.result,actors:s.state.actors.map((a:any)=>({id:a.id,team:a.team,slot:a.slot,hp:a.hp,max_hp:a.max_hp,x:a.x,y:a.y,energy:a.energy}))};}
-function match(row:any,body:any){return row.stage_id===body.stage_id&&JSON.stringify(row.hero_ids)===JSON.stringify(body.hero_ids);}
+function match(row:any,body:any){return row.stage_id===body.stage_id&&(body.instance_ids?JSON.stringify(row.instance_ids)===JSON.stringify(body.instance_ids):row.instance_ids===null&&JSON.stringify(row.hero_ids)===JSON.stringify(body.hero_ids));}
+/** Content heroes (old clients, no progression) or owned instances (progression). */
+export async function teamFor(db:any,playerId:string,content:any,body:any):Promise<{hero_ids:string[];attacker_mods:any[]|null}>{
+ if(progressionOf(content)){if(!body.instance_ids)throw new DomainError('CONFLICT',409,'ROSTER_REQUIRED');return resolveTeam(db,playerId,content,body.instance_ids);}
+ if(!body.hero_ids)throw new DomainError('INVALID_REQUEST',400,'HERO_IDS_REQUIRED');
+ return {hero_ids:body.hero_ids,attacker_mods:null};
+}
 export async function startLiveBattle(pool:Pool,token:string,body:any){
  requireBody('battle_start_request',body);const auth=await authorize(pool,token);
  const existing=(await pool.query('SELECT * FROM live_battles WHERE player_id=$1 AND request_id=$2',[auth.player_id,body.request_id])).rows[0];
  if(existing){if(!match(existing,body))throw new DomainError('CONFLICT',409);return view(existing.session_state);}
  const version=await currentPointer(pool);if(!version)throw new DomainError('NOT_FOUND',404,'NO_CONTENT');
  await assertStageOpen(pool,auth.player_id,version.content,body.stage_id);
- const seed=randomInt(0,4294967296),compiled=await compile(version.content,{attacker_hero_ids:body.hero_ids,stage_id:body.stage_id,seed});
+ // With hero progression the player fights with owned instances (ADR 0021).
+ const team=await teamFor(pool,auth.player_id,version.content,body);
+ const seed=randomInt(0,4294967296),compiled=await compile(version.content,{attacker_hero_ids:team.hero_ids,...(team.attacker_mods?{attacker_mods:team.attacker_mods}:{}),stage_id:body.stage_id,seed});
  const id=randomUUID(),initial=createLiveBattle({battleId:id,contentVersion:version.content_version,setup:compiled.setup,heroes:compiled.heroes,auto:false});
  return transaction(pool,async c=>{
   const locked=await lockAuthorized(c,token);await c.query('SELECT pg_advisory_xact_lock(783112)');
@@ -41,7 +51,7 @@ export async function startLiveBattle(pool:Pool,token:string,body:any){
   if(old){if(!match(old,body))throw new DomainError('CONFLICT',409);return view(old.session_state);}
   const usage=(await c.query('SELECT count(*)::integer AS n FROM live_battles WHERE completed_at IS NULL')).rows[0].n;
   if(usage>=MAX_ACTIVE)throw new DomainError('SERVICE_UNAVAILABLE',503,'BATTLE_BUSY');
-  try{await c.query("INSERT INTO live_battles(id,player_id,request_id,content_version,stage_id,hero_ids,session_state,next_tick_at) VALUES($1,$2,$3,$4,$5,$6,$7,clock_timestamp()+interval '1 second')",[id,locked.player_id,body.request_id,version.content_version,body.stage_id,body.hero_ids,initial]);}
+  try{await c.query("INSERT INTO live_battles(id,player_id,request_id,content_version,stage_id,hero_ids,session_state,next_tick_at,instance_ids,attacker_mods) VALUES($1,$2,$3,$4,$5,$6,$7,clock_timestamp()+interval '1 second',$8,$9)",[id,locked.player_id,body.request_id,version.content_version,body.stage_id,team.hero_ids,initial,body.instance_ids??null,team.attacker_mods?JSON.stringify(team.attacker_mods):null]);}
   catch(error){if((error as any).code==='23505')throw new DomainError('CONFLICT',409,'ACTIVE_BATTLE_EXISTS');throw error;}
   return view(initial);
  });

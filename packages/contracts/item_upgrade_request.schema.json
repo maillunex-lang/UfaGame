@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/item_upgrade_request",
+  "title": "POST /v1/items/upgrade: one upgrade level for gold",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "item_instance_id",
+    "from_upgrade"
+  ],
+  "properties": {
+    "item_instance_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "from_upgrade": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50
+    }
+  }
+}

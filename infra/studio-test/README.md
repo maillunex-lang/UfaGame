@@ -30,3 +30,12 @@ HTTPS nginx route, trusted proxy/rate limit, backup/restore и phone smoke до�
 колонку); откат кода их не удаляет и старому коду они не мешают. Портал, чужие
 проекты, volumes, порты, firewall и nginx не изменяются. Точные команды — в
 сообщении владельцу и в docs/HANDOFF.md не дублируются, чтобы не расходиться.
+
+## Обновление одной командой (update.sh)
+
+`infra/studio-test/update.sh <commit>` — запускает владелец от root из копии скрипта
+нужного commit (`git show <commit>:infra/studio-test/update.sh > /tmp/ufagame-update.sh`).
+Проверки до → pg_dump + старый commit + старая статика → API этого commit (миграции при
+старте) → сборка Studio во временном контейнере → проверки после. Любой сбой после
+переключения возвращает прежний commit, API и статику. Трогает только сервис `api`
+проекта ufagame_s09_test и /srv/ufagame-test/studio.

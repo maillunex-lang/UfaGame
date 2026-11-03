@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {createAutoBattle, stepAutoBattle} from './auto.mjs';
+import {heroStats, progressionOf} from './progression.mjs';
 
 /** Provisional faction advantage multiplier: 12000 bp = x1.2 (ADR 0012). */
 export const ADVANTAGE_BP = 12000;
@@ -56,10 +57,11 @@ function extras(ability) {
   return {extra_effects: list.map(x => ({effect: x.effect, power: effectPower(x), ...(x.target ? {target: x.target} : {})}))};
 }
 
-function actorFor(map, heroId, team, slot) {
+function actorFor(map, heroId, team, slot, grow = null) {
   const hero = lookup(map, heroId, 'hero', 'UNKNOWN_HERO');
-  const combat = hero.data?.combat;
-  if (!combat) fail('HERO_COMBAT_MISSING', heroId);
+  const base = hero.data?.combat;
+  if (!base) fail('HERO_COMBAT_MISSING', heroId);
+  const combat = grow ? grow(base) : base;
   const faction = lookup(map, hero.data.faction_id, 'faction', 'UNKNOWN_FACTION');
   const abilities = hero.data.ability_ids.map(id => lookup(map, id, 'ability', 'UNKNOWN_ABILITY'));
   const [main, ...autos] = abilities;
@@ -118,9 +120,14 @@ export function compileContentBattle(content, request) {
   for (const list of [attackers, defenders])
     if (!Array.isArray(list) || list.length < 1 || list.length > 5) fail('INVALID_TEAM_SIZE');
   if (!Number.isSafeInteger(seed) || seed < 0 || seed > 4294967295) fail('INVALID_REQUEST');
+  // Player progression (ADR 0021): per-attacker level/rank/items, stage enemy level.
+  const p = progressionOf(content);
+  const mods = request?.attacker_mods;
+  if (mods !== undefined && (!p || !Array.isArray(mods) || mods.length !== attackers.length)) fail('INVALID_REQUEST');
+  const enemyLevel = request?.stage_id !== undefined ? map.get(request.stage_id).data.enemy_level : undefined;
   const built = [
-    ...attackers.map((id, slot) => actorFor(map, id, 'attacker', slot)),
-    ...defenders.map((id, slot) => actorFor(map, id, 'defender', slot)),
+    ...attackers.map((id, slot) => actorFor(map, id, 'attacker', slot, mods ? base => heroStats(p, base, mods[slot], map) : null)),
+    ...defenders.map((id, slot) => actorFor(map, id, 'defender', slot, p && enemyLevel ? base => heroStats(p, base, {level: enemyLevel}) : null)),
   ];
   const factionIds = [...new Set(built.map(b => b.actor.faction_id))].sort();
   if (factionIds.length > 6) fail('TOO_MANY_FACTIONS');

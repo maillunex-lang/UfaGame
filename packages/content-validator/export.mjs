@@ -8,7 +8,7 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 /** Ids the given entity depends on (other entities only). */
 function entityDeps(e){
  const d=e.data??{};
- return [d.faction_id,...(d.ability_ids??[]),...(d.advantage_ids??[]),...(d.enemy_hero_ids??[]),...(d.stage_ids??[]),d.parent_id,d.location_id].filter(x=>typeof x==='string');
+ return [d.faction_id,...(d.ability_ids??[]),...(d.advantage_ids??[]),...(d.enemy_hero_ids??[]),...(d.stage_ids??[]),...(d.starter_hero_ids??[]),...(d.starter_item_ids??[]),...(d.rewards_first_heroes??[]),...(d.rewards_first_items??[]),...(d.faction_ids??[]),d.parent_id,d.location_id].filter(x=>typeof x==='string');
 }
 /** Selected ids plus every entity they (transitively) reference, in content order. */
 export function dependencyClosure(content,ids){

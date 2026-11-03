@@ -155,6 +155,10 @@ func _show_hub() -> void:
 		return
 	var missing: int = bundle.resources.filter(func(r): return not content.downloaded(r)).size()
 	label("Мир %s · файлов не скачано: %d" % [bundle.content_version, missing], 18, hub)
+	progression = bundle.content.entities.any(func(e): return e.get("kind") == "progression")
+	if progression:
+		_battle_section(bundle)
+		return
 	label("Герои", 24, hub)
 	for entity in bundle.content.entities:
 		if entity.get("kind") != "hero":
@@ -181,9 +185,14 @@ var stage_picker: OptionButton
 var hero_checks: Dictionary = {}
 var stage_ids: Array = []
 var campaign_view
+var heroes_view
+var team_box: VBoxContainer
+var progression := false
 var last_reward := ""
 
 func _battle_section(bundle: Dictionary) -> void:
+	heroes_view = null
+	campaign_view = null
 	label("Бой", 24, hub)
 	var in_chapters := {}
 	for e in bundle.content.entities:
@@ -193,18 +202,23 @@ func _battle_section(bundle: Dictionary) -> void:
 	var training: Array = bundle.content.entities.filter(func(e): return e.get("kind") == "stage" and not in_chapters.has(e.id))
 	stage_ids = training.map(func(e): return e.id)
 	var fighters: Array = bundle.content.entities.filter(func(e): return e.get("kind") == "hero" and e.get("data", {}).has("combat"))
-	if (stage_ids.is_empty() and in_chapters.is_empty()) or fighters.is_empty():
+	if (stage_ids.is_empty() and in_chapters.is_empty()) or (fighters.is_empty() and not progression):
 		label("Чтобы сразиться, создай в Studio этап с противниками и героя с боевыми параметрами, затем опубликуй.", 18, hub)
 		return
 	label("Твоя команда (до 5):", 18, hub)
 	hero_checks.clear()
-	for e in fighters:
-		var check := CheckBox.new()
-		check.text = str(e.get("name", e.id))
-		check.custom_minimum_size.y = 48
-		check.button_pressed = hero_checks.size() == 0
-		hub.add_child(check)
-		hero_checks[e.id] = check
+	team_box = VBoxContainer.new()
+	hub.add_child(team_box)
+	if progression:
+		label("Основная пятёрка из раздела «Мои герои» ниже.", 16, team_box)
+	else:
+		for e in fighters:
+			var check := CheckBox.new()
+			check.text = str(e.get("name", e.id))
+			check.custom_minimum_size.y = 48
+			check.button_pressed = hero_checks.size() == 0
+			team_box.add_child(check)
+			hero_checks[e.id] = check
 	if FileAccess.file_exists("user://live_battle.json"):
 		var resume := Button.new()
 		resume.text = "Продолжить начатый бой"
@@ -215,8 +229,15 @@ func _battle_section(bundle: Dictionary) -> void:
 		campaign_view = preload("res://campaign_view.gd").new()
 		campaign_view.stage_chosen.connect(func(stage): _start_battle(str(stage.id)))
 		hub.add_child(campaign_view)
-		_load_campaign(bundle)
+	if progression:
+		heroes_view = preload("res://heroes_view.gd").new()
+		heroes_view.auth = auth
+		heroes_view.message.connect(func(text): status.text = text)
+		heroes_view.changed.connect(func(data): _fill_team(data))
+	_load_online(bundle, not in_chapters.is_empty())
 	if stage_ids.is_empty():
+		if heroes_view != null:
+			hub.add_child(heroes_view)
 		return
 	label("Тренировка (без наград и прогресса)", 20, hub)
 	stage_picker = OptionButton.new()
@@ -229,6 +250,42 @@ func _battle_section(bundle: Dictionary) -> void:
 	go.custom_minimum_size.y = 60
 	go.pressed.connect(func(): _start_battle(str(stage_ids[stage_picker.selected])))
 	hub.add_child(go)
+	if heroes_view != null:
+		hub.add_child(heroes_view)
+
+## One request at a time (one HTTP client): roster first, then the campaign.
+func _load_online(bundle: Dictionary, with_campaign: bool) -> void:
+	if progression and heroes_view != null:
+		var view = heroes_view
+		var roster: Dictionary = await view.load_roster()
+		if not is_instance_valid(view):
+			return
+		if roster.ok:
+			_fill_team(roster.data)
+		else:
+			status.text = "Мои герои: " + _explain(str(roster.code))
+	if with_campaign:
+		await _load_campaign(bundle)
+
+## Battle team = checked heroes of the main five (instance ids, server-owned).
+func _fill_team(data: Dictionary) -> void:
+	if team_box == null or not is_instance_valid(team_box):
+		return
+	for child in team_box.get_children():
+		child.queue_free()
+	hero_checks.clear()
+	if data.main.is_empty():
+		label("Пятёрка пуста — нажми «В пятёрку» у героя ниже.", 16, team_box)
+	for id in data.main:
+		for h in data.heroes:
+			if h.id == id:
+				var check := CheckBox.new()
+				check.text = "%s (ур. %d)" % [h.name, int(h.effective_level)]
+				check.custom_minimum_size.y = 48
+				check.button_pressed = h.available
+				check.disabled = not h.available
+				team_box.add_child(check)
+				hero_checks[id] = check
 
 func _load_campaign(bundle: Dictionary) -> void:
 	var view = campaign_view
@@ -271,7 +328,7 @@ func _start_battle(stage_id: String) -> void:
 		status.text = last_reward
 		last_reward = ""
 		_show_hub())
-	var result: Dictionary = await live.start(stage_id, team)
+	var result: Dictionary = await live.start(stage_id, team, progression)
 	busy = false
 	if not result.ok:
 		view.queue_free()

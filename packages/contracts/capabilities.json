@@ -12,6 +12,7 @@
     "battle.abilities.v2",
     "world.locations.v1",
     "battle.triggers.v1",
-    "campaign.chapters.v1"
+    "campaign.chapters.v1",
+    "heroes.progression.v1"
   ]
 }

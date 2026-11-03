@@ -1,0 +1,34 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {validate,progressionProblems} from '@ufagame/contracts';
+import {progressionContent} from '../fixtures/progression.mjs';
+import {heroStats,levelCost,effectiveLevels} from '../../packages/battle-core/progression.mjs';
+const edit=fn=>{const c=progressionContent();fn(c,id=>c.entities.find(e=>e.id===id));return c;};
+const codes=c=>progressionProblems(c).map(p=>p.code);
+test('progression contract: valid fixture, capability required, broken references refused',()=>{
+ assert.equal(validate('content',progressionContent()).ok,true);
+ assert.equal(validate('content',edit(c=>{c.required_capabilities=c.required_capabilities.filter(x=>x!=='heroes.progression.v1');})).ok,false,'capability');
+ assert.deepEqual(codes(edit((c,e)=>{e('progression_main').data.starter_hero_ids.push('hero_missing');})),['STARTER_HERO_INVALID']);
+ assert.deepEqual(codes(edit((c,e)=>{e('progression_main').data.ranks[0].copies=1;})),['RANK_FIRST_COPIES']);
+ assert.deepEqual(codes(edit((c,e)=>{e('progression_main').data.ranks[1].max_level=2;})),['RANK_LEVEL_DECREASES']);
+ assert.deepEqual(codes(edit((c,e)=>{e('item_bow').data.slot='none';})),['ITEM_SLOT_REQUIRED','REWARD_ITEM_INVALID']);
+ assert.deepEqual(codes(edit((c,e)=>{e('item_elf_armor').data.faction_ids=['ability_one'];})),['ITEM_FACTION_INVALID']);
+ assert.deepEqual(codes(edit((c,e)=>{e('stage_one').data.rewards_first_heroes=['item_bow'];})),['REWARD_HERO_INVALID']);
+ assert.deepEqual(codes(edit(c=>{c.entities.push({...c.entities.find(e=>e.kind==='progression'),id:'progression_two'});})),['PROGRESSION_DUPLICATE']);
+ assert.equal(validate('content',edit((c,e)=>{e('item_sword').data.stats={};})).ok,false,'empty stats');
+ assert.equal(validate('content',edit((c,e)=>{e('stage_one').data.rewards_first.push({currency:'hero_exp',amount:1});})).ok,false,'duplicate currency');
+});
+test('progression formulas: cost, growth/rank/items, clamps, sync rule',()=>{
+ const p=progressionContent().entities.find(e=>e.kind==='progression').data;
+ assert.deepEqual(levelCost(p,1),{gold:10,hero_exp:20});assert.deepEqual(levelCost(p,4),{gold:25,hero_exp:50});
+ const base={hp:1000,attack:100,defense:10,speed:1000};
+ const items=new Map([['s',{data:{stats:{attack:100,speed:900000}}}]]);
+ const s=heroStats(p,base,{level:3,rank:1,items:[{item_id:'s',upgrade:0}]},items);
+ assert.equal(s.hp,1400);assert.equal(s.attack,240);assert.equal(s.speed,5000,'clamped to core limit');
+ const inst=[1,2,3,4,5,6].map(i=>({id:'h'+i,level:i*2,rank:0}));
+ const e=effectiveLevels(p,inst,['h1','h2','h3','h4','h5'],['h6']);
+ assert.equal(e.sync_level,2);assert.equal(e.level(inst[5]),2);
+ const capped=effectiveLevels(p,inst.map(x=>({...x,level:x.level+10})),['h1','h2','h3','h4','h5'],['h6']);
+ assert.equal(capped.level({id:'h6',level:1,rank:0}),3,'sync capped by own rank');
+ assert.equal(effectiveLevels(p,inst,['h1','h2'],['h6']).level(inst[5]),12,'no sync below five mains');
+});

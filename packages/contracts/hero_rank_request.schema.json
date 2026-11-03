@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/hero_rank_request",
+  "title": "POST /v1/heroes/rank: copies of the same hero, missing copies paid with rank_material",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "instance_id",
+    "from_rank",
+    "copy_instance_ids"
+  ],
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "from_rank": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 19
+    },
+    "copy_instance_ids": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    }
+  }
+}

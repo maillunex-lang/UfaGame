@@ -30,7 +30,8 @@
           "dialogue_template",
           "resource",
           "location",
-          "chapter"
+          "chapter",
+          "progression"
         ]
       },
       "id": {

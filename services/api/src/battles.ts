@@ -5,6 +5,7 @@ import {randomInt,randomUUID} from 'node:crypto';
 import {DomainError} from './errors.ts';
 import {authorize,bearer,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
+import {teamFor} from './live-battles.ts';
 
 const WORKER=new URL('./battle-worker.mjs',import.meta.url);
 const TIMEOUT_MS=5000;
@@ -30,6 +31,7 @@ export function computeBattle(content:any,request:any):Promise<any>{
  });
 }
 
+const sameRequest=(row:any,b:any)=>row.stage_id===b.stage_id&&(b.instance_ids?JSON.stringify(row.instance_ids)===JSON.stringify(b.instance_ids):row.instance_ids===null&&JSON.stringify(row.hero_ids)===JSON.stringify(b.hero_ids));
 const record=(row:any,result:any)=>({api_version:1,battle_id:row.id,content_version:row.content_version,stage_id:row.stage_id,rewards:[],...result});
 
 /**
@@ -42,21 +44,22 @@ export async function registerBattles(app:FastifyInstance,pool:Pool){
   const session=await authorize(pool,bearer(request));const b=request.body as any;requireBody('battle_start_request',b);
   const old=(await pool.query('SELECT * FROM battles WHERE player_id=$1 AND request_id=$2',[session.player_id,b.request_id])).rows[0];
   if(old){
-   if(old.stage_id!==b.stage_id||JSON.stringify(old.hero_ids)!==JSON.stringify(b.hero_ids))throw new DomainError('CONFLICT',409);
+   if(!sameRequest(old,b))throw new DomainError('CONFLICT',409);
    return replay(old);
   }
   const version=await currentPointer(pool);
   if(!version)throw new DomainError('NOT_FOUND',404,'NO_CONTENT');
   const stage=version.content.entities.find((e:any)=>e.id===b.stage_id&&e.kind==='stage');
   if(!stage)throw new DomainError('INVALID_REQUEST',422,`UNKNOWN_STAGE:${b.stage_id}`);
+  const team=await teamFor(pool,session.player_id,version.content,b);
   const seed=randomInt(0,4294967296);
-  const result=await computeBattle(version.content,{attacker_hero_ids:b.hero_ids,stage_id:b.stage_id,seed});
+  const result=await computeBattle(version.content,{attacker_hero_ids:team.hero_ids,...(team.attacker_mods?{attacker_mods:team.attacker_mods}:{}),stage_id:b.stage_id,seed});
   const id=randomUUID();
-  const row=(await pool.query('INSERT INTO battles(id,player_id,request_id,content_version,stage_id,hero_ids,seed,result,steps,event_log_sha256) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (player_id,request_id) DO NOTHING RETURNING *',[id,session.player_id,b.request_id,version.content_version,b.stage_id,b.hero_ids,seed,result.result,result.steps,result.event_log_sha256])).rows[0];
+  const row=(await pool.query('INSERT INTO battles(id,player_id,request_id,content_version,stage_id,hero_ids,seed,result,steps,event_log_sha256,instance_ids,attacker_mods) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (player_id,request_id) DO NOTHING RETURNING *',[id,session.player_id,b.request_id,version.content_version,b.stage_id,team.hero_ids,seed,result.result,result.steps,result.event_log_sha256,b.instance_ids??null,team.attacker_mods?JSON.stringify(team.attacker_mods):null])).rows[0];
   if(!row){
    // A concurrent retry with the same request_id won the insert: return its battle.
    const winner=(await pool.query('SELECT * FROM battles WHERE player_id=$1 AND request_id=$2',[session.player_id,b.request_id])).rows[0];
-   if(winner.stage_id!==b.stage_id||JSON.stringify(winner.hero_ids)!==JSON.stringify(b.hero_ids))throw new DomainError('CONFLICT',409);
+   if(!sameRequest(winner,b))throw new DomainError('CONFLICT',409);
    return replay(winner);
   }
   return record(row,result);
@@ -71,7 +74,7 @@ export async function registerBattles(app:FastifyInstance,pool:Pool){
  /** Recomputes the stored battle from its pinned version and seed; the hash must match. */
  async function replay(row:any){
   const content=(await pool.query('SELECT content FROM content_versions WHERE content_version=$1',[row.content_version])).rows[0].content;
-  const result=await computeBattle(content,{attacker_hero_ids:row.hero_ids,stage_id:row.stage_id,seed:Number(row.seed)});
+  const result=await computeBattle(content,{attacker_hero_ids:row.hero_ids,...(row.attacker_mods?{attacker_mods:row.attacker_mods}:{}),stage_id:row.stage_id,seed:Number(row.seed)});
   if(result.event_log_sha256!==row.event_log_sha256||result.result!==row.result)throw new DomainError('INTERNAL_ERROR',500,'REPLAY_MISMATCH');
   return record(row,result);
  }

@@ -31,7 +31,8 @@
           "battle.abilities.v2",
           "world.locations.v1",
           "battle.triggers.v1",
-          "campaign.chapters.v1"
+          "campaign.chapters.v1",
+          "heroes.progression.v1"
         ]
       },
       "uniqueItems": true,
@@ -378,6 +379,66 @@
                       "jewelry",
                       "artifact"
                     ]
+                  },
+                  "stats": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "properties": {
+                      "hp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "attack": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "defense": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "speed": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000
+                      }
+                    }
+                  },
+                  "rarity": {
+                    "enum": [
+                      "common",
+                      "rare",
+                      "epic",
+                      "legendary"
+                    ]
+                  },
+                  "faction_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 6,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                    }
+                  },
+                  "upgrade_max": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "upgrade_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "upgrade_gold": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
                   }
                 }
               }
@@ -446,7 +507,9 @@
                         "currency": {
                           "enum": [
                             "gold",
-                            "gems"
+                            "gems",
+                            "hero_exp",
+                            "rank_material"
                           ]
                         },
                         "amount": {
@@ -455,6 +518,29 @@
                           "maximum": 1000000
                         }
                       }
+                    }
+                  },
+                  "enemy_level": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "rewards_first_heroes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                    }
+                  },
+                  "rewards_first_items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
                     }
                   }
                 }
@@ -765,6 +851,137 @@
                   "description": {
                     "type": "string",
                     "maxLength": 500
+                  },
+                  "proposed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "progression"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "level_gold_base",
+                  "level_gold_step",
+                  "level_exp_base",
+                  "level_exp_step",
+                  "growth_bp",
+                  "ranks",
+                  "material_per_copy",
+                  "sync_slots"
+                ],
+                "properties": {
+                  "level_gold_base": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "level_gold_step": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "level_exp_base": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "level_exp_step": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "growth_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "ranks": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "name",
+                        "max_level",
+                        "copies",
+                        "stat_bp"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        },
+                        "max_level": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 500
+                        },
+                        "copies": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 20
+                        },
+                        "stat_bp": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 100000
+                        }
+                      }
+                    }
+                  },
+                  "material_per_copy": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "sync_slots": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 20
+                  },
+                  "starter_hero_ids": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                    }
+                  },
+                  "starter_item_ids": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                    }
                   },
                   "proposed": {
                     "type": "boolean"

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/hero_level_request",
+  "title": "POST /v1/heroes/level: one level up for a main hero; from_level guards double taps",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "instance_id",
+    "from_level"
+  ],
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "from_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  }
+}

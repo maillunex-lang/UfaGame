@@ -130,3 +130,21 @@ test('chapters: ordered stages, one chapter per stage, unique order, area, rewar
  assert.throws(()=>deleteEntity(text,'stage_b'),/ссылку/,'a stage in a chapter cannot vanish');
  assert.equal(listEntities(text).some(e=>e.kind==='chapter'),true);
 });
+test('growth table and items: proposed defaults valid, one table, rank rules, references protected, capability toggled',async()=>{
+ const {defaultProgression,defaultCombat}=await import('../../apps/studio-web/src/entities.mjs');
+ let text=blank();for(const e of [ability,faction,{...hero,data:{...hero.data,combat:defaultCombat()}}])text=upsertEntity(text,e);
+ const sword={id:'item_sword',kind:'item',name:'Сабля',data:{stack_limit:1,slot:'weapon',stats:{attack:50},upgrade_max:3,upgrade_bp:2000,upgrade_gold:100}};
+ text=upsertEntity(text,sword);
+ const table={id:'progression_main',kind:'progression',name:'Развитие',data:{...defaultProgression(),starter_hero_ids:['hero_one','hero_one'],starter_item_ids:['item_sword']}};
+ text=upsertEntity(text,table);
+ const c=JSON.parse(text);assert.equal(validate('content',c).ok,true);assert.ok(c.required_capabilities.includes('heroes.progression.v1'));
+ assert.throws(()=>upsertEntity(text,{...table,id:'progression_two'}),/уже есть/);
+ assert.throws(()=>upsertEntity(text,{...table,data:{...table.data,ranks:[{name:'A',max_level:10,copies:1,stat_bp:0}]}},table.id),/копий/);
+ assert.throws(()=>upsertEntity(text,{...table,data:{...table.data,ranks:[{name:'A',max_level:10,copies:0,stat_bp:0},{name:'B',max_level:5,copies:1,stat_bp:0}]}},table.id),/не может быть меньше/);
+ assert.throws(()=>upsertEntity(text,{...sword,data:{...sword.data,slot:'none'}},sword.id),/слот/);
+ assert.throws(()=>upsertEntity(text,{...sword,data:{...sword.data,faction_ids:['ability_one']}},sword.id),/фракции/);
+ assert.throws(()=>deleteEntity(text,'item_sword'),/Сначала убери ссылку/);
+ assert.throws(()=>deleteEntity(text,'hero_one'),/Сначала убери ссылку/);
+ text=deleteEntity(text,'progression_main');text=deleteEntity(text,'item_sword');
+ assert.ok(!JSON.parse(text).required_capabilities.includes('heroes.progression.v1'),'capability removed with the last use');
+});

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/hero_protect_request",
+  "title": "POST /v1/heroes/protect: a protected hero is never spent as a copy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "instance_id",
+    "protected"
+  ],
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "protected": {
+      "type": "boolean"
+    }
+  }
+}

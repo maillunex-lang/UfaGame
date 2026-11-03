@@ -65,7 +65,8 @@ func _uuid() -> String:
 	return "%s-%s-%s-%s-%s" % [h.substr(0, 8), h.substr(8, 4), h.substr(12, 4), h.substr(16, 4), h.substr(20, 12)]
 
 ## Starts a new battle, or resumes the unfinished one. Returns {ok, code?}.
-func start(stage_id: String, hero_ids: Array) -> Dictionary:
+## With hero progression `use_instances` sends the player's hero instances.
+func start(stage_id: String, hero_ids: Array, use_instances := false) -> Dictionary:
 	var active: Dictionary = await auth.call_api("/v1/live-battles/active", null, true)
 	if not active.ok and active.get("status") == 401:
 		var refreshed: Dictionary = await auth.refresh_session()
@@ -76,7 +77,7 @@ func start(stage_id: String, hero_ids: Array) -> Dictionary:
 	if active.ok:
 		snapshot = active.data
 	else:
-		var created: Dictionary = await auth.authorized_post("/v1/live-battles", {"request_id": _uuid(), "stage_id": stage_id, "hero_ids": hero_ids})
+		var created: Dictionary = await auth.authorized_post("/v1/live-battles", {"request_id": _uuid(), "stage_id": stage_id, ("instance_ids" if use_instances else "hero_ids"): hero_ids})
 		if not created.ok:
 			return created
 		snapshot = created.data

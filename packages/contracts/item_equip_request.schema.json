@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/item_equip_request",
+  "title": "POST /v1/items/equip: put on (moving it from another hero) or take off with null",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "item_instance_id",
+    "hero_instance_id"
+  ],
+  "properties": {
+    "item_instance_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "hero_instance_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}
