@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://ufagame.invalid/contracts/v1/live_battle_frame",
+  "type":"object","additionalProperties":false,
+  "required":["seq","at_ms","events","command_results","actors","result"],
+  "properties":{
+    "seq":{"type":"integer","minimum":1,"maximum":900},
+    "at_ms":{"type":"integer","minimum":100,"maximum":90000},
+    "result":{"enum":[null,"attacker_win","attacker_loss"]},
+    "actors":{"type":"array","minItems":2,"maxItems":10,"items":{"type":"object","additionalProperties":false,"required":["id","hp","x","y","energy"],"properties":{
+      "id":{"type":"string","pattern":"^[a-z][a-z0-9_]{2,79}$"},"hp":{"type":"integer","minimum":0,"maximum":1000000},"x":{"type":"integer","minimum":0,"maximum":10000},"y":{"type":"integer","minimum":0,"maximum":10000},"energy":{"type":"integer","minimum":0,"maximum":1000}
+    }}},
+    "events":{"type":"array","maxItems":500,"items":{"oneOf":[
+      {"type":"object","additionalProperties":false,"required":["kind","actor_id","x","y"],"properties":{"kind":{"const":"move"},"actor_id":{"type":"string"},"x":{"type":"integer"},"y":{"type":"integer"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","source_id","target_id","amount"],"properties":{"kind":{"enum":["damage","heal","stun","knockback"]},"source_id":{"type":"string"},"target_id":{"type":"string"},"amount":{"type":"integer","minimum":0,"maximum":2000000},"ability_id":{"type":"string"}}}
+    ]}},
+    "command_results":{"type":"array","maxItems":32,"items":{"type":"object","additionalProperties":false,"required":["seq","status"],"properties":{"seq":{"type":"integer","minimum":1},"status":{"enum":["applied","rejected"]},"reason":{"enum":["ABILITY_NOT_READY","OFFLINE_AUTO"]}}}}
+  }
+}

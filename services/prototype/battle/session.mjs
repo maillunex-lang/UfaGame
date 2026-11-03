@@ -22,7 +22,7 @@ export class BattleSession {
   const actor=this.#state.actors.find(a=>a.id===command.actor_id&&a.team==='attacker'&&a.hp>0);
   if(!actor||this.#pending.has(actor.id))throw new Error('INVALID_ACTOR');
   const enemies=this.#state.actors.filter(a=>a.team!==actor.team&&a.hp>0);
-  if(this.#state.step<actor.next_attack_step||Math.min(1000,actor.energy+actor.energy_per_step)<actor.ability.cost||!enemies.some(e=>distance(actor,e)<=actor.range))throw new Error('ABILITY_NOT_READY');
+  if(this.#state.step<actor.next_attack_step||this.#state.step<(actor.next_ability_step??0)||this.#state.step<(actor.stunned_until_step??0)||Math.min(1000,actor.energy+actor.energy_per_step)<actor.ability.cost||!enemies.some(e=>distance(actor,e)<=actor.range))throw new Error('ABILITY_NOT_READY');
   const ack={seq:command.seq,for_step:command.for_step,status:'accepted'};
   this.#pending.set(actor.id,command.seq);this.#lastSeq=command.seq;this.#acks.set(command.seq,{fingerprint,ack});
   return {...ack,replayed:false};

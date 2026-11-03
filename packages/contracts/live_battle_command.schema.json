@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/live_battle_command",
+  "oneOf": [
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "seq", "for_step", "actor_id"],
+      "properties": {
+        "type": {"const": "ability"},
+        "seq": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+        "for_step": {"type": "integer", "minimum": 1, "maximum": 900},
+        "actor_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"}
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "seq", "for_step", "enabled"],
+      "properties": {
+        "type": {"const": "auto"},
+        "seq": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+        "for_step": {"type": "integer", "minimum": 1, "maximum": 900},
+        "enabled": {"type": "boolean"}
+      }
+    }
+  ]
+}
