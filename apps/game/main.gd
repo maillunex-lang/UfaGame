@@ -186,6 +186,7 @@ var hero_checks: Dictionary = {}
 var stage_ids: Array = []
 var campaign_view
 var heroes_view
+var economy_view
 var team_box: VBoxContainer
 var progression := false
 var last_reward := ""
@@ -193,6 +194,7 @@ var last_reward := ""
 func _battle_section(bundle: Dictionary) -> void:
 	heroes_view = null
 	campaign_view = null
+	economy_view = null
 	label("Бой", 24, hub)
 	var in_chapters := {}
 	for e in bundle.content.entities:
@@ -234,10 +236,14 @@ func _battle_section(bundle: Dictionary) -> void:
 		heroes_view.auth = auth
 		heroes_view.message.connect(func(text): status.text = text)
 		heroes_view.changed.connect(func(data): _fill_team(data))
+	if bundle.content.entities.any(func(e): return e.get("kind") in ["vip", "afk", "summon_pool"]):
+		economy_view = preload("res://economy_view.gd").new()
+		economy_view.auth = auth
+		economy_view.message.connect(func(text): status.text = text)
+		economy_view.changed.connect(func(): if heroes_view != null and is_instance_valid(heroes_view): heroes_view.load_roster())
 	_load_online(bundle, not in_chapters.is_empty())
 	if stage_ids.is_empty():
-		if heroes_view != null:
-			hub.add_child(heroes_view)
+		_add_views()
 		return
 	label("Тренировка (без наград и прогресса)", 20, hub)
 	stage_picker = OptionButton.new()
@@ -250,6 +256,11 @@ func _battle_section(bundle: Dictionary) -> void:
 	go.custom_minimum_size.y = 60
 	go.pressed.connect(func(): _start_battle(str(stage_ids[stage_picker.selected])))
 	hub.add_child(go)
+	_add_views()
+
+func _add_views() -> void:
+	if economy_view != null:
+		hub.add_child(economy_view)
 	if heroes_view != null:
 		hub.add_child(heroes_view)
 
@@ -266,6 +277,8 @@ func _load_online(bundle: Dictionary, with_campaign: bool) -> void:
 			status.text = "Мои герои: " + _explain(str(roster.code))
 	if with_campaign:
 		await _load_campaign(bundle)
+	if economy_view != null and is_instance_valid(economy_view):
+		await economy_view.load_all()
 
 ## Battle team = checked heroes of the main five (instance ids, server-owned).
 func _fill_team(data: Dictionary) -> void:

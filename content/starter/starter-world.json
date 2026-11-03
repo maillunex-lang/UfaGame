@@ -8,7 +8,10 @@
     "battle.triggers.v1",
     "world.locations.v1",
     "campaign.chapters.v1",
-    "heroes.progression.v1"
+    "heroes.progression.v1",
+    "vip.v1",
+    "summon.v1",
+    "afk.v1"
   ],
   "entities": [
     {
@@ -1167,6 +1170,10 @@
           {
             "currency": "hero_exp",
             "amount": 1000
+          },
+          {
+            "currency": "gems",
+            "amount": 500
           }
         ]
       }
@@ -1570,6 +1577,166 @@
         "location_id": "district_beloretskiy",
         "proposed": true,
         "description": "Горы просыпаются, и Владыка Ямантау зовёт на бой."
+      }
+    },
+    {
+      "id": "vip_main",
+      "kind": "vip",
+      "name": "VIP",
+      "data": {
+        "levels": [
+          {
+            "points": 100,
+            "perks_text": "Значок VIP",
+            "afk_hours": 0
+          },
+          {
+            "points": 300,
+            "perks_text": "+1 ч AFK",
+            "afk_hours": 1
+          },
+          {
+            "points": 700,
+            "perks_text": "+1 ч AFK",
+            "afk_hours": 1
+          },
+          {
+            "points": 1500,
+            "perks_text": "+2 ч AFK",
+            "afk_hours": 2
+          },
+          {
+            "points": 3000,
+            "perks_text": "+2 ч AFK",
+            "afk_hours": 2
+          },
+          {
+            "points": 6000,
+            "perks_text": "+3 ч AFK",
+            "afk_hours": 3
+          },
+          {
+            "points": 10000,
+            "perks_text": "+3 ч AFK, быстрый расчёт (S26)",
+            "afk_hours": 3
+          },
+          {
+            "points": 16000,
+            "perks_text": "+4 ч AFK",
+            "afk_hours": 4
+          },
+          {
+            "points": 25000,
+            "perks_text": "+4 ч AFK",
+            "afk_hours": 4
+          },
+          {
+            "points": 40000,
+            "perks_text": "+5 ч AFK",
+            "afk_hours": 5
+          }
+        ],
+        "tutorial_points": 100,
+        "daily_points": 20,
+        "win_points": 2,
+        "win_points_daily_cap": 20,
+        "proposed": true
+      }
+    },
+    {
+      "id": "pool_heroes",
+      "kind": "summon_pool",
+      "name": "Зов героев",
+      "data": {
+        "cost": {
+          "currency": "gems",
+          "amount": 50
+        },
+        "description": "Герои Башкортостана отвечают на зов курая.",
+        "entries": [
+          {
+            "hero_id": "hero_azamat",
+            "weight": 10
+          },
+          {
+            "hero_id": "hero_aigul",
+            "weight": 10
+          },
+          {
+            "hero_id": "hero_karagai",
+            "weight": 10
+          },
+          {
+            "hero_id": "hero_zulfia",
+            "weight": 10
+          },
+          {
+            "hero_id": "hero_timer",
+            "weight": 10
+          },
+          {
+            "hero_id": "hero_laysan",
+            "weight": 4
+          },
+          {
+            "hero_id": "hero_buranbay",
+            "weight": 4
+          },
+          {
+            "hero_id": "hero_nuria",
+            "weight": 4
+          },
+          {
+            "hero_id": "hero_ilgiz",
+            "weight": 2
+          },
+          {
+            "hero_id": "hero_server",
+            "weight": 2
+          },
+          {
+            "hero_id": "hero_ilgiz",
+            "weight": 12,
+            "shards": 5
+          },
+          {
+            "hero_id": "hero_server",
+            "weight": 12,
+            "shards": 5
+          }
+        ],
+        "guarantee": {
+          "every": 10,
+          "hero_ids": [
+            "hero_ilgiz",
+            "hero_server"
+          ]
+        },
+        "shards_per_hero": 30,
+        "proposed": true
+      }
+    },
+    {
+      "id": "afk_main",
+      "kind": "afk",
+      "name": "AFK-награды",
+      "data": {
+        "per_hour": [
+          {
+            "currency": "gold",
+            "amount": 300
+          },
+          {
+            "currency": "hero_exp",
+            "amount": 400
+          },
+          {
+            "currency": "rank_material",
+            "amount": 5
+          }
+        ],
+        "stage_bonus_bp": 800,
+        "proposed": true
       }
     },
     {

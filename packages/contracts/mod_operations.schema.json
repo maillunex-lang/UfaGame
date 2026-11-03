@@ -31,7 +31,10 @@
           "resource",
           "location",
           "chapter",
-          "progression"
+          "progression",
+          "vip",
+          "summon_pool",
+          "afk"
         ]
       },
       "id": {

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/afk_claim_request",
+  "title": "POST /v1/afk/claim: collect AFK income once",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

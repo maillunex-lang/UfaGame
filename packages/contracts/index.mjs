@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes','summon_request','summon_assemble_request','afk_claim_request','vip_claim_request','vip','summon','afk'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -32,6 +32,9 @@ export function validate(name, value) {
     const progression = value.entities.some(e => e.kind==='progression' || (e.kind==='item' && (e.data.stats!==undefined || e.data.upgrade_max!==undefined || e.data.faction_ids!==undefined)) || (e.kind==='stage' && (e.data.enemy_level!==undefined || e.data.rewards_first_heroes!==undefined || e.data.rewards_first_items!==undefined || (e.data.rewards_first??[]).some(r => r.currency==='hero_exp' || r.currency==='rank_material'))));
     if (progression && !value.required_capabilities.includes('heroes.progression.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (progressionProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
+    for (const [kind,cap] of [['vip','vip.v1'],['summon_pool','summon.v1'],['afk','afk.v1']])
+      if (value.entities.some(e => e.kind===kind) && !value.required_capabilities.includes(cap)) return {ok:false,code:'INVALID_REQUEST'};
+    if (economyProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
     const world = value.entities.some(e => e.kind==='location' || (e.kind==='stage' && e.data.location_id!==undefined));
     if (world && !value.required_capabilities.includes('world.locations.v1')) return {ok:false,code:'INVALID_REQUEST'};
     if (locationProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
@@ -124,6 +127,31 @@ export function progressionProblems(content) {
     if (e.kind==='item' && (e.data.faction_ids??[]).some(id => byId.get(id)?.kind!=='faction')) out.push({code:'ITEM_FACTION_INVALID',entity_id:e.id});
     if (e.kind==='stage' && (e.data.rewards_first_heroes??[]).some(id => !combatHero(id))) out.push({code:'REWARD_HERO_INVALID',entity_id:e.id});
     if (e.kind==='stage' && (e.data.rewards_first_items??[]).some(id => !gear(id))) out.push({code:'REWARD_ITEM_INVALID',entity_id:e.id});
+  }
+  return out;
+}
+/**
+ * Economy rules (S25/S27/S29): one VIP and one AFK table; VIP thresholds strictly
+ * increase and the tutorial reaches VIP 1; summon entries/guarantee name combat
+ * heroes, guarantee heroes are in the pool, shard entries need shards_per_hero.
+ */
+export function economyProblems(content) {
+  const byId = new Map(content.entities.map(e => [e.id,e]));
+  const out = [];
+  for (const kind of ['vip','afk']) { const t = content.entities.filter(e => e.kind===kind); if (t.length > 1) out.push({code:kind.toUpperCase()+'_DUPLICATE',entity_id:t[1].id}); }
+  for (const v of content.entities.filter(e => e.kind==='vip')) {
+    const l = v.data.levels;
+    for (let i = 1; i < l.length; i++) if (l[i].points <= l[i-1].points) out.push({code:'VIP_POINTS_NOT_INCREASING',entity_id:v.id});
+    if (v.data.tutorial_points > 0 && v.data.tutorial_points < l[0].points) out.push({code:'VIP_TUTORIAL_BELOW_LEVEL_1',entity_id:v.id});
+    if (v.data.daily_points === 0 && !(v.data.win_points > 0 && v.data.win_points_daily_cap > 0)) out.push({code:'VIP_NO_FREE_SOURCE',entity_id:v.id});
+  }
+  const combatHero = id => byId.get(id)?.kind==='hero' && byId.get(id).data.combat!==undefined;
+  for (const p of content.entities.filter(e => e.kind==='summon_pool')) {
+    const ids = p.data.entries.map(x => x.hero_id);
+    if (ids.some(id => !combatHero(id))) out.push({code:'SUMMON_HERO_INVALID',entity_id:p.id});
+    if (new Set(p.data.entries.map(x => x.hero_id+':'+(x.shards??0))).size !== ids.length) out.push({code:'SUMMON_ENTRY_DUPLICATE',entity_id:p.id});
+    if (p.data.entries.some(x => x.shards!==undefined) && p.data.shards_per_hero===undefined) out.push({code:'SUMMON_SHARDS_RECIPE_MISSING',entity_id:p.id});
+    if (p.data.guarantee && p.data.guarantee.hero_ids.some(id => !p.data.entries.some(x => x.hero_id===id && x.shards===undefined))) out.push({code:'SUMMON_GUARANTEE_NOT_IN_POOL',entity_id:p.id});
   }
   return out;
 }

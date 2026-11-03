@@ -6,6 +6,7 @@ import {authorize,lockAuthorized,requireBody} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {assertStageOpen,recordWin} from './campaign.ts';
 import {resolveTeam} from './heroes.ts';
+import {grantWinVip} from './economy-routes.ts';
 import {progressionOf} from '../../../packages/battle-core/progression.mjs';
 import {DomainError} from './errors.ts';
 import {createLiveBattle,queueLiveCommand,advanceLiveBattle,disconnectLiveBattle,LATE_STEPS} from '../../../packages/battle-core/live.mjs';
@@ -92,7 +93,7 @@ export async function advanceDue(pool:Pool){
   const online=row.online===true,current=online?row.session_state:disconnectLiveBattle(row.session_state);
   const next=advanceLiveBattle(current,{forceAuto:!online});
   await c.query('INSERT INTO live_battle_frames(battle_id,seq,frame) VALUES($1,$2,$3)',[row.id,next.frame.seq,next.frame]);
-  if(next.session.state.result==='attacker_win')await recordWin(c,row);
+  if(next.session.state.result==='attacker_win'){await recordWin(c,row);await grantWinVip(c,row);}
   await c.query("UPDATE live_battles SET session_state=$2,next_tick_at=next_tick_at+interval '100 milliseconds',completed_at=CASE WHEN $3 THEN clock_timestamp() ELSE NULL END WHERE id=$1",[row.id,next.session,next.session.state.result!==null]);
   return true;
  });

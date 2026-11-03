@@ -36,7 +36,7 @@ test('starter world ZIP: import into a fresh draft, publish, player gets heroes,
   const pre=await post(`/admin/v1/drafts/${draftId}/import/preflight`,{expected_revision:0,zip_base64:zip});
   assert.equal(pre.statusCode,200,pre.body);assert.equal(pre.json().ready,true,'no conflicts in a fresh draft');
   const applied=await post(`/admin/v1/drafts/${draftId}/import/apply`,{expected_revision:0,zip_base64:zip,resolutions:{},...meta()});
-  assert.equal(applied.statusCode,200,applied.body);assert.equal(applied.json().draft.content.entities.length,84);
+  assert.equal(applied.statusCode,200,applied.body);assert.equal(applied.json().draft.content.entities.length,87);
   const pointer=(await api.inject({url:'/admin/v1/content/releases',headers:{cookie:headers.cookie}})).json().pointer;
   const pub=await post(`/admin/v1/drafts/${draftId}/publish`,{expected_revision:1,expected_pointer_revision:pointer?.pointer_revision??0,...meta()});
   assert.equal(pub.statusCode,200,pub.body);
@@ -58,7 +58,11 @@ test('starter world ZIP: import into a fresh draft, publish, player gets heroes,
   let result;for(let i=0;i<190&&!result;i++){const x=(await api.inject({url:'/v1/live-battles/'+start.json().battle_id,headers:auth})).json();if(x.result)result=x.result;else await new Promise(r=>setTimeout(r,500));}
   assert.equal(result,'attacker_win','starter five wins the first stage');
   const after=(await api.inject({url:'/v1/heroes',headers:auth})).json();
-  assert.equal(after.balances.gold,500);assert.equal(after.balances.hero_exp,1000);
+  assert.equal(after.balances.gold,500);assert.equal(after.balances.hero_exp,1000);assert.equal(after.balances.gems,500,'enough gems for ten pulls');
+  const sm=(await api.inject({url:'/v1/summon',headers:auth})).json();assert.equal(validate('summon',sm).ok,true);assert.equal(sm.pools[0].guarantee.pulls_left,10);
+  assert.equal((await api.inject({method:'POST',url:'/v1/summon',headers:auth,payload:{request_id:randomUUID(),pool_id:'pool_heroes',count:10}})).statusCode,200);
+  const vip=(await api.inject({url:'/v1/vip',headers:auth})).json();assert.equal(validate('vip',vip).ok,true);assert.equal(vip.tutorial.steps[0].done,true);
+  assert.equal(validate('afk',(await api.inject({url:'/v1/afk',headers:auth})).json()).ok,true);
   assert.equal((await api.inject({url:'/v1/campaign',headers:auth})).json().chapters[0].stages[1].status,'open');
  }finally{
   if(api)await api.close();if(pool)await pool.end();

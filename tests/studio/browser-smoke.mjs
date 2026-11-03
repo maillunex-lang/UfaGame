@@ -245,6 +245,25 @@ try{
  await growth.getByRole('alert').filter({hasText:'Сначала убери ссылку'}).waitFor();
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'growth editor fits the phone width');
  console.log('Chromium mobile: growth table (levels, ranks, starters), item editor, stage exp/item rewards and enemy level, referenced item deletion blocked — passed (mock API)');
+ // S25/S27/S29: VIP table, summon pool with odds and guarantee, AFK income.
+ const econ=page.getByRole('region',{name:'Экономика'});
+ await econ.getByRole('button',{name:'Создать таблицу VIP'}).click();await econ.getByRole('status').filter({hasText:'Таблица VIP создана'}).waitFor();
+ await econ.getByRole('button',{name:'Изменить VIP'}).click();await econ.getByLabel('Порог очков VIP 2').fill('250');await econ.getByLabel('Бесплатных очков в день').fill('30');
+ await econ.getByRole('button',{name:'Применить VIP'}).click();await econ.getByRole('status').filter({hasText:'Готово'}).waitFor();
+ await econ.getByRole('button',{name:'Добавить призыв'}).click();await econ.getByLabel('Цена одной попытки').fill('50');
+ await econ.getByLabel('Вес Волк',{exact:true}).fill('30');
+ await econ.getByLabel('Добавить вариант').selectOption({label:'Герой'});
+ await econ.getByLabel('Раз в сколько попыток').fill('5');await econ.getByLabel('Осколков, чтобы собрать героя').fill('20');
+ if(process.env.UFA_SCREENSHOT_DIR)await econ.screenshot({path:process.env.UFA_SCREENSHOT_DIR+'/economy-form.png'});
+ await econ.getByRole('button',{name:'Добавить этот призыв'}).click();await econ.getByRole('status').filter({hasText:'Готово'}).waitFor();
+ await econ.getByRole('button',{name:'Создать AFK-награды'}).click();await econ.getByRole('status').filter({hasText:'Таблица AFK создана'}).waitFor();
+ await page.locator('.save-bar').filter({hasText:'Все изменения сохранены'}).waitFor({timeout:10000});
+ const ec=draft.content;const vipT=ec.entities.find(e=>e.kind==='vip').data,poolT=ec.entities.find(e=>e.kind==='summon_pool').data;
+ assert.equal(vipT.levels[1].points,250);assert.equal(vipT.daily_points,30);
+ assert.deepEqual(poolT.cost,{currency:'gems',amount:50});assert.equal(poolT.guarantee.every,5);assert.equal(poolT.shards_per_hero,20);assert.ok(poolT.entries.some(x=>x.shards===5));
+ assert.ok(ec.entities.some(e=>e.kind==='afk'));for(const c of ['vip.v1','summon.v1','afk.v1'])assert.ok(ec.required_capabilities.includes(c),c);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'economy editor fits the phone width');
+ console.log('Chromium mobile: VIP table edit, summon pool with odds/guarantee/shards, AFK table — passed (mock API)');
  console.log('Chromium mobile: publish preflight, publish with confirm, unchanged version — passed (mock API)');
  console.log('Chromium mobile: export with dependencies, invalid ZIP, cancel, conflict diff and manual resolution, apply — passed (mock API with real importer)');
  console.log('Chromium mobile: create ability/faction/hero, save, reject referenced deletion, no overflow — passed (mock API)');

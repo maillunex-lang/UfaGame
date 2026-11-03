@@ -101,7 +101,7 @@ export function starterWorld() {
     point('point_yamantau', 'Вершина Ямантау', 'district_beloretskiy', 54255000, 58103000, 'Гора Ямантау'),
 
     // Chapter 1 — Ufa.
-    stage('stage_c1_1', 'Волки у Белой', ['enemy_steppe_wolf', 'enemy_steppe_wolf'], {location_id: 'point_ufa_belaya_bank', rewards_first: [{currency: 'gold', amount: 500}, {currency: 'hero_exp', amount: 1000}]}),
+    stage('stage_c1_1', 'Волки у Белой', ['enemy_steppe_wolf', 'enemy_steppe_wolf'], {location_id: 'point_ufa_belaya_bank', rewards_first: [{currency: 'gold', amount: 500}, {currency: 'hero_exp', amount: 1000}, {currency: 'gems', amount: 500}]}),
     stage('stage_c1_2', 'Туман в старом парке', ['enemy_swamp_spirit', 'enemy_steppe_wolf', 'enemy_swamp_spirit'], {enemy_level: 12, location_id: 'point_ufa_old_park', rewards_first: [{currency: 'gold', amount: 600}, {currency: 'hero_exp', amount: 1200}], rewards_first_items: ['item_fox_hat']}),
     stage('stage_c1_3', 'Разбойники у ворот', ['enemy_bandit', 'enemy_bandit', 'enemy_steppe_wolf'], {enemy_level: 4, location_id: 'point_ufa_river_gate', rewards_first: [{currency: 'gold', amount: 800}, {currency: 'hero_exp', amount: 1200}, {currency: 'rank_material', amount: 100}], rewards_first_heroes: ['hero_laysan']}),
     stage('stage_c1_boss', 'Хозяин Белой реки', ['boss_river_master', 'enemy_swamp_spirit', 'enemy_swamp_spirit'], {enemy_level: 15, location_id: 'point_ufa_belaya_bank', boss: true, rewards_first: [{currency: 'gold', amount: 1500}, {currency: 'gems', amount: 50}, {currency: 'hero_exp', amount: 2500}], rewards_first_heroes: ['hero_buranbay'], rewards_first_items: ['item_amber_beads']}),
@@ -122,6 +122,14 @@ export function starterWorld() {
     {id: 'chapter_2_burzyan', kind: 'chapter', name: 'Тайна Шульган-Таша', data: {order: 2, stage_ids: ['stage_c2_1', 'stage_c2_2', 'stage_c2_3', 'stage_c2_boss'], location_id: 'district_burzyanskiy', proposed: true, description: 'В бурзянских лесах тени ведут к древней пещере.'}},
     {id: 'chapter_3_mountains', kind: 'chapter', name: 'Вершины Урала', data: {order: 3, stage_ids: ['stage_c3_1', 'stage_c3_2', 'stage_c3_3', 'stage_c3_boss'], location_id: 'district_beloretskiy', proposed: true, description: 'Горы просыпаются, и Владыка Ямантау зовёт на бой.'}},
 
+    // Economy (S25/S27/S29), proposed numbers.
+    {id: 'vip_main', kind: 'vip', name: 'VIP', data: {levels: [[100, 'Значок VIP', 0], [300, '+1 ч AFK', 1], [700, '+1 ч AFK', 1], [1500, '+2 ч AFK', 2], [3000, '+2 ч AFK', 2], [6000, '+3 ч AFK', 3], [10000, '+3 ч AFK, быстрый расчёт (S26)', 3], [16000, '+4 ч AFK', 4], [25000, '+4 ч AFK', 4], [40000, '+5 ч AFK', 5]].map(([points, perks_text, afk_hours]) => ({points, perks_text, afk_hours})), tutorial_points: 100, daily_points: 20, win_points: 2, win_points_daily_cap: 20, proposed: true}},
+    {id: 'pool_heroes', kind: 'summon_pool', name: 'Зов героев', data: {cost: {currency: 'gems', amount: 50}, description: 'Герои Башкортостана отвечают на зов курая.',
+      entries: [['hero_azamat', 10], ['hero_aigul', 10], ['hero_karagai', 10], ['hero_zulfia', 10], ['hero_timer', 10], ['hero_laysan', 4], ['hero_buranbay', 4], ['hero_nuria', 4], ['hero_ilgiz', 2], ['hero_server', 2]].map(([hero_id, weight]) => ({hero_id, weight}))
+        .concat([{hero_id: 'hero_ilgiz', weight: 12, shards: 5}, {hero_id: 'hero_server', weight: 12, shards: 5}]),
+      guarantee: {every: 10, hero_ids: ['hero_ilgiz', 'hero_server']}, shards_per_hero: 30, proposed: true}},
+    {id: 'afk_main', kind: 'afk', name: 'AFK-награды', data: {per_hour: [{currency: 'gold', amount: 300}, {currency: 'hero_exp', amount: 400}, {currency: 'rank_material', amount: 5}], stage_bonus_bp: 800, proposed: true}},
+
     {id: 'progression_main', kind: 'progression', name: 'Развитие героев', data: {
       level_gold_base: 30, level_gold_step: 15, level_exp_base: 40, level_exp_step: 20, growth_bp: 800,
       ranks: [{name: 'Новичок', max_level: 20, copies: 0, stat_bp: 0}, {name: 'Воин', max_level: 40, copies: 1, stat_bp: 1500}, {name: 'Батыр', max_level: 60, copies: 2, stat_bp: 3500}, {name: 'Легенда', max_level: 100, copies: 3, stat_bp: 6000}],
@@ -133,7 +141,7 @@ export function starterWorld() {
     schema_version: 1,
     // Same as a new Studio draft, so importing into a fresh draft has no base conflict.
     content_version: 'draft_001',
-    required_capabilities: ['content.core.v1', 'battle.combat.v1', 'battle.abilities.v2', 'battle.triggers.v1', 'world.locations.v1', 'campaign.chapters.v1', 'heroes.progression.v1'],
+    required_capabilities: ['content.core.v1', 'battle.combat.v1', 'battle.abilities.v2', 'battle.triggers.v1', 'world.locations.v1', 'campaign.chapters.v1', 'heroes.progression.v1', 'vip.v1', 'summon.v1', 'afk.v1'],
     entities,
   };
 }

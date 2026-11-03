@@ -6,6 +6,7 @@ import {authorize,bearer} from './auth.ts';
 import {currentPointer} from './content.ts';
 import {applyDeltaTx} from './economy.ts';
 import {grantHero,grantItem} from './heroes.ts';
+import {settleAfkBeforeProgress} from './economy-routes.ts';
 
 type Querier=Pool|PoolClient;
 const cleared=async(db:Querier,playerId:string)=>new Map<string,string>((await db.query('SELECT stage_id,battle_id FROM campaign_progress WHERE player_id=$1',[playerId])).rows.map(r=>[r.stage_id,r.battle_id]));
@@ -35,6 +36,8 @@ export async function assertStageOpen(db:Querier,playerId:string,content:any,sta
 export async function recordWin(c:PoolClient,row:{id:string;player_id:string;stage_id:string;content_version:string}){
  const content=(await c.query('SELECT content FROM content_versions WHERE content_version=$1',[row.content_version])).rows[0]?.content;
  if(!content||stageStatus(content,new Map(),row.stage_id)==='training')return;
+ // AFK income speed depends on progress: close the running segment first (S29).
+ if(!(await c.query('SELECT 1 FROM campaign_progress WHERE player_id=$1 AND stage_id=$2',[row.player_id,row.stage_id])).rowCount)await settleAfkBeforeProgress(c,row.player_id);
  const inserted=(await c.query('INSERT INTO campaign_progress(player_id,stage_id,content_version,battle_id) VALUES($1,$2,$3,$4) ON CONFLICT (player_id,stage_id) DO NOTHING RETURNING stage_id',[row.player_id,row.stage_id,row.content_version,row.id])).rowCount;
  if(!inserted)return;
  const stage=content.entities.find((e:any)=>e.id===row.stage_id&&e.kind==='stage');

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/summon_request",
+  "title": "POST /v1/summon: one or ten pulls; request_id replays the saved result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "pool_id",
+    "count"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "pool_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "count": {
+      "enum": [
+        1,
+        10
+      ]
+    }
+  }
+}

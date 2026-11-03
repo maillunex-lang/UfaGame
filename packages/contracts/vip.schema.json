@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/vip",
+  "title": "GET /v1/vip: level computed by the server from vip_points",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "points",
+    "level",
+    "next_points",
+    "afk_hours",
+    "levels",
+    "daily",
+    "wins",
+    "tutorial",
+    "proposed"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "points": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "next_points": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "afk_hours": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "level",
+          "points",
+          "perks_text",
+          "afk_hours",
+          "free_days"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "perks_text": {
+            "type": "string"
+          },
+          "afk_hours": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "free_days": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "daily": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "points",
+        "available"
+      ],
+      "properties": {
+        "points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "available": {
+          "type": "boolean"
+        }
+      }
+    },
+    "wins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "points",
+        "today",
+        "cap"
+      ],
+      "properties": {
+        "points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "today": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "tutorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "steps",
+        "points",
+        "claimed"
+      ],
+      "properties": {
+        "points": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "claimed": {
+          "type": "boolean"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "name",
+              "done"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "done": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "proposed": {
+      "type": "boolean"
+    }
+  }
+}

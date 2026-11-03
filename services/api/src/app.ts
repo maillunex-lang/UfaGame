@@ -13,6 +13,7 @@ import {registerContent} from './content.ts';
 import {registerBattles} from './battles.ts';
 import {registerCampaign} from './campaign.ts';
 import {registerHeroes} from './heroes.ts';
+import {registerEconomy} from './economy-routes.ts';
 import {registerLiveRoutes} from './live-routes.ts';
 export async function buildApp(pool:Pool,ownerOptions:OwnerOptions={origin:process.env.ADMIN_ORIGIN,cookiePath:process.env.ADMIN_COOKIE_PATH}) {
  const app=Fastify({logger:false,bodyLimit:16384,trustProxy:false,requestTimeout:10000});
@@ -26,7 +27,7 @@ export async function buildApp(pool:Pool,ownerOptions:OwnerOptions={origin:proce
  });
  app.get('/health/live',async()=>({status:'ok'}));
  app.get('/health/ready',async(_request,reply)=>{
-  try{const ready=await pool.query('SELECT name FROM schema_migrations WHERE name = ANY($1::text[])',[['006-studio-drafts.sql','007-owner-resources.sql','008-resource-revisions.sql','009-content-versions.sql','010-battles.sql','011-live-battles.sql','012-campaign.sql','013-heroes.sql']]);if(ready.rowCount!==8)throw new Error('Schema not ready');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
+  try{const ready=await pool.query('SELECT name FROM schema_migrations WHERE name = ANY($1::text[])',[['006-studio-drafts.sql','007-owner-resources.sql','008-resource-revisions.sql','009-content-versions.sql','010-battles.sql','011-live-battles.sql','012-campaign.sql','013-heroes.sql','014-economy.sql']]);if(ready.rowCount!==9)throw new Error('Schema not ready');return {status:'ok'};}catch{return reply.code(503).send({error:{code:'SERVICE_UNAVAILABLE',message:'SERVICE_UNAVAILABLE',request_id:_request.id}});}
  });
  app.get('/v1/capabilities',async()=>registry);
  app.setNotFoundHandler((request,reply)=>reply.code(404).send({error:{code:'NOT_FOUND',message:'NOT_FOUND',request_id:request.id}}));
@@ -36,6 +37,7 @@ export async function buildApp(pool:Pool,ownerOptions:OwnerOptions={origin:proce
  await registerBattles(app,pool);
  await registerCampaign(app,pool);
  await registerHeroes(app,pool);
+ await registerEconomy(app,pool);
  await registerLiveRoutes(app,pool);
  await registerOwner(app,pool,ownerOptions);
  return app;

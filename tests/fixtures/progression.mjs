@@ -16,3 +16,14 @@ export const progressionContent=()=>({schema_version:1,content_version:'progress
  {id:'progression_main',kind:'progression',name:'Развитие',data:{level_gold_base:10,level_gold_step:5,level_exp_base:20,level_exp_step:10,growth_bp:1000,
   ranks:[{name:'Новичок',max_level:3,copies:0,stat_bp:0},{name:'Боец',max_level:5,copies:2,stat_bp:2000}],material_per_copy:50,sync_slots:2,
   starter_hero_ids:['hero_a','hero_b','hero_c','hero_d','hero_e','hero_a','hero_a','hero_b'],starter_item_ids:['item_sword','item_elf_armor']}}]});
+/** Progression fixture + VIP, summon pool and AFK (S25/S27/S29). */
+export const economyContent=(o={})=>{
+ const c=progressionContent();
+ c.content_version='economy_fixture';
+ c.required_capabilities.push('vip.v1','summon.v1','afk.v1');
+ c.entities.push(
+  {id:'vip_main',kind:'vip',name:'VIP',data:{levels:[{points:100,perks_text:'VIP 1',afk_hours:0},{points:500,perks_text:'+2 ч AFK',afk_hours:2},{points:1000000000,perks_text:'Огромный порог'}],tutorial_points:100,daily_points:50,win_points:10,win_points_daily_cap:30,proposed:true,...o.vip}},
+  {id:'pool_main',kind:'summon_pool',name:'Призыв',data:{cost:{currency:'gems',amount:10},entries:[{hero_id:'hero_a',weight:1},{hero_id:'hero_b',weight:1},{hero_id:'hero_c',weight:2,shards:5},{hero_id:'hero_f',weight:1}],guarantee:{every:3,hero_ids:['hero_f']},shards_per_hero:10,...o.pool}},
+  {id:'afk_main',kind:'afk',name:'AFK',data:{per_hour:[{currency:'gold',amount:3600},{currency:'hero_exp',amount:360}],stage_bonus_bp:5000,...o.afk}});
+ return c;
+};

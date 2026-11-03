@@ -32,7 +32,10 @@
           "world.locations.v1",
           "battle.triggers.v1",
           "campaign.chapters.v1",
-          "heroes.progression.v1"
+          "heroes.progression.v1",
+          "vip.v1",
+          "summon.v1",
+          "afk.v1"
         ]
       },
       "uniqueItems": true,
@@ -982,6 +985,281 @@
                       "type": "string",
                       "pattern": "^[a-z][a-z0-9_]{2,79}$"
                     }
+                  },
+                  "proposed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "vip"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "levels",
+                  "tutorial_points",
+                  "daily_points"
+                ],
+                "properties": {
+                  "levels": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "points"
+                      ],
+                      "properties": {
+                        "points": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000000
+                        },
+                        "perks_text": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "afk_hours": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 12
+                        }
+                      }
+                    }
+                  },
+                  "tutorial_points": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  },
+                  "daily_points": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "win_points": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100000
+                  },
+                  "win_points_daily_cap": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "proposed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "summon_pool"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "cost",
+                  "entries"
+                ],
+                "properties": {
+                  "cost": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "enum": [
+                          "gold",
+                          "gems"
+                        ]
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 1000000
+                      }
+                    }
+                  },
+                  "entries": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "hero_id",
+                        "weight"
+                      ],
+                      "properties": {
+                        "hero_id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                        },
+                        "weight": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        },
+                        "shards": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000
+                        }
+                      }
+                    }
+                  },
+                  "guarantee": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "every",
+                      "hero_ids"
+                    ],
+                    "properties": {
+                      "every": {
+                        "type": "integer",
+                        "minimum": 2,
+                        "maximum": 1000
+                      },
+                      "hero_ids": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "uniqueItems": true,
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]{2,79}$"
+                        }
+                      }
+                    }
+                  },
+                  "shards_per_hero": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "proposed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "data"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{2,79}$"
+              },
+              "kind": {
+                "const": "afk"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "per_hour"
+                ],
+                "properties": {
+                  "per_hour": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "enum": [
+                            "gold",
+                            "hero_exp",
+                            "rank_material"
+                          ]
+                        },
+                        "amount": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        }
+                      }
+                    }
+                  },
+                  "stage_bonus_bp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
                   },
                   "proposed": {
                     "type": "boolean"

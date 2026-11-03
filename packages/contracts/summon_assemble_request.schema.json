@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/summon_assemble_request",
+  "title": "POST /v1/summon/assemble: shards of a hero become one hero",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "pool_id",
+    "hero_id"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "pool_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "hero_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    }
+  }
+}

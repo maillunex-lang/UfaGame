@@ -31,7 +31,7 @@ const wins=(stage,level)=>{let w=0;for(let seed=1;seed<=3;seed++){const {setup,h
 const balance=content.entities.filter(e=>e.kind==='stage').map(st=>{let level=1;while(level<=40&&!wins(st.id,level))level++;return {stage_id:st.id,name:st.name,boss:!!st.data.boss,enemy_level:st.data.enemy_level??1,needs_team_level:level>40?null:level};});
 
 const files={'starter-world.json':Buffer.from(JSON.stringify(content,null,2)+'\n'),'ufagame-starter.zip':zip,'balance.json':Buffer.from(JSON.stringify(balance,null,2)+'\n')};
-const counts=Object.fromEntries(['faction','ability','hero','item','location','stage','chapter','progression'].map(k=>[k,content.entities.filter(e=>e.kind===k).length]));
+const counts=Object.fromEntries(['faction','ability','hero','item','location','stage','chapter','progression','vip','summon_pool','afk'].map(k=>[k,content.entities.filter(e=>e.kind===k).length]));
 if(process.argv.includes('--check')){
  for(const [name,bytes] of Object.entries(files)){const path=new URL(name,dir);if(!existsSync(path)||!readFileSync(path).equals(bytes))throw new Error(`${name} is out of date: run node tools/content/build-starter.mjs`);}
  console.log('Starter world files are up to date');

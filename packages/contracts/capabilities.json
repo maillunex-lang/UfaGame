@@ -13,6 +13,9 @@
     "world.locations.v1",
     "battle.triggers.v1",
     "campaign.chapters.v1",
-    "heroes.progression.v1"
+    "heroes.progression.v1",
+    "vip.v1",
+    "summon.v1",
+    "afk.v1"
   ]
 }

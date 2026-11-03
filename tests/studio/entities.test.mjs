@@ -148,3 +148,17 @@ test('growth table and items: proposed defaults valid, one table, rank rules, re
  text=deleteEntity(text,'progression_main');text=deleteEntity(text,'item_sword');
  assert.ok(!JSON.parse(text).required_capabilities.includes('heroes.progression.v1'),'capability removed with the last use');
 });
+test('economy tables: proposed VIP/AFK valid, one table each, thresholds, free source, pool rules, used hero protected',async()=>{
+ const {defaultVip,defaultAfk,defaultCombat,oddsPreview}=await import('../../apps/studio-web/src/entities.mjs');
+ let text=blank();for(const e of [ability,faction,{...hero,data:{...hero.data,combat:defaultCombat()}}])text=upsertEntity(text,e);
+ text=upsertEntity(text,{id:'vip_main',kind:'vip',name:'VIP',data:defaultVip()});text=upsertEntity(text,{id:'afk_main',kind:'afk',name:'AFK',data:defaultAfk()});
+ const pool={id:'pool_one',kind:'summon_pool',name:'Призыв',data:{cost:{currency:'gems',amount:100},entries:[{hero_id:'hero_one',weight:10}],guarantee:{every:10,hero_ids:['hero_one']}}};
+ text=upsertEntity(text,pool);
+ const c=JSON.parse(text);assert.equal(validate('content',c).ok,true);for(const k of ['vip.v1','summon.v1','afk.v1'])assert.ok(c.required_capabilities.includes(k));
+ assert.throws(()=>upsertEntity(text,{id:'vip_two',kind:'vip',name:'VIP',data:defaultVip()}),/уже есть/);
+ const v=defaultVip();v.levels[1].points=50;assert.throws(()=>upsertEntity(text,{id:'vip_main',kind:'vip',name:'VIP',data:v},'vip_main'),/больше/);
+ assert.throws(()=>upsertEntity(text,{id:'vip_main',kind:'vip',name:'VIP',data:{...defaultVip(),daily_points:0,win_points:0}},'vip_main'),/бесплатный источник/);
+ assert.throws(()=>upsertEntity(text,{...pool,data:{...pool.data,entries:[{hero_id:'hero_one',weight:10,shards:5}]}},'pool_one'),/осколков|Гарантированные/);
+ assert.throws(()=>deleteEntity(text,'hero_one'),/Сначала убери ссылку/);
+ assert.deepEqual(oddsPreview([{weight:1},{weight:3}]),['25.00','75.00']);
+});

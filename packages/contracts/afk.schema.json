@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ufagame.invalid/contracts/v1/afk",
+  "title": "GET /v1/afk and claim: server-time accumulation, cap 12 h + VIP hours",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "api_version",
+    "per_hour",
+    "accrued",
+    "accrued_ms",
+    "cap_hours",
+    "window_started_at",
+    "server_time",
+    "claimed",
+    "proposed"
+  ],
+  "properties": {
+    "api_version": {
+      "const": 1
+    },
+    "per_hour": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "accrued": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "accrued_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cap_hours": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "window_started_at": {
+      "type": "string"
+    },
+    "server_time": {
+      "type": "string"
+    },
+    "claimed": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "proposed": {
+      "type": "boolean"
+    }
+  }
+}
