@@ -1578,4 +1578,8 @@ docs/reports/S25-S27-S29.md. Проверки: повтор обучения, п
 Общее: `npm run check` exit0, интеграция 47/47, Chromium mobile, Godot, check:game.
 Стартовый мир дополнен VIP, призывом и AFK. Не проверено: VPS и телефон.
 Следующий шаг: Game v14, обновление VPS через update.sh, приемка владельцем.
+CI на 584f5b0: Repository checks 41629491201 — success. Game v14 (capabilities vip.v1,
+summon.v1, afk.v1; versionCode 14; сертификат e8959e0f…e575) опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s25-s27-s29-game-test-v14/Game-arm64-v14.apk
+— повторное скачивание, SHA-256 35e37bb4…c3cf совпал; на телефоне не проверена.
 
