@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 const ajv = new Ajv({strict: true, allErrors: true, coerceTypes: false, removeAdditional: false});
 formats(ajv);
 export const registry = JSON.parse(readFileSync(new URL('./capabilities.json', import.meta.url)));
-const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes','summon_request','summon_assemble_request','afk_claim_request','vip_claim_request','vip','summon','afk','quest_claim_request','quests'];
+const names = ['content','battle_snapshot','battle_event','ledger_entry','error','guest_request','refresh_request','revoke_request','bind_request','login_request','recover_request','session','progress','bound_session','rotate_recovery_request','owner_login_request','owner_profile_request','owner_logout_request','owner_password_request','owner_audit_query','owner_profile','owner_session','owner_audit_page','studio_draft','draft_create_request','draft_save_request','mod_manifest','mod_operations','resource_descriptor','resource_upload_request','resource_update_request','battle_preview_request','battle_preview','mod_resource','import_preflight_request','import_apply_request','publish_preflight_request','publish_request','pointer_request','content_bundle','battle_start_request','battle_record','live_battle_command','live_battle_frame','live_battle_snapshot','campaign','hero_level_request','hero_rank_request','hero_team_request','hero_protect_request','item_equip_request','item_upgrade_request','heroes','summon_request','summon_assemble_request','afk_claim_request','vip_claim_request','vip','summon','afk','quest_claim_request','quests','game_layout'];
 export const schemas = Object.fromEntries(names.map(n => [n, JSON.parse(readFileSync(new URL(`./${n}.schema.json`,import.meta.url)))]));
 for (const name of names) ajv.addSchema(schemas[name]);
 const validators = Object.fromEntries(names.map(n => [n, ajv.getSchema(schemas[n].$id)]));
@@ -12,6 +12,7 @@ export function validate(name, value) {
   const validator = validators[name];
   if (!validator) throw new Error('Unknown schema');
   if (!validator(value)) return {ok:false, code:'INVALID_REQUEST'};
+  if (name === 'game_layout' && layoutProblems(value).length) return {ok:false,code:'INVALID_REQUEST'};
   if (name === 'content') {
     if (value.required_capabilities.some(c => !registry.capabilities.includes(c))) return {ok:false,code:'INCOMPATIBLE_CLIENT'};
     const combat = value.entities.some(e => (e.kind==='hero' && e.data.combat) || (e.kind==='ability' && e.data.energy_cost!==undefined));
@@ -197,4 +198,25 @@ export function resourceRefs(content) {
     if (e.kind==='location' && e.data.art) refs.push({entity_id:e.id,resource_id:e.data.art.resource_id,media_type:'image/png'});
   }
   return refs;
+}
+
+/** S31 proposal: validate topology after structural validation. */
+export function layoutProblems(layout) {
+  const nodes = layout.nodes, byId = new Map(nodes.map(node => [node.id, node]));
+  if (byId.size !== nodes.length) return ['DUPLICATE_NODE'];
+  const roots = nodes.filter(node => node.parent === null);
+  if (roots.length !== 1 || !['column','row'].includes(roots[0].type)) return ['INVALID_ROOT'];
+  for (const node of nodes) {
+    const visited = new Set(); let cursor = node, depth = 0;
+    while (cursor) {
+      if (visited.has(cursor.id)) return ['CYCLE'];
+      visited.add(cursor.id);
+      if (++depth > 8) return ['MAX_DEPTH'];
+      if (cursor.parent === null) { if (cursor.id !== roots[0].id) return ['INVALID_ROOT']; break; }
+      const parent = byId.get(cursor.parent);
+      if (!parent || !['column','row'].includes(parent.type)) return ['INVALID_PARENT'];
+      cursor = parent;
+    }
+  }
+  return [];
 }

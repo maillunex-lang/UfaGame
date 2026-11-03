@@ -81,8 +81,13 @@ test('S27 summon: shortage, odds, 10-pull replay, guarantee boundary, parallel p
   assert.ok(par.every(x=>x.statusCode===200));assert.equal(await p.bal('gems'),600);
   const all=(await pool.query('SELECT results FROM summon_pulls WHERE player_id=$1 ORDER BY created_at',[p.g.player_id])).rows.flatMap(x=>x.results);
   assert.equal(all.length,40);assert.equal(Number((await pool.query("SELECT total_pulls FROM summon_state WHERE player_id=$1",[p.g.player_id])).rows[0].total_pulls),40);
-  // Guarantee boundary: never 3 pulls in a row without hero_f.
-  let gap=0,maxGap=0;for(const x of all){if(x.hero_id==='hero_f'&&!x.shards)gap=0;else gap++;maxGap=Math.max(maxGap,gap);}assert.ok(maxGap<=2,'guarantee every 3 pulls, gap '+maxGap);
+  // Parallel transactions acquire the player lock in an unspecified order; created_at
+  // is transaction-start time, so it cannot establish their serialization order.
+  // Check whether an ordering of the three returned batches satisfies the guarantee.
+  const batches=par.map(x=>x.json().last);
+  const validOrder=(pulls)=>{let gap=0;for(const x of pulls){gap=x.hero_id==='hero_f'&&!x.shards?0:gap+1;if(gap>2)return false;}return true;};
+  const serialOrders=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  assert.ok(serialOrders.some(order=>validOrder([...first,...order.flatMap(i=>batches[i])])), 'guarantee every 3 pulls for a valid serialized order');
   assert.ok(all.some(x=>x.guaranteed),'some pulls were forced by the guarantee');
   const heroes=(await p.get('/v1/heroes')).heroes.length,nonShard=all.filter(x=>!x.shards).length;assert.equal(heroes,8+nonShard,'every hero pull is an instance');
   const shards=all.filter(x=>x.shards).length*5;assert.equal(await p.bal('shard_hero_c'),shards);
