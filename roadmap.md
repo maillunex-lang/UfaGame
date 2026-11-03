@@ -1257,3 +1257,16 @@ https://github.com/maillunex-lang/UfaGame/releases/download/s16-game-test-v8/Gam
 корня — штатное перенаправление портала на вход, не следствие изменений UfaGame
 (nginx не менялся). Вопрос закрыт. Развертывание S11–S16 (96bb084) владельцем еще
 не выполнено.
+
+### S11–S16 — развертывание на тестовом VPS (выполнил владелец)
+2026-11-03 06:01: backup `/srv/ufagame-test/backup-20261103-060126` (db.dump 28513
+байт, прежний commit 4371e4a, копия статики). `ufagame_s09_test` API пересобран на
+96bb084; миграция 009 применена при старте (health/ready требует 006–009 →
+`{"status":"ok"}` после штатного connection reset во время старта). Статика собрана
+в node:24.19.0: `index-DiX5NPon.js`/`index-CIzEynZv.css` — совпали с локальной
+сборкой того же commit. nginx: `apply-body-limit.sh` добавил только
+`client_max_body_size 16m;` в /game/server/ (diff в 1 строку), nginx -t прошел,
+тело 2 МБ дошло до API (HTTP 404 от API вместо 413), портал/Studio/API прошли.
+Backup nginx: /srv/ufagame-test/nginx-backup-9bTW35/original.conf.
+Не проверено: Studio v14 и Game v8 на телефоне, публикация с телефона и загрузка
+мира игрой с VPS (критерий завершения S16).
