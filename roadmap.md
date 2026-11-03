@@ -1466,3 +1466,8 @@ check:studio 14, Chromium mobile, интеграция 38/38 (сквозной �
 публикация → бой с оглушением из дополнительного действия), `npm run check`,
 check:game exit0. Миграций нет. Осталось для done: Game v11 (новая capability) и
 проверка владельцем, что герой из Studio действует в бою на телефоне.
+CI на 187f307: Repository checks 41614023128 — success. Game v11 (capability
+battle.triggers.v1 и world.locations.v1 в комплекте; сертификат e8959e0f…e575)
+опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s20-game-test-v11/Game-arm64-v11.apk
+— повторное скачивание, SHA-256 824e848a…c3d2 совпал; на телефоне не проверена.
