@@ -5,7 +5,7 @@ GitHub: публичный https://github.com/maillunex-lang/UfaGame; досту
 
 ## Статусы и порядок
 todo - не начато; in_progress - реализуется; blocked - конкретный блокер; done - реализовано и проверено.
-S01–S09 и S11 done; S10, S12, S17 и S51 in_progress; S52 blocked; остальные этапы — по таблице. Подготовка промпта не означает выполнение этапа.
+S01–S09 и S11–S14 done; S10, S17 и S51 in_progress; S52 blocked; остальные этапы — по таблице. Подготовка промпта не означает выполнение этапа.
 S01–S24: постепенный технический срез; S01–S53: первая рабочая версия с выбранными базовыми режимами; S54–S57: полнота/проверки/публичный запуск; S58–S60: поздние расширения.
 План сложного проекта не является гарантией сроков. Каждый этап при необходимости дробится на подзадачи с сохранением зависимостей и приемки.
 Частично доступную работу продолжать независимо, но недоступную проверку не отмечать done.
@@ -23,9 +23,9 @@ S01–S24: постепенный технический срез; S01–S53: п
 | S09 | Каркас веб-комбайна и черновики | S08 | done |
 | S10 | Game Studio Android APK | S04, S09 | in_progress |
 | S11 | Реестр ресурсов и анимации | S03, S09 | done |
-| S12 | Контракт ZIP-модификации | S03, S11 | in_progress |
-| S13 | Защищенный валидатор ZIP | S12 | blocked |
-| S14 | Импорт, экспорт и разрешение конфликтов | S09, S13 | blocked |
+| S12 | Контракт ZIP-модификации | S03, S11 | done |
+| S13 | Защищенный валидатор ZIP | S12 | done |
+| S14 | Импорт, экспорт и разрешение конфликтов | S09, S13 | done |
 | S15 | Публикация контента и version pointer | S14 | todo |
 | S16 | Game: вход, загрузчик и постоянные ресурсы | S04, S06, S15 | todo |
 | S17 | Серверное ядро автобоя | S05, S03 | in_progress |
@@ -1202,3 +1202,22 @@ Studio v13 (WAV в выборе файлов) подписана прежним 
 https://github.com/maillunex-lang/UfaGame/releases/download/s11-studio-test-v13/Studio-v13.apk
 — повторное скачивание, SHA-256 107b9734…d73f совпал; на телефоне не проверена.
 Следующий шаг — S12–S14 (ZIP с ресурсами, импорт/экспорт), затем S15.
+
+### S12–S14 — ZIP-пакеты: контракт, карантинная проверка, импорт/экспорт; этапы done
+Commits 871cc09 (контракт, инспектор, планировщик, API) и 119b32e (UI Studio,
+Android DownloadPolicy `?ids=`, ADR 0013, docs/MOD_AUTHORING.md, пример
+examples/ufa_batyrs_starter). Подробно: docs/reports/S12.md, S13.md, S14.md.
+Проверки: `npm run check` exit0 (contracts 10, mod 29, studio 7, battle 24);
+интеграция с реальной PostgreSQL 16.15 + Chromium 25/26 (провал только Godot ENOENT
+в среде); Chromium mobile smoke passed; DownloadPolicyTest/PickerPolicyTest passed.
+Миграций нет. Откат — revert; черновики, измененные импортом, остаются валидными.
+Не проверено: VPS (новый API/веб не развернут), телефон, реальное скачивание файла
+в WebView. Блокер для больших файлов через сайт: nginx `client_max_body_size`
+(по умолчанию 1 МиБ) — подготовлен infra/studio-test/render-body-limit.py для
+apply-nginx.sh (бэкап, diff, nginx -t, smoke, откат); синтетический тест прошел,
+на VPS не применялся. CI на 119b32e: Repository checks 41579441800 — success
+(source, godot, integration). Studio v14 (DownloadPolicy `?ids=`) подписана прежним
+ключом, опубликована:
+https://github.com/maillunex-lang/UfaGame/releases/download/s14-studio-test-v14/Studio-v14.apk
+— повторное скачивание, SHA-256 21adc9d2…dae4 совпал; на телефоне не проверена.
+Следующий шаг: S15 (неизменяемые версии контента, preflight, publish, rollback).
